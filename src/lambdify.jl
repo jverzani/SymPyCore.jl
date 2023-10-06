@@ -1,0 +1,405 @@
+## Work with symbolic expression tree including lambdify
+
+# to keep SymPy.Introspection alive
+Base.@kwdef struct Introspection{T}
+    _sympy_::T
+    funcname::Function  = (x::Sym) -> SymPyCore.funcname(x, _sympy_)
+    func::Function      = (x::Sym) -> SymPyCore.func(x, _sympy_)
+    args::Function      = (x::Sym) -> SymPyCore.args(x, _sympy_)
+    class::Function     = (x::Sym) -> SymPyCore.class(x, _sympy_)
+    classname::Function = (x::Sym) -> SymPyCore.classname(x, _sympy_)
+end
+
+is_symbolic(x::SymbolicObject) = true
+is_symbolic(x) = false
+
+"""
+    funcname(x)
+
+Return name or ""
+"""
+function funcname(x::Sym, _sympy_=nothing)
+    y = ↓(x)
+    if hasproperty(y, :func)
+        return string(y.func.__name__)
+    else
+        return ""
+    end
+end
+
+"""
+   func(x)
+
+Return function head from an expression
+
+[Invariant:](http://docs.sympy.org/dev/tutorial/manipulation.html)
+
+Every well-formed SymPy expression `ex` must either have `length(args(ex)) == 0` or
+`func(ex)(args(ex)...) = ex`.
+"""
+func(ex::Sym, _sympy_=nothing) = return ↓(ex).func
+
+"""
+    args(x)
+
+Return arguments of `x`, as a tuple. (Empty if no `:args` property.)
+"""
+function args(x::Sym, _sympy_=nothing)
+    y = ↓(x)
+    if hasproperty(y, :args)
+        return Tuple(Sym(aᵢ) for aᵢ in y.args)
+    else
+        return ()
+    end
+end
+
+function class(x::T, _sympy_=nothing) where {T}
+    y = ↓(x)
+    if hasproperty(y, :__class__)
+        return y.__class__
+    else
+        return nothing
+    end
+end
+
+function classname(x::T, _sympy_=nothing) where {T}
+    cls = class(x)
+    if cls == nothing
+        "NULL"
+    else
+        string(cls.__name__)
+    end
+end
+
+# function getmembers(x::T) where {T <: Union{Sym, PyObject}}
+#     Dict(u=>v for (u,v) in inspect.getmembers(x))
+# end
+
+## --------------------------------------------------
+# Methods for SymbolicUtils extension
+_istree(x::SymbolicObject) = !(↓(x).is_Atom)
+
+function _operation(x::SymbolicObject)
+    @assert _istree(x)
+    nm = funcname(x)
+    λ = get(sympy_fn_julia_fn, nm, nothing)
+    isnothing(λ) && return getfield(Main, Symbol(nm))
+    return first(λ)
+end
+
+_arguments(x::SymbolicObject) = collect(args(x))
+
+function _similarterm(t::SymbolicObject, f, args, symtype=nothing;
+                      metadata=nothing, exprhead=:call)
+    f(args...) # default
+end
+
+## --------------------------------------------------
+
+# lambdify an expression
+
+## Mapping of SymPy Values into julia values
+val_map = Dict(
+               "Zero"             => :(0),
+               "One"              => :(1),
+               "NegativeOne"      => :(-1),
+               "Half"             => :(1/2),
+               "Pi"               => :pi,
+               "Exp1"             => :ℯ,
+               "Infinity"         => :Inf,
+               "NegativeInfinity" => :(-Inf),
+               "ComplexInfinity"  => :Inf, # error?
+               "ImaginaryUnit"    => :im,
+               "BooleanTrue"      => :true,
+               "BooleanFalse"     => :false
+               )
+
+## Mapping of Julia function names into julia ones
+## most are handled by Symbol(fnname), the following catch exceptions
+## Hack to avoid Expr(:call,  :*,2, x)  being  2x and  not  2*x
+## As of newer sympy versions, this is no longer needed.
+
+# Some julia functions for use within lambdify
+function _piecewise(args...)
+    as = copy([args...])
+    val, cond = pop!(as)
+    ex = Expr(:call, :ifelse, cond, convert(Expr,val), :nothing)
+    while length(as) > 0
+        val, cond = pop!(as)
+        ex = Expr(:call, :ifelse, cond, convert(Expr,val), convert(Expr, ex))
+    end
+    ex
+end
+
+_ANY_(xs...) = any(xs) # any∘tuple ?
+_ALL_(xs...) = all(xs) # all∘tuple
+_ZERO_(xs...) = 0      #
+# not quite a match; NaN not θ(0) when evaluated at 0 w/o second argument
+_HEAVISIDE_(a...)  = (a[1] < 0 ? 0 : (a[1] > 0 ? 1 : (length(a) > 1 ? a[2] : NaN)))
+
+## Map to get function object from type information
+# we may want fn or expression, Symbol(+) yields :+ but allocates to make a string
+sympy_fn_julia_fn = Dict(
+    "Add" => (+, :+),
+    "Sub" => (-, :-),
+    "Mul" => (*, :*),
+    "Div" => (/, :/),
+    "Pow" => (^, :^),
+    "re"  => (real, :real),
+    "im"  => (imag, :imag),
+    "Abs" => (abs, :abs),
+    "Min" => (min, :min),
+    "Max" => (max, :max),
+    "Poly" => (identity, :identity),
+    "conjugate" => (conj, :conj),
+    "atan2" => (atan, :atan),
+    #
+    "Less" => (<, :(<)),
+    "LessThan" => (<=, :(<=)),
+    "StrictLessThan" => (<, :(<)),
+    "Equal" => (==, :(==)),
+    "Equality" => (==, :(==)),
+    "Unequality" => (!==, :(!==)),
+    "StrictGreaterThan" => (>, :(>)),
+    "GreaterThan" => (>=, :(>=)),
+    "Greater" => (>, :(>)),
+    #
+    "Piecewise" => (SymPyCore._piecewise,  :(SymPyCore._piecewise)),
+    "Heaviside" => (SymPyCore._HEAVISIDE_, :(SymPyCore._HEAVISIDE_)),
+    "Order" =>     (SymPyCore._ZERO_,      :(SymPyCore._ZERO_)),
+    "And" =>       (all∘tuple,             :(SymPyCore._ALL_)),
+    "Or" =>        (any∘tuple,             :(SymPyCore._ANY_)),
+)
+
+
+const  fn_map = Dict(k => last(v) for (k,v) ∈ pairs(sympy_fn_julia_fn))
+
+map_fn(key, fn_map) = haskey(fn_map, key) ? fn_map[key] : Symbol(key)
+
+##
+
+Base.convert(::Type{Expr}, x::SymbolicObject) = walk_expression(x)
+
+"""
+    walk_expression(ex; values=Dict(), fns=Dict())
+
+Convert a symbolic SymPy expression into a `Julia` expression. This is needed to use functions in external packages in lambdified functions.
+
+## Example
+```
+using SymPy
+@syms x y
+ex = sympy.hyper((2,2),(3,3),x) * y
+```
+
+Calling `lambdify(ex)` will fail to make a valid function, as `hyper` is implemented in `HypergeometricFunctions.pFq`. So, we have:
+
+```
+using HypergeometricFunctions
+d = Dict("hyper" => :pFq)
+body = SymPy.walk_expression(ex, fns=d)
+syms = Symbol.(free_symbols(ex))
+fn = eval(Expr(:function, Expr(:call, gensym(), syms...), body));
+fn(1,1) # 1.6015187080185656
+```
+
+"""
+function walk_expression(ex; values=Dict(), fns=Dict())
+
+    fns_map = merge(fn_map, fns)
+    vals_map = merge(val_map, values)
+
+    fn = funcname(ex)
+
+    # special case `F(t) = ...` output from ODE
+    # this may be removed if it proves a bad idea....
+    if fn == "Equality" && lhs(ex).is_Function
+        return walk_expression(rhs(ex), values=values, fns=fns)
+    end
+
+    if fn == "Symbol" || fn == "Dummy" || fn == "IndexedBase"
+        str_ex = string(ex)
+        return get(vals_map, str_ex, Symbol(str_ex))
+    elseif fn in ["Integer" , "Float"]
+        return N(ex)
+    elseif fn == "Rational"
+        return convert(Int, numer(ex))//convert(Int, denom(ex))
+        ## piecewise requires special treatment
+    elseif fn == "Piecewise"
+        return _piecewise([walk_expression(cond, values=values, fns=fns) for cond in args(ex)]...)
+    elseif fn == "ExprCondPair"
+        val, cond = args(ex)
+        return (val, walk_expression(cond, values=values, fns=fns))
+    elseif fn == "Tuple"
+        return walk_expression.(args(ex), values=values, fns=fns)
+    elseif fn == "Indexed"
+        return Expr(:ref, [walk_expression(a, values=values, fns=fns) for a in args(ex)]...)
+    elseif fn == "Pow"
+        a, b = args(ex)
+        b == 1//2 && return Expr(:call, :sqrt, walk_expression(a, values=values, fns=fns))
+        b == 1//3 && return Expr(:call, :cbrt, walk_expression(a, values=values, fns=fns))
+        return Expr(:call, :^,  [walk_expression(aᵢ, values=values, fns=fns) for aᵢ in (a,b)]...)
+    elseif haskey(vals_map, fn)
+        return vals_map[fn]
+    end
+
+    as = args(ex)
+    Expr(:call, map_fn(fn, fns_map), [walk_expression(a, values=values, fns=fns) for a in as]...)
+end
+
+"""
+    lambdify(ex, vars=free_symbols();
+             fns=Dict(), values=Dict, use_julia_code=false,
+             invoke_latest=true)
+
+Take a symbolic expression and return a `Julia` function or expression to build a function.
+
+* `ex::Sym` a symbolic expression with 0, 1, or more free symbols
+
+* `vars` a container of symbols to use for the function arguments. The default is `free_symbols` which has a specific ordering. Specifying `vars` allows this default ordering of arguments to be customized. If `vars` is empty, such as when the symbolic expression has *no* free symbols, a variable arg constant function is returned.
+
+* `fns::Dict`, `vals::Dict`: Dictionaries that allow customization of the function that walks the expression `ex` and creates the corresponding AST for a Julia expression. See `SymPy.fn_map` and `SymPy.val_map` for the default mappings of sympy functions and values into `Julia`'s AST.
+
+* `use_julia_code::Bool`: use SymPy's conversion to an expression, the default is `false`
+
+* `invoke_latest=true`: if `true` will call `eval` and `Base.invokelatest` to return a function that should not have any world age issue. If `false` will return a Julia expression that can be `eval`ed to produce a function.
+
+Example:
+
+```jldoctest
+julia> using SymPy
+
+julia> @syms x y z
+(x, y, z)
+
+julia> ex = x^2 * sin(x)
+ 2
+x ⋅sin(x)
+
+julia> fn = lambdify(ex);
+
+julia> fn(pi)
+0.0
+
+julia> ex = x + 2y + 3z
+x + 2⋅y + 3⋅z
+
+julia> fn = lambdify(ex);
+
+julia> fn(1,2,3) # order is by free_symbols
+14
+
+julia> ex(x=>1, y=>2, z=>3)
+14
+
+julia> fn = lambdify(ex, (y,x,z));
+
+julia> fn(1,2,3)
+13
+```
+
+!!! Note:
+
+The default produces slower functions due to the calls to `eval` and
+`Base.invokelatest`.  In the following `g2` (which, as seen, requires
+additional work to compute) is as fast as calling `f` (on non symbolic
+types), whereas `g1` is an order of magnitude slower in this example.
+
+```
+julia> @vars x
+(x,)
+
+julia> f(x) = exp(cot(x))
+f (generic function with 1 method)
+
+julia> g1 = lambdify(f(x))
+#88 (generic function with 1 method)
+
+julia> ex = lambdify(f(x), invoke_latest=false)
+:(function var"##271"(x)
+      exp(cot(x))
+  end)
+
+julia> @eval g2(x) = (\$ex)(x)
+g2 (generic function with 1 method)
+```
+
+An alternative, say, is to use `GeneralizedGenerated`'s `mk_function`, as follows:
+
+```
+julia> using GeneralizedGenerated
+
+julia> body = convert(Expr, f(x))
+:(exp(cot(x)))
+
+julia> g3 = mk_function((:x,), (), body)
+function = (x;) -> begin
+    (Main).exp((Main).cot(x))
+end
+```
+
+This function will be about 2-3 times slower than `f`.
+
+"""
+function  lambdify(ex::Sym, vars=free_symbols(ex);
+              fns=Dict(), values=Dict(),
+              use_julia_code=false,
+              invoke_latest=true)
+    if isempty(vars)
+        # can't call N(ex) here...
+        v = ex.evalf()
+        if v.is_real == True
+            val = convert(Real, v)
+        else
+            val = Complex(convert(Real, real(v)), convert(Real, imag(v)))
+        end
+        return (ts...) -> val
+    end
+    body = convert_expr(ex, fns=fns, values=values, use_julia_code=use_julia_code)
+    ex = expr_to_function(body, vars)
+    if invoke_latest
+        fn = eval(ex)
+        return (args...) -> Base.invokelatest(fn, args...)
+    else
+        ex
+    end
+end
+
+# convert symbolic expression to julia AST
+# more flexibly than `convert(Expr, ex)`
+function convert_expr(ex::Sym;
+                      fns=Dict(), values=Dict(),
+                      use_julia_code=false)
+    if use_julia_code
+        convert_expr_julia_code(ex)
+    else
+        body = walk_expression(ex, fns=fns, values=values)
+    end
+    body
+end
+
+# XXX -- this uses `sympy` method. Not good!
+function convert_expr_julia_code(ex)
+    Meta.parse(sympy.julia_code(ex)) # issue here with 2.*...
+end
+
+# take an expression and arguments and return an Expr of a generic function
+function  expr_to_function(body, vars)
+    syms = Symbol.(vars)
+    Expr(:function, Expr(:call, gensym(), syms...), body)
+end
+
+# from @mistguy cf. https://github.com/JuliaPy/SymPy.jl/issues/218
+# T a data type to convert to, when specified
+function lambdify(exs::Array{S, N}, vars = union(free_symbols.(exs)...); T::DataType=Nothing, kwargs...) where {S <: Sym, N}
+    f = lambdify.(exs, (vars,)) # prevent broadcast in vars
+    if T == Nothing
+        (args...) -> map.(f, args...)
+    else
+        (args...) -> convert(Array{T,N}, map.(f, args...))
+    end
+end
+
+Base.convert(::Type{Function}, ex::Sym) = lambdify(ex)
+
+export lambdify

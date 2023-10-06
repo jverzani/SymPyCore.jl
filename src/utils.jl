@@ -1,0 +1,240 @@
+## --------------------------------------------------
+## Subs
+
+## Call
+## Call symbolic object with natural syntax
+## ex(x=>val)
+## how to do from any symbolic object?
+(ex::Sym)() = ex
+
+## without specification, variables to substitute for come from ordering of `free_symbols`:
+function (ex::Sym)(args...)
+    xs = free_symbols(ex)
+    for (var, val) in zip(xs, args)
+        ex = subs(ex, Pair(var, Sym(val)))
+    end
+    ex
+end
+
+## can use a Dict or pairs to specify:
+function (ex::Sym)(x::Dict)
+    for (k,v) in x
+        ex = subs(ex, Pair(k, Sym(v)))
+    end
+    ex
+end
+function (ex::Sym)(kvs::Pair...)
+    for (k,v) in kvs
+        ex = subs(ex, Pair(k, Sym(v)))
+    end
+    ex
+end
+
+##################################################
+## subs
+##
+"""
+`subs` is used to subsitute a value in an expression with another
+value.
+Examples:
+
+```jldoctest subs
+julia> using SymPy
+
+julia> x,y = symbols("x,y")
+(x, y)
+
+julia> ex = (x-y)*(x+2y)
+(x - y)⋅(x + 2⋅y)
+
+julia> subs(ex, (y, y^2))
+⎛     2⎞ ⎛       2⎞
+⎝x - y ⎠⋅⎝x + 2⋅y ⎠
+
+julia> subs(ex, (x,1), (y,2))
+-5
+
+julia> subs(ex, (x,y^3), (y,2))
+72
+
+julia> subs(ex, y, 3)
+(x - 3)⋅(x + 6)
+```
+
+There is a curried form of `subs` to use with the chaining `|>` operator
+
+```jldoctest subs
+julia> ex |> subs(x,ℯ)
+(ℯ - y)⋅(2⋅y + ℯ)
+```
+The use of pairs gives a convenient alternative:
+
+```jldoctest subs
+julia> subs(ex, x=>1, y=>2)
+-5
+
+julia> ex |> subs(x=>1, y=>2)
+-5
+```
+
+
+"""
+subs(ex::T, y::Tuple{Any, Any}; kwargs...)          where {T <: SymbolicObject} = ex.subs(y[1], Sym(y[2]), kwargs...)
+
+# Alternate interfaces
+
+subs(ex::T, y::Tuple{Any, Any}, args...; kwargs...) where {T <: SymbolicObject} = subs(subs(ex, y), args...)
+subs(ex::T, y::S, val; kwargs...)                   where {T <: SymbolicObject, S<:SymbolicObject} = subs(ex, (y,val))
+subs(ex::T, dict::Dict; kwargs...)                  where {T <: SymbolicObject} = subs(ex, dict...)
+subs(ex::T, d::Pair...; kwargs...)                  where {T <: SymbolicObject} = subs(ex, ((p.first, p.second) for p in d)...)
+subs(exs::Tuple{T, N}, args...; kwargs...)          where {T <: SymbolicObject, N} = map(u -> subs(u, args...;kwargs...), exs)
+subs(x::Number, args...; kwargs...) = x
+
+## curried versions to use with |>
+subs(x::SymbolicObject, y; kwargs...) = ex -> subs(ex, x, y; kwargs...)
+subs(;kwargs...)                      = ex -> subs(ex; kwargs...)
+subs(dict::Dict; kwargs...)           = ex -> subs(ex, dict...; kwargs...)
+subs(d::Pair...; kwargs...)           = ex -> subs(ex, [(p.first, p.second) for p in d]...; kwargs...)
+
+
+##################################################
+## doit
+##
+"""
+`doit` evaluates objects that are not evaluated by default.
+
+Examples:
+
+```jldoctest doit
+julia> using SymPy
+
+julia> @syms x f()
+(x, f)
+
+julia> D = Differential(x)
+Differential(x)
+
+julia> df = D(f(x))
+d
+──(f(x))
+dx
+
+julia> dfx = subs(df, (f(x), x^2))
+d ⎛ 2⎞
+──⎝x ⎠
+dx
+
+julia> doit(dfx)
+2⋅x
+```
+
+Set `deep=true` to apply `doit` recursively to force evaluation of nested expressions:
+
+```jldoctest doit
+julia> @syms g()
+(g,)
+
+julia> dgfx = g(dfx)
+ ⎛d ⎛ 2⎞⎞
+g⎜──⎝x ⎠⎟
+ ⎝dx    ⎠
+
+julia> doit(dgfx)
+ ⎛d ⎛ 2⎞⎞
+g⎜──⎝x ⎠⎟
+ ⎝dx    ⎠
+
+julia> doit(dgfx, deep=true)
+g(2⋅x)
+```
+
+There is also a curried form of `doit`:
+```jldoctest doit
+julia> dfx |> doit
+2⋅x
+
+julia> dgfx |> doit(deep=true)
+g(2⋅x)
+```
+
+"""
+doit(ex::T; deep::Bool=false) where {T<:SymbolicObject} = ex.doit(deep=deep)
+doit(; deep::Bool=false)                                = ((ex::T) where {T<:SymbolicObject}) -> doit(ex, deep=deep)
+
+## simplify(ex::SymbolicObject, ...) is exported
+"""
+    simplify
+
+SymPy has dozens of functions to perform various kinds of simplification. There is also one general function called `simplify` that attempts to apply all of these functions in an intelligent way to arrive at the simplest form of an expression. (See [Simplification](https://docs.sympy.org/latest/tutorial/simplification.html) for details on `simplify` and other related functionality).
+
+For non-symbolic expressions, `simplify` returns its first argument.
+"""
+simplify(x,args...;kwargs...) = x
+
+##################################################
+##
+## access documentation of SymPy
+"""
+    SymPy.Doc(f::Symbol, [module=sympy])
+
+Return docstring of `f` found within the specified module.
+
+Examples
+```
+SymPy.Doc(:sin)
+SymPy.Doc(:det, sympy.matrices)
+## add module to query
+SymPy.pyimport_conda("sympy.crypto.crypto", "sympy")
+SymPy.Doc(:padded_key, sympy.crypto)
+```
+"""
+struct Doc
+    u
+    m
+end
+Doc(u::Union{Symbol, Function}) = Doc(Symbol(u), sympy)
+function Base.show(io::IO, u::Doc)
+    v = getproperty(u.m, Symbol(u.u)).__doc__
+    print(io, v)
+end
+
+
+"""
+    free_symbols(ex)
+    free_symbols(ex::Vector{Sym})
+
+Return vector of free symbols of expression or vector of expressions. The results are orderded by
+`sortperm(string.(fs))`.
+
+Example:
+
+```jldoctest
+julia> using SymPy
+
+julia> @syms x y z a
+(x, y, z, a)
+
+julia> free_symbols(2*x + a*y) # [a, x, y]
+3-element Vector{Sym}:
+ a
+ x
+ y
+```
+"""
+function free_symbols(ex::Union{T, Vector{T}}) where {T<:SymbolicObject}
+    fs = collect(↓(ex).free_symbols)
+    isempty(fs) && return Sym[]
+    return Sym.(fs[sortperm(string.(fs))] )
+
+
+
+    fs[sortperm(string.(fs))]   # some sorting order to rely on
+    pex = PyObject(ex)
+    #fs.__class__.__name__ == "set"
+    if PyCall.hasproperty(pex, :free_symbols)
+        fs = collect(Sym, pex.free_symbols)
+        fs[sortperm(string.(fs))]   # some sorting order to rely on
+    else
+        Sym[]
+    end
+end

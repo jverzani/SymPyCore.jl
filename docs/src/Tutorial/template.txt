@@ -1,0 +1,38 @@
+* replace `` -> ` (check for math `\
+.. math: -> ```math
+* replace :: -> !!! but this needs hand editing to keep the admonition style
+* replace .. sidebar::  -> !!! note "..." + one space!
+* remove navigation references and header
+* XXX :ref:`reference` -> [reference]()
+* setup
+```@setup Julia
+using SymPy #PythonCall
+```
+
+
+
+!!! tip "Julia differences"
+
+    XXX
+
+```@repl Julia
+```
+
+----
+
+
+```@raw html
+<details><summary>Expand for Python example</summary>
+```
+
+```python
+
+%< ---- insert copy and paste here ---- >%
+
+
+
+```
+----
+```@raw html
+</details>
+```
