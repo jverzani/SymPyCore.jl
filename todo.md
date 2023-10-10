@@ -17,10 +17,12 @@
 ✓ * 𝑄
 ✓ * doit
 ✓ * Matrices
-* getindex[] (?)
+? * getindex[] (?)
+* rewrite, replaces, cse, ...
+* Wild
 * Testing -- rewrite! using this order?
 * Docs
-* Tutorial -- started
+* Tutorial -- started; finish editing; NOT WORKING with Core package, just SymPy itself
 * pytypemappings (more?? not sure)
 
 

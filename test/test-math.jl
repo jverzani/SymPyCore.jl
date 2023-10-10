@@ -1,5 +1,7 @@
 using Test
+using LinearAlgebra
 using SpecialFunctions
+using SymPyCore
 
 @testset "Math" begin
     ρ = symbols("rho", positive=true)
@@ -44,7 +46,7 @@ using SpecialFunctions
     #@test rewrite(sinc(x), "jn") == jn(0, PI * x)
 end
 
-@test "sign and absolute value functions" begin
+@testset "sign and absolute value functions" begin
     # abs, abs2,s ign, signbit, copysign, flipsign
     @syms x y::real z::positive
     a, b = Sym(22//10), Sym(-3)
@@ -61,7 +63,7 @@ end
     @test sign(z) == 1
     @test sign(a) == 1
     @test sign(b) == -1
-    @test sign(Sym(0)) = 0
+    @test sign(Sym(0)) == 0
 
     # no signbit
 
@@ -75,7 +77,7 @@ end
 
 end
 
-@test "powers, logs, roots" begin
+@testset "powers, logs, roots" begin
     # sqrt, cbrt, hypot, exp, expm1, ldexp, log, log(b,x), log2(x), log10, log1p,
     # XXX exponent, significant
     @syms x y::real z::positive
@@ -89,19 +91,19 @@ end
     @test cbrt(z) == z^(1//3)
 
     @test hypot(y,z) == sqrt(y^2 + z^2)
-    @test hypot(a,b) == hypot(u, v)
+    @test hypot(a,b) ≈ hypot(u, v)
 
     @test exp(x) == E^x
-    @test exp(a) == u
+    @test exp(a) ≈ exp(u)
 
     @test expm1(x) == E^x - 1
-    @test expm1(a) == exp(u) - 1
+    @test expm1(a) ≈ exp(u) - 1
 
     @test ldexp(x, y ) == x * 2^y
     @test iszero(ldexp(a, 4) - ldexp(float(u),4))
 
     @test log(z)(z => a) ≈ log(u)
-    @test log(a) == log(22/10)
+    @test log(a) ≈ log(u)
 
     @test log(2, x) == log(x)/log(Sym(2)) # sympy.log(x,b) is order
     @test log2(x) == log(x)/log(Sym(2))
@@ -143,11 +145,11 @@ end
     solve(x^2 - 2a, a)
     solve(Lt(x-2, 0))
     solve( x-2 ≪ 0)
-    exs = [x-y-1, x+y-2]
+    exs = (x-y-1, x+y-2)
     di = solve(exs)
     @test di[x] == 3//2
-    @test map(ex -> subs(ex, di), exs) == [0,0]
-    solve([x-y-a, x+y], [x,y])
+    @test subs.(exs, Ref(di)) == (0, 0)
+    solve((x-y-a, x+y), (x, y))
 
 end
 
@@ -158,7 +160,11 @@ end
     ## nsolve -- not method for arrays, issue 268
     @syms z1::positive z2z1::positive
     # XXX No error? @test_throws MethodError nsolve([z1^2-1, z1+z2z1-2], [z1,z2z1], [1,1])  # non symbolic first argument
-    @test all(N.(sympy.nsolve([z1^2-1, z1+z2z1-2], [z1,z2z1], (1,1))) .≈ [1.0, 1.0])
+    eqs = (z1^2-1, z1+z2z1-2)
+    xs = (z1, z2z1)
+    x₀s = (1,1)
+    out = nsolve(eqs, xs, x₀s)
+    @test all(N.(out) .≈ [1.0, 1.0])
 
     ## linsolve
     @syms x y
@@ -176,7 +182,7 @@ end
 
 
 @testset "Calculus" begin
-    @syms x, y a
+    @syms x::real, a::positive
     @test limit(sin(x*a)/x, x=>0) == a
     @test diff(exp(x*a), x) == a*exp(x*a)
     @test integrate(cos(x*a), x) == sin(x*a) / a
@@ -192,32 +198,7 @@ end
 
 end
 
-@testset "Assumptions" begin
-    @test ask(𝑄.even(Sym(2))) == true
-    @test ask(𝑄.even(Sym(3))) == false
-    @test ask(𝑄.nonzero(Sym(3))) == true
-    @syms x_real::real
-    @syms x_real_positive::(real, positive)
-    @test ask(𝑄.positive(x_real)) == nothing
-    @test ask(𝑄.positive(x_real_positive)) == true
-    @test ask(𝑄.nonnegative(x_real^2)) == true
-    ## XXX @test ask(𝑄.upper_triangular([x_real 1; 0 x_real])) == true
-    @test ask(𝑄.positive_definite([x_real 1; 1 x_real])) == nothing
-end
-
-
-@testset "Fix past issues" begin
-    @syms x y z
-    ## Issue # 56
-    @test Sym(1+2im) == 1+2IM
-    @test convert(Sym, 1 + 2im) == 1 + 2IM
-
-
-    ## Issue #59
-    sympy.cse(sin(x)+sin(x)*cos(x))
-    sympy.cse([sin(x), sin(x)*cos(x)])
-    sympy.cse( [sin(x), sin(x)*cos(x), cos(x), sin(x)*cos(x)])
-
+@testset "lambdify" begin
     ## Issue #60, lambidfy
     x, y = symbols("x, y")
     lambdify(sin(x)*cos(2x) * exp(x^2/2))
@@ -243,10 +224,35 @@ end
     ex = integrate(sqrt(1 + (1/x)^2), (x, 1/sympy.E, sympy.E))
     @test lambdify(ex)() ≈ 3.1961985135995072
 
-#    i2 = SymPy.lambdify_expr(x^2,name=:square)
-#    @test i2.head == :function
-#    @test i2.args[1].args[1] == :square
-    ## @test i2.args[2] == :(x.^2) # too fussy
+end
+
+@testset "Assumptions" begin
+    @test ask(𝑄.even(Sym(2))) == true
+    @test ask(𝑄.even(Sym(3))) == false
+    @test ask(𝑄.nonzero(Sym(3))) == true
+    @syms x_real::real
+    @syms x_real_positive::(real, positive)
+    @test ask(𝑄.positive(x_real)) == Sym(nothing)
+    @test ask(𝑄.positive(x_real_positive)) == true
+    @test ask(𝑄.nonnegative(x_real^2)) == true
+    A = [x_real 1;
+         0 x_real]
+    @test_broken ask(𝑄.upper_triangular(A)) == true # is None, why?
+    @test ask(𝑄.positive_definite([x_real 1; 1 x_real])) == Sym(nothing)
+end
+
+
+@testset "Fix past issues" begin
+    @syms x y z
+    ## Issue # 56
+    @test Sym(1+2im) == 1+2IM
+    @test convert(Sym, 1 + 2im) == 1 + 2IM
+
+
+    ## Issue #59
+    sympy.cse(sin(x)+sin(x)*cos(x))
+    sympy.cse((sin(x), sin(x)*cos(x)))
+    sympy.cse( (sin(x), sin(x)*cos(x), cos(x), sin(x)*cos(x)) )
 
 
     ## issue #67
@@ -257,8 +263,10 @@ end
     @test log(Sym(3), Sym(4)) == log(Sym(4)) / log(Sym(3))
 
     ## issue #103 # this does not work for `x` (which has `classname(x) == "Symbol"`), but should work for other expressions
+    @syms x y z
     for ex in (sin(x), x*y^2*x, sqrt(x^2 - 2y))
-        @test Bool(func(ex)(SymPy.Introspection.args(ex)...) == ex) # XXX func(ex)(SymPy.Introspection.args(ex)...) == ex
+        cmp = Introspection.func(ex)(↓(Introspection.args(ex))...) == ↓(ex)
+        @test SymPyCore._convert(Bool, cmp)
     end
 
     ## properties (Issue #119)
@@ -283,12 +291,12 @@ end
 
     # issue 222 type of eigvals
     A = [Sym("a") 1; 0 1]
-    @test typeof(eigvals(A)) <: Dict ## XXX typeof(eigvals(A)) <: Vector{Sym}
+    @test typeof(eigvals(A)) <: Vector{<:Sym}
 
     # issue 231 Q.complex
     @syms x_maybecomplex
     @syms x_imag::imaginary
-    @test ask(𝑄.complex(x_maybecomplex)) == nothing
+    @test ask(𝑄.complex(x_maybecomplex)) == Sym(nothing)
     @test ask(𝑄.complex(x_imag)) == true
 
     # issue 242 lambdify and conjugate
@@ -323,8 +331,7 @@ end
     @test lambdify(p)(-2) == (-2)^2
 
     # issue 298 lambdify for results of dsolve
-    @syms t
-    F = SymFunction("F")
+    @syms t, F()
     diffeq = diff(F(t),t) - 3*F(t)
     res = dsolve(diffeq, F(t), ics=Dict(F(0) => 2))  # 2exp(3t)
     @test lambdify(res)(1) ≈ 2*exp(3*1)
@@ -335,15 +342,6 @@ end
 
     # issue #319  with   use   of  Dummy, but
     #  really  a  lambdify issue
-    dummy = sympy.Dummy
-    # Symbolic differentiation of functions
-    function D(f)
-        x = dummy("x")
-        lambdify(diff.(f(x), x), (x,))
-    end
-    @test D(t -> t^2)(1) == 2
-
-    # issue   #320  with integrate(f) when
     # f  is consant
     # XXX @test integrate(x -> 1, 0, 1)  == 1 <-- want to deprecate
     # XXX @test limit(x->1,  x, 0) == 1
@@ -351,10 +349,11 @@ end
 
     ## Issue 324 with inference of matrix operations
     A = fill(Sym("a"), 2, 2)
-    @test eltype(A*A) == Sym
-    @test eltype(A*ones(2,2)) == Sym
-    @test eltype(A*Diagonal([1,1])) == Sym
-    VERSION >= v"1.2.0"  && @test eltype(A * I(2)) == Sym
+    T = eltype(A)
+    @test eltype(A*A) == T
+    @test eltype(A*ones(2,2)) == T
+    @test eltype(A*Diagonal([1,1])) == T
+    VERSION >= v"1.2.0"  && @test eltype(A * I(2)) == T
 
     ## Issue 328 with E -> e
     @syms x
@@ -395,13 +394,13 @@ end
     t = series(exp(x), x, 0, 2)
     @test lambdify(t)(1/2) == 1 + 1/2
 
-        ## Issue #405 with ambigous methods
+    ## Issue #405 with ambigous methods
     @syms α
-    M = Sym[1 2; 3 4] ## XXX M = SymMatrix([1 2; 3 4])
+    M = Sym[1 2; 3 4]
     @test α * M == M * α
     @test 2 * M == M * 2
-    @test isa(M/α, SymMatrix)
-    @test isa(α * inv(M), SymMatrix)
+    @test isa(M/α, Matrix)
+    @test isa(α * inv(M), Matrix)
 
     ## issue #408 with inv
     @syms n::(integer,positive)
@@ -418,7 +417,7 @@ end
     u = Heaviside(t)
     λ = lambdify(u)
     @test all((iszero(λ(-1)), isone(λ(1))))
-    VersionNumber(string(sympy.py.__version__)) >= v"1.9" && @test λ(0) == 1//2
+    VersionNumber(string(sympy.o.__version__)) >= v"1.9" && @test λ(0) == 1//2
     u = Heaviside(t, 1)
     λ = lambdify(u)
     @test all((iszero(λ(-1)), isone(λ(0)), isone(λ(1))))

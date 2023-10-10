@@ -12,7 +12,23 @@ function Sym(x::Complex{Bool})
      x.re &&  x.im && return Sym(1) + IM
 end
 Sym(x::Complex{T}) where {T} = Sym(real(x)) + Sym(imag(x)) * IM
+sympify(x; kwargs...) = ↑(_sympy_.sympify(x; kwargs...))
 
+# ↓ for Vector, Matrix
+import SymPyCore: ↓
+(↓)(x::Vector{<:Sym}) = _sympy_.Matrix(Tuple(map(↓, reshape(x, length(x), 1))))
+function (↓)(M::AbstractMatrix{<:Sym})
+    _sympy_.Matrix(Tuple(map(↓, Mᵢ) for Mᵢ ∈ eachrow(M)))
+end
+
+function Base.getproperty(M::AbstractArray{<:Sym, N}, prop::Symbol) where {N} #XX array or Matrix?
+    if prop in fieldnames(typeof(M))
+        return getfield(M, prop)
+    end
+    getproperty(Sym(↓(M)), prop)
+end
+
+## ----
 
 function symbols(args...; kwargs...)
     as =  _sympy_.symbols(args...; kwargs...)

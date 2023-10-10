@@ -2,7 +2,7 @@ Gotchas
 =========
 
 ```@setup Julia
-using SymPy #PythonCall
+using SymPyPythonCall
 ```
 
 
@@ -23,14 +23,11 @@ Symbols
 
 One consequence of this fact is that SymPy can be used in any environment
 where Python is available.  We just import it, like we would any other
-library:
+library.
 
 !!! tip "Julia differences"
 
-    XXX
-
-```@repl Julia
-```
+    `SymPyCore` is loaded as a backend by either `using SymPy` or `using SymPyPythonCall`.
 
 ----
 
@@ -52,9 +49,10 @@ Python session.  Now, suppose we start to do a computation.
 
 !!! tip "Julia differences"
 
-    XXX
+    Only a select set of functions and classes are imported in `julia`, others can be accessed from the `sympy` module that is created when the package is loaded.
 
 ```@repl Julia
+x + 1
 ```
 
 ----
@@ -83,9 +81,11 @@ To define variables, we must use `symbols`.
 
 !!! tip "Julia differences"
 
-    XXX
+    The `symbols` constructor, used in the `Python` version of this tutorial, is replaced here by `@syms`, though it can be used, as `x=symbols("x")`.
 
 ```@repl Julia
+@syms x     # x = symbols("x") is an alternative
+x + 1
 ```
 
 ----
@@ -113,9 +113,10 @@ For now, let us just define the most common variable names, `x`, `y`, and
 
 !!! tip "Julia differences"
 
-    XXX
+    The `@syms` macro does not need assignment, it creates variables in local scope.
 
 ```@repl Julia
+@syms x, y, z
 ```
 
 ----
@@ -138,9 +139,11 @@ variable it is assigned to need not have anything to do with one another.
 
 !!! tip "Julia differences"
 
-    XXX
+    This kind of name mangling can be done using `=>` with the `@syms` constructor.
 
 ```@repl Julia
+@syms a=>"b", b=>"a"
+a # prints as "b"
 ```
 
 ----
@@ -167,11 +170,10 @@ Here we have done the very confusing thing of assigning a Symbol with the name
 `a`.  Now the Python variable named `a` points to the SymPy Symbol named
 `b`, and vice versa.  How confusing.  We could have also done something like
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+@syms crazy => "unrelated"
+crazy + 1
 ```
 
 ----
@@ -217,11 +219,12 @@ Python variables.  Consider the following::
 What do you think the output of this code will be?  If you thought `3`,
 you're wrong.  Let's see what really happens
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+@syms x
+expr = x + 1
+x = 2
+expr
 ```
 
 ----
@@ -254,9 +257,14 @@ do not change automatically.  For example
 
 !!! tip "Julia differences"
 
-    XXX
+    This is similar in `Julia`
 
 ```@repl Julia
+x = "abc"
+expr = x * "def" # * not +
+expr
+x = "ABC"
+expr
 ```
 
 ----
@@ -300,9 +308,12 @@ discussed in more detail later.
 
 !!! tip "Julia differences"
 
-    XXX
+    We use the more `Julia`n `subs(expr, ...)` in lieu of `expr.subs(...)`, which is also possible, though does not allow the `Julia`n specification of paired data using `=>`..
 
 ```@repl Julia
+@syms x
+expr = x + 1
+subs(expr, x => 2)
 ```
 
 ----
@@ -342,9 +353,10 @@ us see what happens when we use `==`.
 
 !!! tip "Julia differences"
 
-    XXX
+    In math ``=`` is for specifying an equation, but in `Julia` (as with `Python`), `=` is for assignment. The `==` checks for equality (`Julia` also uses `===` and `isequal` for related, but different tests of equality). Equations in `SymPy` use either `Eq` as a function or `~` as an infix operator.
 
 ```@repl Julia
+x + 1 == 4
 ```
 
 ----
@@ -366,14 +378,14 @@ us see what happens when we use `==`.
 Instead of treating `x + 1 == 4` symbolically, we just got `False`.  In
 SymPy, `==` represents exact structural equality testing.  This means that
 `a == b` means that we are *asking* if `a = b`.  We always get a `bool` as
-the result of `==`.  There is a separate object, called `Eq`, which can be
-used to create symbolic equalities
+the result of `==`. There is a separate object, called Eq, which can be used to create symbolic equalities.
 
 !!! tip "Julia differences"
 
-    XXX
+    In `Julia`, in addition to `Eq` as a function, the infix operator `~` also makes expressions.
 
 ```@repl Julia
+x + 1 ~ 4
 ```
 
 ----
@@ -395,11 +407,10 @@ used to create symbolic equalities
 There is one additional caveat about `==` as well.  Suppose we want to know
 if `(x + 1)^2 = x^2 + 2x + 1`.  We might try something like this:
 
-!!! tip "Julia differences"
 
-    XXX
 
 ```@repl Julia
+(x+1)^2 == x^2 + 2x + 1
 ```
 
 ----
@@ -442,11 +453,13 @@ method is not infallible---in fact, it can be
 to determine if two symbolic expressions are identically equal in
 general---but for most common expressions, it works quite well.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+a = (x+1)^2
+b = x^2 + 2x + 1
+simplify(a - b)
+c = x^2 - 2x +1
+simplify(a - c)
 ```
 
 ----
@@ -473,11 +486,10 @@ general---but for most common expressions, it works quite well.
 There is also a method called `equals` that tests if two expressions are
 equal by evaluating them numerically at random points.
 
-!!! tip "Julia differences"
-
-    XXX
-
 ```@repl Julia
+a = cos(x)^2 - sin(x)^2
+b = cos(2*x)
+a.equals(b)
 ```
 
 ----
@@ -509,9 +521,12 @@ Python, `^` represents logical exclusive or.  SymPy follows this convention:
 
 !!! tip "Julia differences"
 
-    XXX
+    The `^` is for exponents; use `&` or `|` instead
 
 ```@repl Julia
+Sym(true) & Sym(false)
+Sym(true) | Sym(true)
+xor(x, y)
 ```
 
 ----
@@ -549,9 +564,11 @@ object.
 
 !!! tip "Julia differences"
 
-    XXX
+    This is also how promotion works within `Julia` in that promotion to symbolic types is sticky
 
 ```@repl Julia
+typeof(Sym(1) + 1)
+typeof(1 + 1)
 ```
 
 ----
@@ -578,9 +595,11 @@ division of two Integers gives a Rational:
 
 !!! tip "Julia differences"
 
-    XXX
+    In `Julia` `Sym(1//3)` will also produce a symbolic rational, but not `Sym(1/3)`.
 
 ```@repl Julia
+u = Sym(1) / Sym(3)
+typeof(u)
 ```
 
 ----
@@ -608,9 +627,10 @@ which is no longer supported from versions above SymPy 1.5.1:
 
 !!! tip "Julia differences"
 
-    XXX
+    In `Julia` `/` is division and for integers returns a floating point value.
 
 ```@repl Julia
+1/2
 ```
 
 ----
@@ -634,9 +654,10 @@ To avoid this, we can construct the rational object explicitly
 
 !!! tip "Julia differences"
 
-    XXX
+    While `sympy.Rational(1, 2)` produces a rational number, a more `Julia`n way is to convert a rational into a symbolic value
 
 ```@repl Julia
+Sym(1//2)
 ```
 
 ----
@@ -660,9 +681,10 @@ This problem also comes up whenever we have a larger symbolic expression with
 
 !!! tip "Julia differences"
 
-    XXX
+    This is also a problem in `Julia`
 
 ```@repl Julia
+x + 1/2
 ```
 
 ----
@@ -687,9 +709,10 @@ around this by explicitly creating a Rational:
 
 !!! tip "Julia differences"
 
-    XXX
+    Use a rational, in the same way:
 
 ```@repl Julia
+x + 1//2
 ```
 
 ----

@@ -14,7 +14,16 @@ Base.Float64(x::Sym) = _Float64(N(x))
 _Float64(x::Sym) = throw(ArgumentError("variable must have no free symbols"))
 _Float64(x) = Float64(x)
 
+function Base.Int(x::Sym)
+    if x.is_integer == true
+        abs(x) <= typemax(Int) && return convert(Int, ↓(x))
+        return convert(BigInt, ↓(x))
+    end
+    convert(Int, ↓(x.evalf()))
+end
 
+Base.:==(x::Sym{T}, y) where {T} = ==(promote(x, y)...)
+Base.:==(x, y::Sym{T}) where {T} = ==(promote(x, y)...)
 Base.isequal(x::T, y::T) where {T <: SymbolicObject} =
     hash(x) == hash(y)
 Base.isless(x::Sym{T}, y) where {T} = isless(promote(x,y)...)
@@ -25,6 +34,9 @@ function Base.isless(x::Sym{T}, y::Sym{T}) where {T}
         isnan(x) && isnan(y) && return false
         isnan(x) && return false
         isnan(y) && return false
+    end
+    if x.is_real == true && y.is_real == true
+        return Lt(x, y) == Sym(true) ? true : false
     end
     out = x.compare(y)
     out == -1  ? true : false
@@ -48,9 +60,7 @@ Base.expm1(x::Sym) = exp(x) - 1
 Base.exp2(x::Sym)  = Sym(2)^x
 Base.exp10(x::Sym) = Sym(10)^x
 Base.log1p(x::Sym) = log(1 + x)
-Base.log(b::Number, x::Sym) = log(x, b) # sympy.log has different order
-Base.log2(x::SymbolicObject)  = log(x, 2) # sympy.log has different order
-Base.log10(x::SymbolicObject) = log(x, 10) # sympy.log has different order
+#Base.log(b::Number, x::Sym) = log(x, b) # sympy.log has different order
 function Base.frexp(x::Sym)
     n = ceil(log2(x))
     r = x/2^n
@@ -86,20 +96,39 @@ Base.fld(x::Sym, y::Sym) = floor(x / y)
 Base.clamp(x::Sym, a, b) = min(max(x, a), b)
 
 
+## --------------------------------------------------
+# sets
+Base.in(x::Sym, I::Sym) = I.contains(x) == Sym(true)
+Base.in(x::Number, I::Sym) = Sym(x) in I
+Base.intersect(x::Sym, args...; kwargs...) = x.intersect(args...; kwargs...)
+Base.union(x::Sym, args...; kwargs...) = x.union(args...; kwargs...)
+Base.issubset(x::Sym, args...; kwargs...) = x.issubset(args...; kwargs...)
 
+
+## --------------------------------------------------
 ## calculus.
 ## use a pair for limit x=>0
 limit(x::SymbolicObject, xc::Pair, args...;kwargs...) = limit(x, xc[1], xc[2], args...;kwargs...)
 
-## integrate(ex,a,b)
-# function integrate(ex::SymbolicObject, a::Number, b::Number)
-#     fs = free_symbols(ex)
-#     if length(fs) !== 1
-#         @warn "Need exactly on free symbol. Use `integrate(ex, (x, a, b))` instead"
-#         return
-#     end
-#     integrate(ex, (fs[1], a, b))
-# end
+# Steal this idea from ModelingToolkit
+"""
+    Differential(x)
+
+Use to find (partial) derivatives.
+
+## Example
+```
+@syms x y u()
+Dx = Differential(x)
+Dx(u(x,y))  # resolves to diff(u(x,y),x)
+Dx(u)       # will evaluate diff(u(x), x)
+```
+"""
+struct Differential
+    x::Sym
+end
+(∂::Differential)(u::Sym) = diff(u, ∂.x)
+(∂::Differential)(u::SymFunction) = diff(u(∂.x), ∂.x)
 
 
 ## Add interfaces for solve, nonlinsolve when vector of equations passed in
@@ -110,7 +139,7 @@ limit(x::SymbolicObject, xc::Pair, args...;kwargs...) = limit(x, xc[1], xc[2], a
 
 Specify an equation.
 
-Alternative syntax to `Eq(lhs, rhs)` or `lhs ⩵ rhs` (`\\Equal[tab]`) following `Symbolics.jl`.
+Alternative syntax to `Eq(lhs, rhs)` or `lhs ⩵ rhs` (`\\Equal[tab]`). Notation borrowed from `Symbolics.jl`.
 """
 Base.:~(lhs::Number, rhs::SymbolicObject) = Eq(lhs, rhs)
 Base.:~(lhs::SymbolicObject, rhs::Number) = Eq(lhs, rhs)
@@ -125,7 +154,7 @@ Use `solve` to solve algebraic equations.
 Examples:
 
 ```julia
-julia> using SymPy
+julia> using SymPy_PythonCall
 
 julia> @syms x y a b c d
 (x, y, a, b, c, d)
@@ -147,6 +176,10 @@ Dict{Any, Any} with 2 entries:
 
 !!! note
     A very nice example using `solve` is a [blog](https://newptcai.github.io/euclidean-plane-geometry-with-julia.html) entry on [Napolean's theorem](https://en.wikipedia.org/wiki/Napoleon%27s_theorem) by Xing Shi Cai.
+
+!!! note "Systems"
+    Use a tuple, not a vector, of equations when there is more than one.
+
 """
 solve() = ()
 
@@ -154,7 +187,9 @@ solve() = ()
 """
     nonlinsolve
 
-Note: if passing variables in use a tuple (e.g., `(x,y)`) and *not* a vector (e.g., `[x,y]`).
+!!! note "Systems"
+    Use a tuple, not a vector, of equations when there is more than one.
+
 """
 nonlinsolve() = ()
 
@@ -162,15 +197,17 @@ nonlinsolve() = ()
 ## dsolve allowing initial condiation to be specified
 
 """
-   dsolve(eqn, var, args..,; ics=nothing, kwargs...)
+    dsolve(eqn, var, args..,; ics=nothing, kwargs...)
 
-Call `sympy.dsolve`.
+Calls `sympy.dsolve`.
 
-The initial conditions are specified with a dictionary.
+ics: The initial conditions are specified with a dictionary or `nothing`
+
+# Extended help
 
 Example:
 
-```jldoctest dsolve
+```julia jldoctest dsolve
 julia> using SymPy
 
 julia> @syms α, x, f(), g()
@@ -193,11 +230,11 @@ f(x) = C₁ + ────
              2
 ```
 
-```jldoctest dsolve
-julia> dsolve(eqn(α=>2); ics=Dict(f(0)=>1)) |> print # fill in parameter, initial condition
+```julia jldoctest dsolve
+julia> dsolve(eqn(α=>2); ics=Dict(f(0)=>1))
 Eq(f(x), x^2 + 1)
 
-julia> eqn = ∂(∂(f(x))) ~ -f(x); print(eqn)
+julia> eqn = ∂(∂(f(x))) ~ -f(x)
 Eq(Derivative(f(x), (x, 2)), -f(x))
 
 julia> dsolve(eqn)
@@ -208,21 +245,21 @@ f(x) = -sin(x) + cos(x)
 
 julia> eqn = ∂(∂(f(x))) - f(x) - exp(x);
 
-julia> dsolve(eqn, ics=Dict(f(0) => 1, f(1) => Sym(1//2))) |> print # not just 1//2
+julia> dsolve(eqn, ics=Dict(f(0) => 1, f(1) => Sym(1//2)))
 Eq(f(x), (x/2 + (-exp(2) - 2 + E)/(-2 + 2*exp(2)))*exp(x) + (-E + 3*exp(2))*exp(-x)/(-2 + 2*exp(2)))
 ```
 
-Systems. Use a tuple, not a vector, of equations, as such are now deprecated by SymPy.
+!!! note "Systems"
+    Use a tuple, not a vector, of equations when there is more than one.
 
-```jldoctest dsolve
+```julia jldoctest dsolve
 julia> @syms x() y() t g
 (x, y, t, g)
 
 julia> ∂ = Differential(t)
 Differential(t)
 
-julia> eqns = (∂(x(t)) ~ y(t), ∂(y(t)) ~ x(t))
-(Eq(Derivative(x(t), t), y(t)), Eq(Derivative(y(t), t), x(t)))
+julia> eqns = (∂(x(t)) ~ y(t), ∂(y(t)) ~ x(t));
 
 julia> dsolve(eqns)
 2-element Vector{Sym}:
@@ -250,8 +287,8 @@ julia> eq = (∂(x)(t) ~ x(t)*y(t)*sin(t), ∂(y)(t) ~ y(t)^2 * sin(t))
 ```
 
 ```julia
-julia> dsolve(eq)  # returns a set to be `collect`ed:
-PyObject {Eq(x(t), -exp(C1)/(C2*exp(C1) - cos(t))), Eq(y(t), -1/(C1 - cos(t)))}
+julia> dsolve(eq)
+
 ```
 
 ```julia
@@ -273,10 +310,8 @@ function dsolve(eqn, args...;
 end
 
 rhs(x::SymbolicObject) = x.rhs()
-lhs(x::SymbolicObject) = y.rhs()
+lhs(x::SymbolicObject) = x.lhs()
 
-
-export dsolve, rhs, lhs
 
 ## ----
 

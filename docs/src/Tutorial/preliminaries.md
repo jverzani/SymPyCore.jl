@@ -1,9 +1,9 @@
 Preliminaries
 ===============
 
-```@setup Julia
-using SymPy #PythonCall
-```
+!!! tip "Julia differences"
+
+    This is a translation of the `Python` tutorial for SymPy, described below, to use the `Julie` intefaces to SymPy provided in `SymPyCore`.
 
 
 This tutorial assumes that the reader already knows the basics of the Python programming

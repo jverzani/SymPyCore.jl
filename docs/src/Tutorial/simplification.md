@@ -2,16 +2,17 @@ Simplification
 ================
 
 ```@setup Julia
-using SymPy #PythonCall
+using SymPyPythonCall
 ```
 
 To make this document easier to read, we are going to enable pretty printing.
 
 !!! tip "Julia differences"
 
-    XXX
+    Pretty printing is the default output.
 
 ```@repl Julia
+@syms x, y, z
 ```
 
 ----
@@ -43,9 +44,15 @@ way to arrive at the simplest form of an expression.  Here are some examples
 
 !!! tip "Julia differences"
 
-    XXX
+    The `SpecialFunctions` package is loaded, so the method for `gamma` is available.
+
 
 ```@repl Julia
+using SpecialFunctions
+
+simplify(sin(x)^2 + cos(x)^2)
+simplify( (x^3 + x^2 - x - 1) / (x^2 + 2x + 1) )
+simplify( gamma(x) / gamma(x-2) )
 ```
 
 ----
@@ -77,11 +84,9 @@ simplification operations in SymPy, and uses heuristics to determine the
 simplest result. But "simplest" is not a well-defined term.  For example, say
 we wanted to "simplify" `x^2 + 2x + 1` into `(x + 1)^2`:
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+simplify(x^2 + 2*x + 1)
 ```
 
 ----
@@ -135,11 +140,10 @@ expand
 Although it has a lot of scopes, for now, we will consider its function in
 expanding polynomial expressions. For example:
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+expand( (x+1)^2 )
+expand( (x+2) * (x-3) )
 ```
 
 ----
@@ -170,11 +174,10 @@ very name, it makes expressions bigger, not smaller.  Usually this is the
 case, but often an expression will become smaller upon calling `expand()` on
 it due to cancellation.
 
-!!! tip "Julia differences"
 
-    XXX
 
 ```@repl Julia
+expand((x + 1)*(x - 2) - (x - 1)*x)
 ```
 
 ----
@@ -199,11 +202,10 @@ factor
 `factor()` takes a polynomial and factors it into irreducible factors over
 the rational numbers.  For example:
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+factor(x^3 - x^2 + x - 1)
+factor(x^2*z + 4*x*y*z + 4*y^2*z)
 ```
 
 ----
@@ -236,9 +238,12 @@ more structured output.
 
 !!! tip "Julia differences"
 
-    XXX
+    The `factor_list` function must be qualified
 
 ```@repl Julia
+c, fs = sympy.factor_list(x^2*z + 4*x*y*z + 4*y^2*z);
+c  # constant
+fs # factors (fac, mult)
 ```
 
 ----
@@ -262,11 +267,10 @@ the strict sense.  They will intelligently factor or expand any kind of
 expression (though note that the factors may not be irreducible if the input
 is no longer a polynomial over the rationals).
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+expand((cos(x) + sin(x))^2)
+expand((cos(x) + sin(x))^2)
 ```
 
 ----
@@ -279,7 +283,7 @@ is no longer a polynomial over the rationals).
     >>> expand((cos(x) + sin(x))**2)
        2                           2
     sin (x) + 2⋅sin(x)⋅cos(x) + cos (x)
-    >>> factor(cos(x)**2 + 2*cos(x)*sin(x) + sin(x)**2)
+    >>>  expand((cos(x) + sin(x))**2)
                      2
     (sin(x) + cos(x))
 ```
@@ -296,9 +300,11 @@ collect
 
 !!! tip "Julia differences"
 
-    XXX
+    The `collect` method when the first argument is symbolic, dispatches to `sympy.collect`, which has the semantics below. A call like `collect(Sym, ...)` will not behave as expected.
 
 ```@repl Julia
+expr = x*y + x - 3 + 2*x^2 - z*x^2 + x^3
+collected_expr = collect(expr, x)
 ```
 
 ----
@@ -326,11 +332,9 @@ collect
 `collect()` is particularly useful in conjunction with the `.coeff()`
 method.  `expr.coeff(x, n)` gives the coefficient of `x**n` in `expr`:
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+collected_expr.coeff(x, 2)
 ```
 
 ----
@@ -361,11 +365,12 @@ canonical form, ``\frac{p}{q}``, where `p` and `q` are expanded polynomials with
 no common factors, and the leading coefficients of `p` and `q` do not have
 denominators (i.e., are integers).
 
-!!! tip "Julia differences"
-
-    XXX
-
 ```@repl Julia
+cancel((x^2 + 2*x + 1)/(x^2 + x))
+expr = 1/x + (3*x/2 - 2)/(x - 4)
+cancel(expr)
+expr = (x*y^2 - 2*x*y*z + x*z^2 + y^2 - 2*y*z + z^2)/(x^2 - 1)
+cancel(expr)
 ```
 
 ----
@@ -416,11 +421,9 @@ denominators (i.e., are integers).
 Note that since `factor()` will completely factorize both the numerator and
 the denominator of an expression, it can also be used to do the same thing:
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+factor(expr)
 ```
 
 ----
@@ -451,11 +454,9 @@ apart
 `apart()` performs a [partial fraction decomposition](https://en.wikipedia.org/wiki/Partial_fraction_decomposition) on a rational
 function.
 
-!!! tip "Julia differences"
-
-    XXX
-
 ```@repl Julia
+expr = (4*x^3 + 21*x^2 + 10*x + 12)/(x^4 + 5*x^3 + 5*x^2 + 4*x)
+apart(expr)
 ```
 
 ----
@@ -495,9 +496,12 @@ Trigonometric Simplification
 
 !!! tip "Julia differences"
 
-    XXX
+    The SymPy convention is the same as within `Julia`
 
 ```@repl Julia
+acos(x)
+cos(acos(x))
+asin(Sym(1))
 ```
 
 ----
@@ -533,9 +537,12 @@ To simplify expressions using trigonometric identities, use `trigsimp()`.
 
 !!! tip "Julia differences"
 
-    XXX
+    The `trigsimp` function needs qualification
 
 ```@repl Julia
+sympy.trigsimp(sin(x)^2 + cos(x)^2)
+sympy.trigsimp(sin(x)^4 - 2*cos(x)^2*sin(x)^2 + cos(x)^4)
+sympy.trigsimp(sin(x)*tan(x)/sec(x))
 ```
 
 ----
@@ -563,11 +570,10 @@ To simplify expressions using trigonometric identities, use `trigsimp()`.
 
 `trigsimp()` also works with hyperbolic trig functions.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+sympy.trigsimp(cosh(x)^2 + sinh(x)^2)
+sympy.trigsimp(sinh(x)/tanh(x))
 ```
 
 ----
@@ -599,9 +605,11 @@ identities, use `expand_trig()`.
 
 !!! tip "Julia differences"
 
-    XXX
+    The `expand_trig` function must be qualified
 
 ```@repl Julia
+sympy.expand_trig(sin(x + y))
+sympy.expand_trig(tan(2*x))
 ```
 
 ----
@@ -629,11 +637,9 @@ Because `expand_trig()` tends to make trigonometric expressions larger, and
 `trigsimp()` tends to make them smaller, these identities can be applied in
 reverse using `trigsimp()`
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+sympy.trigsimp(sin(x)*cos(y) + sin(y)*cos(x))
 ```
 
 ----
@@ -664,37 +670,33 @@ Before we introduce the power simplification functions, a mathematical
 discussion on the identities held by powers is in order.  There are three
 kinds of identities satisfied by exponents
 
-1. `x^ax^b = x^{a + b}`
-2. `x^ay^a = (xy)^a`
-3. `(x^a)^b = x^{ab}`
+1. ``x^ax^b = x^{a + b}``
+2. ``x^ay^a = (xy)^a``
+3. ``(x^a)^b = x^{ab}``
 
 Identity 1 is always true.
 
-Identity 2 is not always true.  For example, if `x = y = -1` and `a =
-\frac{1}{2}`, then `x^ay^a = \sqrt{-1}\sqrt{-1} = i\cdot i = -1`, whereas
-`(xy)^a = \sqrt{-1\cdot-1} = \sqrt{1} = 1`.  However, identity 2 is true at
-least if `x` and `y` are nonnegative and `a` is real (it may also be true
+Identity 2 is not always true.  For example, if ``x = y = -1`` and ``a =
+\frac{1}{2}``, then ``x^ay^a = \sqrt{-1}\sqrt{-1} = i\cdot i = -1``, whereas
+``(xy)^a = \sqrt{-1\cdot-1} = \sqrt{1} = 1``.  However, identity 2 is true at
+least if ``x`` and ``y`` are nonnegative and ``a`` is real (it may also be true
 under other conditions as well).  A common consequence of the failure of
 identity 2 is that ``\sqrt{x}\sqrt{y} \neq \sqrt{xy}``.
 
-Identity 3 is not always true.  For example, if `x = -1`, `a = 2`, and `b =
-\frac{1}{2}`, then `(x^a)^b = {\left((-1)^2\right)}^{1/2} = \sqrt{1} = 1`
-and `x^{ab} = (-1)^{2\cdot1/2} = (-1)^1 = -1`.  However, identity 3 is true
-when `b` is an integer (again, it may also hold in other cases as well).  Two
+Identity 3 is not always true.  For example, if ``x = -1``, ``a = 2``, and ``b =
+\frac{1}{2}``, then ``(x^a)^b = {\left((-1)^2\right)}^{1/2} = \sqrt{1} = 1``
+and ``x^{ab} = (-1)^{2\cdot1/2} = (-1)^1 = -1``.  However, identity 3 is true
+when ``b`` is an integer (again, it may also hold in other cases as well).  Two
 common consequences of the failure of identity 3 are that ``\sqrt{x^2}\neq x``
 and that ``\sqrt{\frac{1}{x}} \neq \frac{1}{\sqrt{x}}``.
 
 To summarize
 
-+-----------------------+------------------------------------+----------------------------------------------------+-----------------------------------------------------------------------------+
 |Identity               |Sufficient conditions to hold       |Counterexample when conditions are not met          |Important consequences                                                       |
-+=======================+====================================+====================================================+=============================================================================+
-|1. `x^ax^b = x^{a + b}`|Always true                         |None                                                |None                                                                         |
-+-----------------------+------------------------------------+----------------------------------------------------+-----------------------------------------------------------------------------+
-|2. `x^ay^a = (xy)^a`   |`x, y \geq 0` and `a \in \mathbb{R}`|`(-1)^{1/2}(-1)^{1/2} \neq (-1\cdot-1)^{1/2}`       |`\sqrt{x}\sqrt{y} \neq \sqrt{xy}` in general                                 |
-+-----------------------+------------------------------------+----------------------------------------------------+-----------------------------------------------------------------------------+
-|3. `(x^a)^b = x^{ab}`  |`b \in \mathbb{Z}`                  |`{\left((-1)^2\right)}^{1/2} \neq (-1)^{2\cdot1/2}` |`\sqrt{x^2}\neq x` and `\sqrt{\frac{1}{x}}\neq\frac{1}{\sqrt{x}}` in general |
-+-----------------------+------------------------------------+----------------------------------------------------+-----------------------------------------------------------------------------+
+|:----------------------|:-----------------------------------|:---------------------------------------------------|:----------------------------------------------------------------------------|
+|1. ``x^ax^b = x^{a + b}``|Always true                         |None                                                |None                                                                         |
+|2. ``x^ay^a = (xy)^a``   |``x, y \geq 0`` and ``a \in \mathbb{R}``|``(-1)^{1/2}(-1)^{1/2} \neq (-1\cdot-1)^{1/2}``       |``\sqrt{x}\sqrt{y} \neq \sqrt{xy}`` in general                                 |
+|3. ``(x^a)^b = x^{ab}``  |``b \in \mathbb{Z}``                  |``{\left((-1)^2\right)}^{1/2} \neq (-1)^{2\cdot1/2}`` |``\sqrt{x^2}\neq x`` and ``\sqrt{\frac{1}{x}}\neq\frac{1}{\sqrt{x}}`` in general |
 
 
 This is important to remember, because by default, SymPy will not perform
@@ -717,9 +719,12 @@ but for now, all we need to know are the following.
 
 !!! tip "Julia differences"
 
-    XXX
+    We use `@syms` below, though `symbols` has an advantage when defining more than one variable with a certain assumption
 
 ```@repl Julia
+@syms x::positive, y::positive
+@syms a::real, b::rea;
+@syms z, t, c
 ```
 
 ----
@@ -747,9 +752,6 @@ but for now, all we need to know are the following.
     In SymPy, `sqrt(x)` is just a shortcut to `x**Rational(1, 2)`.  They
     are exactly the same object.
 
-     >>> sqrt(x) == x**Rational(1, 2)
-     True
-
 powsimp
 -------
 
@@ -758,9 +760,11 @@ powsimp
 
 !!! tip "Julia differences"
 
-    XXX
+    The `powsimp` function must be qualified
 
 ```@repl Julia
+sympy.powsimp(x^a*x^b)
+sympy.powsimp(x^a*y^a)
 ```
 
 ----
@@ -785,11 +789,10 @@ powsimp
 
 Notice that `powsimp()` refuses to do the simplification if it is not valid.
 
-!!! tip "Julia differences"
 
-    XXX
 
 ```@repl Julia
+sympy.powsimp(t^c*z^c)
 ```
 
 ----
@@ -813,11 +816,9 @@ If you know that you want to apply this simplification, but you don't want to
 mess with assumptions, you can pass the `force=True` flag.  This will force
 the simplification to take place, regardless of assumptions.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+sympy.powsimp(t^c*z^c, force=true)
 ```
 
 ----
@@ -840,11 +841,9 @@ the simplification to take place, regardless of assumptions.
 Note that in some instances, in particular, when the exponents are integers or
 rational numbers, and identity 2 holds, it will be applied automatically.
 
-!!! tip "Julia differences"
-
-    XXX
-
 ```@repl Julia
+(z*t)^2
+sqrt(x*y)
 ```
 
 ----
@@ -870,11 +869,9 @@ This means that it will be impossible to undo this identity with
 `powsimp()`, because even if `powsimp()` were to put the bases together,
 they would be automatically split apart again.
 
-!!! tip "Julia differences"
-
-    XXX
-
 ```@repl Julia
+sympy.powsimp(z^2*t^2)
+sympy.powsimp(sqrt(x)*sqrt(y))
 ```
 
 ----
@@ -904,9 +901,11 @@ from right to left, respectively.
 
 !!! tip "Julia differences"
 
-    XXX
+    The too need qualification
 
 ```@repl Julia
+sympy.expand_power_exp(x^(a + b))
+sympy.expand_power_base((x*y)^a)
 ```
 
 ----
@@ -932,11 +931,10 @@ from right to left, respectively.
 
 As with `powsimp()`, identity 2 is not applied if it is not valid.
 
-!!! tip "Julia differences"
 
-    XXX
 
 ```@repl Julia
+sympy.expand_power_base((z*t)^c)
 ```
 
 ----
@@ -959,11 +957,8 @@ As with `powsimp()`, identity 2 is not applied if it is not valid.
 And as with `powsimp()`, you can force the expansion to happen without
 fiddling with assumptions by using `force=True`.
 
-!!! tip "Julia differences"
-
-    XXX
-
 ```@repl Julia
+sympy.expand_power_base((z*t)^c, force=true)
 ```
 
 ----
@@ -986,11 +981,10 @@ fiddling with assumptions by using `force=True`.
 As with identity 2, identity 1 is applied automatically if the power is a
 number, and hence cannot be undone with `expand_power_exp()`.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+x^2*x^3
+sympy.expand_power_exp(x^5)
 ```
 
 ----
@@ -1020,9 +1014,10 @@ powdenest
 
 !!! tip "Julia differences"
 
-    XXX
+    This function needs qualification
 
 ```@repl Julia
+sympy.powdenest((x^a)^b)
 ```
 
 ----
@@ -1045,11 +1040,9 @@ powdenest
 As before, the identity is not applied if it is not true under the given
 assumptions.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+sympy.powdenest((z^a)^b)
 ```
 
 ----
@@ -1072,11 +1065,9 @@ assumptions.
 
 And as before, this can be manually overridden with `force=True`.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+sympy.powdenest((z^a)^b, force=true)
 ```
 
 ----
@@ -1105,8 +1096,8 @@ Exponentials and logarithms
     natural logarithm, also known as `ln`.  SymPy automatically provides an
     alias `ln = log` in case you forget this.
 
-     >>> ln(x)
-     log(x)
+         >>> ln(x)
+         log(x)
 
 Logarithms have similar issues as powers.  There are two main identities
 
@@ -1118,11 +1109,9 @@ cut in the complex plane for the complex logarithm.  However, sufficient
 conditions for the identities to hold are if `x` and `y` are positive and `n`
 is real.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+@syms x::positive, y::positive, n::real
 ```
 
 ----
@@ -1163,9 +1152,14 @@ always, the identities will not be applied unless they are valid.
 
 !!! tip "Julia differences"
 
-    XXX
+    This function needs qualification
 
 ```@repl Julia
+sympy.expand_log(log(x*y))
+sympy.expand_log(log(x/y))
+sympy.expand_log(log(x^2))
+sympy.expand_log(log(x^n))
+sympy.expand_log(log(z*t))
 ```
 
 ----
@@ -1195,11 +1189,11 @@ always, the identities will not be applied unless they are valid.
 As with `powsimp()` and `powdenest()`, `expand_log()` has a `force`
 option that can be used to ignore assumptions.
 
-!!! tip "Julia differences"
 
-    XXX
 
 ```@repl Julia
+sympy.expand_log(log(z^2))
+sympy.expand_log(log(z^2), force=true)
 ```
 
 ----
@@ -1228,9 +1222,12 @@ To apply identities 1 and 2 from right to left, use `logcombine()`.
 
 !!! tip "Julia differences"
 
-    XXX
+    This function needs qualification
 
 ```@repl Julia
+sympy.logcombine(log(x) + log(y))
+sympy.logcombine(n*log(x))
+sympy.logcombine(n*log(z))
 ```
 
 ----
@@ -1257,11 +1254,8 @@ To apply identities 1 and 2 from right to left, use `logcombine()`.
 `logcombine()` also has a `force` option that can be used to ignore
 assumptions.
 
-!!! tip "Julia differences"
-
-    XXX
-
 ```@repl Julia
+sympy.logcombine(n*log(z), force=true)
 ```
 
 ----
@@ -1299,9 +1293,10 @@ assumptions we put on them in the previous section.  We will also define `k`,
 
 !!! tip "Julia differences"
 
-    XXX
+    Functions in `SpecialFunctions` with SymPy counterparts have methods defined for them which, generally, are dispatched on through the first argument being symbolic. Other special function in SymPy must be qualifed in usage, as in `sympy.hyper`. For these, there is no requirement that the first argument be symbolic.
 
 ```@repl Julia
+@syms x y z k m n
 ```
 
 ----
@@ -1324,11 +1319,10 @@ The [factorial](https://en.wikipedia.org/wiki/Factorial) function is
 `factorial`.  `factorial(n)` represents `n!= 1\cdot2\cdots(n - 1)\cdot
 n`. `n!` represents the number of permutations of `n` distinct items.
 
-!!! tip "Julia differences"
 
-    XXX
 
 ```@repl Julia
+factorial(n)
 ```
 
 ----
@@ -1352,11 +1346,10 @@ The [binomial coefficient](https://en.wikipedia.org/wiki/Binomial_coefficient fu
 ways to choose `k` items from a set of `n` distinct items.  It is also often
 written as `nCk`, and is pronounced "`n` choose `k`".
 
-!!! tip "Julia differences"
 
-    XXX
 
 ```@repl Julia
+binomial(n, k)
 ```
 
 ----
@@ -1383,9 +1376,10 @@ represents ``\Gamma(z) = \int_0^\infty t^{z - 1}e^{-t}\,dt``, which for positive
 
 !!! tip "Julia differences"
 
-    XXX
+    As mentioned, `gamma` is exported by  `SpecialFunctions` and a method for symbolic arguments is provided when that package is loaded
 
 ```@repl Julia
+gamma(z)
 ```
 
 ----
@@ -1405,17 +1399,16 @@ represents ``\Gamma(z) = \int_0^\infty t^{z - 1}e^{-t}\,dt``, which for positive
 
 
 The [generalized hypergeometric function](https://en.wikipedia.org/wiki/Generalized_hypergeometric_function) is
-`hyper`.  `hyper([a_1, ..., a_p], [b_1, ..., b_q], z)` represents
-`{}_pF_q\left(\begin{matrix} a_1, \cdots, a_p \\ b_1, \cdots, b_q \end{matrix}
-\middle| z \right)`.  The most common case is `{}_2F_1`, which is often
+`hyper`. ``hyper([a_1, ..., a_p], [b_1, ..., b_q], z)` represents
+``{}_pF_q\left(\begin{matrix} a_1, \cdots, a_p \\ b_1, \cdots, b_q \end{matrix}
+\middle| z \right)``.  The most common case is ``{}_2F_1``, which is often
 referred to as the `ordinary hypergeometric function
 [https://en.wikipedia.org/wiki/Hypergeometric_function](https://en.wikipedia.org/wiki/Hypergeometric_function).
 
-!!! tip "Julia differences"
 
-    XXX
 
 ```@repl Julia
+sympy.hyper([1, 2], [3], z)
 ```
 
 ----
@@ -1444,11 +1437,10 @@ another.  This works for any function in SymPy, not just special functions.
 To rewrite an expression in terms of a function, use
 `expr.rewrite(function)`.  For example,
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+tan(x).rewrite(cos)
+factorial(x).rewrite(gamma)
 ```
 
 ----
@@ -1484,9 +1476,10 @@ To expand special functions in terms of some identities, use
 
 !!! tip "Julia differences"
 
-    XXX
+    This function needs qualification
 
 ```@repl Julia
+sympy.expand_func(gamma(x + 3))
 ```
 
 ----
@@ -1511,11 +1504,10 @@ hyperexpand
 To rewrite `hyper` in terms of more standard functions, use
 `hyperexpand()`.
 
-!!! tip "Julia differences"
 
-    XXX
 
 ```@repl Julia
+sympy.hyperexpand(sympy.hyper([1, 1], [2], z))
 ```
 
 ----
@@ -1540,11 +1532,10 @@ To rewrite `hyper` in terms of more standard functions, use
 [its documentation](sympy.functions.special.hyper.meijerg) for more
 information).
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+expr = sympy.meijerg([[1],[1]], [[1],[]], -z)
+sympy.hyperexpand(expr)
 ```
 
 ----
@@ -1576,11 +1567,12 @@ combsimp
 
 To simplify combinatorial expressions, use `combsimp()`.
 
-!!! tip "Julia differences"
 
-    XXX
 
 ```@repl Julia
+@syms n::integer, k::integer
+sympy.combsimp(factorial(n)/factorial(n - 3))
+sympy.combsimp(binomial(n+1, k+1)/binomial(n, k))
 ```
 
 ----
@@ -1612,9 +1604,10 @@ non-integer argument, use `gammasimp()`.
 
 !!! tip "Julia differences"
 
-    XXX
+    This function needs qualification
 
 ```@repl Julia
+sympy.gammasimp(gamma(x)*gamma(1 - x))
 ```
 
 ----
@@ -1646,23 +1639,28 @@ a_0 + \cfrac{1}{a_1 + \cfrac{1}{a_2 + \cfrac{1}{ \ddots + \cfrac{1}{a_n}
    }}}
 ```
 
-where `a_0, \ldots, a_n` are integers, and `a_1, \ldots, a_n` are positive. A
+where ``a_0, \ldots, a_n`` are integers, and ``a_1, \ldots, a_n`` are positive. A
 continued fraction can also be infinite, but infinite objects are more
 difficult to represent in computers, so we will only examine the finite case
 here.
 
-A continued fraction of the above form is often represented as a list `[a_0;
-a_1, \ldots, a_n]`.  Let's write a simple function that converts such a list
+A continued fraction of the above form is often represented as a list ``[a_0;
+a_1, \ldots, a_n]``.  Let's write a simple function that converts such a list
 to its continued fraction form.  The easiest way to construct a continued
 fraction from a list is to work backwards.  Note that despite the apparent
 symmetry of the definition, the first element, `a_0`, must usually be handled
 differently from the rest.
 
-!!! tip "Julia differences"
-
-    XXX
-
 ```@repl Julia
+function list_to_frac(l)
+  ex = Sym(0)
+  for i in reverse(l[2:end])
+    ex += i
+    ex = 1/ex
+  end
+  first(l) + ex
+end
+list_to_frac([x, y, z])
 ```
 
 ----
@@ -1694,11 +1692,8 @@ differently from the rest.
 We use `Integer(0)` in `list_to_frac` so that the result will always be a
 SymPy object, even if we only pass in Python ints.
 
-!!! tip "Julia differences"
-
-    XXX
-
 ```@repl Julia
+list_to_frac([1, 2, 3, 4])
 ```
 
 ----
@@ -1725,11 +1720,11 @@ symbolics here, so let's create a symbolic continued fraction.  The
 numbered symbols.  `symbols('a0:5')` will create the symbols `a0`, `a1`,
 ..., `a4`.
 
-!!! tip "Julia differences"
 
-    XXX
 
 ```@repl Julia
+@syms a[0:4]
+frac = list_to_frac(a)
 ```
 
 ----
@@ -1764,11 +1759,10 @@ numbered symbols.  `symbols('a0:5')` will create the symbols `a0`, `a1`,
 This form is useful for understanding continued fractions, but lets put it
 into standard rational function form using `cancel()`.
 
-!!! tip "Julia differences"
 
-    XXX
 
 ```@repl Julia
+frac = cancel(frac)
 ```
 
 ----
@@ -1805,11 +1799,13 @@ The key observation here is that we can convert an expression to the form `c +
 `apart()` function.  We use `apart()` to pull the term out, then subtract
 it from the expression, and take the reciprocal to get the `f` part.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+l = Any[]
+a0 = first(a)
+frac = apart(frac, a0)
+push!(l, a0)
+frac = 1 / (frac - a0)
 ```
 
 ----
@@ -1840,11 +1836,26 @@ it from the expression, and take the reciprocal to get the `f` part.
 
 Now we repeat this process
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+a1,a2,a3,a4 = a[2:end]
+frac = apart(frac, a1)
+push!(l, a1)
+frac = 1/(frac - a1)
+
+frac = apart(frac, a2)
+push!(l, a2)
+frac = 1/(frac - a2)
+
+frac = apart(frac, a3)
+push!(l, a3)
+frac = 1/(frac - a3)
+
+frac = apart(frac, a4)
+push!(l, a4)
+frac = 1/(frac - a4)
+
+list_to_frac(l)
 ```
 
 ----
@@ -1905,9 +1916,14 @@ example
 
 !!! tip "Julia differences"
 
-    XXX
+    Sampling with replacement is provided in the `StatsBase` package. Here we define a non-performant function to shuffle a vector of values.
+
 
 ```@repl Julia
+shuffle(x) = [(i=rand(1:length(x)); a=x[i]; deleteat!(x,i); a) for _ ∈ 1:length(x)]
+@syms a[0:4]
+l = shuffle(a)
+orig_frac = frac = cancel(list_to_frac(l))
 ```
 
 ----
@@ -1936,7 +1952,7 @@ peeking (you can check your answer at the end by calling
 comparing it to `orig_frac`.
 
 See if you can think of a way to figure out what symbol to pass to `apart()`
-at each stage (hint: think of what happens to `a_0` in the formula `a_0 +
-\frac{1}{a_1 + \cdots}` when it is canceled).
+at each stage (hint: think of what happens to ``a_0`` in the formula ``a_0 +
+\frac{1}{a_1 + \cdots}`` when it is canceled).
 
-Answer: a0 is the only symbol that does not appear in the denominator
+Answer: ``a_0`` is the only symbol that does not appear in the denominator

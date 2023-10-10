@@ -23,7 +23,9 @@ symbols() = nothing
 """
     Sym{T}
 
-Wrapper for symbolic python objects allowing for many generic method definitions.
+Main wrapper for symbolic Python objects.
+
+This is useful for dispatching methods for generic functions. `Sym` is also used to make symbolic values, in particular numeric values can be made into symbolic values.
 """
 struct Sym{T} <: SymbolicObject{T}
     o::T
@@ -51,30 +53,20 @@ for specifying differential equations. The macro [`@syms`](@ref) is also availab
 
 ## Examples:
 
-```jldoctest symfunction
+```julia jldoctest symfunction
 julia> using SymPy
 
-julia> u = SymFunction("u");
+julia> @syms v(); # recommended way to create a symbolic function
 
-julia> @syms v();
+julia> u = SymFunction("u") # alternate
 
 ```
 
-Alternatively, we can pass a comma separated string of variable names to create
-more than one at a time.
-
-```jldoctest symfunction
-julia> F,G,H = SymFunction("F, G, H")
-3-element Vector{SymFunction}:
- F
- G
- H
-```
-
+## Extended help
 
 For symbolic functions *not* wrapped in the `SymFunction` type, the `sympy.Function` constructor can be used, as can the [`symbols`](@ref) function to construct symbolic functions (`F=sympy.Function("F", real=true)`; `F = sympy.symbols("F", cls=sympy.Function, real=true)`).
 
-```jldoctest symfunction
+```julia jldoctest symfunction
 julia> @syms u(), v()::real, t
 (u, v, t)
 
@@ -85,7 +77,7 @@ julia> sqrt(u(t)^2), sqrt(v(t)^2) # real values have different simplification ru
 
 Such functions are undefined functions in SymPy, and can be used symbolically, such as with taking derivatives:
 
-```jldoctest symfunction
+```julia jldoctest symfunction
 julia> @syms x y u()
 (x, y, u)
 
@@ -120,39 +112,37 @@ end
 ## We use this class for `ImmutableMatrices`
 ## Mutable matrices are mapped to `AbstractArray{Sym,N}`
 ## cf. matrix.jl
-"""
-    SymMatrix
+# """
+#     SymMatrix
 
-Type to store a SymPy matrix, as created by `sympy.ImmutableMatrix`.
+# Type to store a SymPy matrix, as created by `sympy.ImmutableMatrix`.
 
-These have 0-based indexing defined for them to match SymPy
+# These have 0-based indexing defined for them to match SymPy
 
-The traditional infix mathmatical operations are defined, but no dot broadcasting.
+# The traditional infix mathmatical operations are defined, but no dot broadcasting.
 
-The `convert(Matrix{Sym}, M)` call is useful to covert to a Julia matrix
+# The `convert(Matrix{Sym}, M)` call is useful to covert to a Julia matrix
 
-"""
-mutable struct SymMatrix{T} <: SymbolicObject{T}
-    o::T
-end
+# """
+# mutable struct SymMatrix{T} <: SymbolicObject{T}
+#     o::T
+# end
 
-## --------------------------------------------------
+# ## --------------------------------------------------
 
-## Permutations
-## A permutation of {0, 1, 2, ..., n} -- 0-based
-struct SymPermutation{T} <: SymbolicObject{T}
-    o::T
-end
-export SymPermutation
-#XXXBase.convert(::Type{SymPermutation}, o::PyCall.PyObject) = SymPermutation(o)
+# ## Permutations
+# ## A permutation of {0, 1, 2, ..., n} -- 0-based
+# struct SymPermutation{T} <: SymbolicObject{T}
+#     o::T
+# end
+# Base.convert(::Type{SymPermutation}, o) = SymPermutation(o)
 
 
-## A permutation of {0, 1, 2, ..., n} -- 0-based
-struct SymPermutationGroup{T} <: SymbolicObject{T}
-    p::T
-end
-export SymPermutationGroup
-#XXXBase.convert(::Type{SymPermutationGroup}, o::PyCall.PyObject) = SymPermutationGroup(o)
+# ## A permutation of {0, 1, 2, ..., n} -- 0-based
+# struct SymPermutationGroup{T} <: SymbolicObject{T}
+#     p::T
+# end
+# Base.convert(::Type{SymPermutationGroup}, o) = SymPermutationGroup(o)
 
 ## --------------------------------------------------
 #XXX

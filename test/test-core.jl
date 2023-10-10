@@ -1,3 +1,4 @@
+
 @testset "Symbols" begin
 
 end
@@ -76,7 +77,7 @@ end
         @test subs(ex, Dict(x=>1)) == 0
         @test ex(x=>1) == 0
         @test ex(x=>2, y=>2) == 0
-        @test_broken ex.subs(Dict(x=>1)) == 0 ## shoul break. Awkward mix of python/julia
+        @test ex.subs(Dict(x=>1)) == 0 ## shoul break. Awkward mix of python/julia
 
         # Test subs on simple numbers
         @syms x y
@@ -94,12 +95,12 @@ end
             dict2[x] = i
         end
         for d in (dict1,)
-            @test_broken ex |> subs(d) == factorial(4)
-            @test_broken subs(ex, d) == factorial(4)
-            @test_broken subs(ex, d...) == factorial(4)
-            @test_broken ex |> subs(d...) == factorial(4)
-            @test_broken ex(d) == factorial(4)
-            @test_broken ex(d...) == factorial(4)
+            @test ex |> subs(d) == factorial(4)
+            @test subs(ex, d) == factorial(4)
+            @test subs(ex, d...) == factorial(4)
+            @test ex |> subs(d...) == factorial(4)
+            @test ex(d) == factorial(4)
+            @test ex(d...) == factorial(4)
         end
         for d in (dict2,)
             @test ex |> subs(d) == factorial(4)

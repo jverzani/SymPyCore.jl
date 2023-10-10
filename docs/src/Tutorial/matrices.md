@@ -2,14 +2,7 @@ Matrices
 ==========
 
 ```@setup Julia
-using SymPy #PythonCall
-```
-
-!!! tip "Julia differences"
-
-    XXX
-
-```@repl Julia
+using SymPyPythonCall
 ```
 
 ----
@@ -40,9 +33,11 @@ use
 
 !!! tip "Julia differences"
 
-    XXX
+    We have two ways to store matrices -- as a matrix of symbolic objects or as a symbolic wrapper around the underlying Python `Matrix` objects. The former gives access to Julia's common idioms, the latter access to SymPy's methods for matrices. `↓(M)` takes a matrix of symbolic values and returns a SymPy matrix object, `↑(𝑀)` does the reverse. The `getindex` notation for a matrix of symbolic values is overridden to call the SymPy method.  Matrices of symbolic objects can be created by adding `Sym` as a type hint; or more commonly occur by promotion when one or more entries is symbolic.
 
 ```@repl Julia
+Sym[1 -1; 3 4; 0 2]
+[Sym(1) -1; 3 4; 0 2]
 ```
 
 ----
@@ -70,9 +65,10 @@ a column vector.
 
 !!! tip "Julia differences"
 
-    XXX
+    This is different in `Julia`, as column syntax does not use commas.
 
 ```@repl Julia
+Sym[1 2 3]
 ```
 
 ----
@@ -99,9 +95,12 @@ Matrices are manipulated just like any other object in SymPy or Python.
 
 !!! tip "Julia differences"
 
-    XXX
+    The resulting matrix is just a matrix with symbolic elements, so is manipulated like any other matrix
 
 ```@repl Julia
+M1 = Sym[1 2 3; 3 2 1]
+M2 = Sym[0, 1, 1]  # can't use N
+M1 * M2
 ```
 
 ----
@@ -143,9 +142,12 @@ To get the shape of a matrix, use :func:`~.shape()` function.
 
 !!! tip "Julia differences"
 
-    XXX
+    We can use `Julia` generics or object mathods of sympy
 
 ```@repl Julia
+M = Sym[1 2 3; -2 0 4]
+size(M)
+M.shape
 ```
 
 ----
@@ -179,9 +181,11 @@ column.
 
 !!! tip "Julia differences"
 
-    XXX
+    We use standard Julia notation for array access
 
 ```@repl Julia
+M[1, :]
+M[:, end]
 ```
 
 ----
@@ -212,9 +216,10 @@ will modify the Matrix **in place**.
 
 !!! tip "Julia differences"
 
-    XXX
+    These mutation operations will work if the matrix is converted via  `↓` to an underlying Python matrix, but that is not illustrated here.
 
 ```@repl Julia
+nothing
 ```
 
 ----
@@ -248,9 +253,10 @@ operations **do not** operate in place.
 
 !!! tip "Julia differences"
 
-    XXX
+    One can use `Julia` idioms, but that is not illustrated
 
 ```@repl Julia
+nothing
 ```
 
 ----
@@ -290,11 +296,14 @@ As noted above, simple operations like addition, multiplication and power are
 done just by using `+`, `*`, and `**`.  To find the inverse of a matrix,
 just raise it to the `-1` power.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+M1, M2 = Sym[1 3; -2 3], Sym[0 3; 0 7]
+M1 + M2
+M1 * M2
+3*M1
+M1^2
+inv(M2)
 ```
 
 ----
@@ -341,9 +350,11 @@ To take the transpose of a Matrix, use `T`.
 
 !!! tip "Julia differences"
 
-    XXX
+    Use `'` for the adjoint, `transpose` for transpose
 
 ```@repl Julia
+M = Sym[1 2 3; 4 5 6]
+transpose(M)
 ```
 
 ----
@@ -375,13 +386,15 @@ Matrix Constructors
 ===================
 
 Several constructors exist for creating common matrices.  To create an
-identity matrix, use `eye`.  `eye(n)` will create an `n\times n` identity matrix.
+identity matrix, use `eye`.  `eye(n)` will create an ``n\times n`` identity matrix.
 
 !!! tip "Julia differences"
 
-    XXX
+    This cnostructor is not exported, so needs to be qualified
 
 ```@repl Julia
+sympy.eye(3)
+sympy.eye(4)
 ```
 
 ----
@@ -413,13 +426,14 @@ identity matrix, use `eye`.  `eye(n)` will create an `n\times n` identity matrix
 ----
 
 To create a matrix of all zeros, use `zeros`.  `zeros(n, m)` creates an
-``n\times m`` matrix of ``0``\ s.
+``n\times m`` matrix of ``0`` s.
 
 !!! tip "Julia differences"
 
-    XXX
+    This is more idiomatically done with a type:
 
 ```@repl Julia
+zeros(Sym, 2, 3)
 ```
 
 ----
@@ -442,11 +456,9 @@ To create a matrix of all zeros, use `zeros`.  `zeros(n, m)` creates an
 
 Similarly, `ones` creates a matrix of ones.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+ones(Sym, 3, 4)
 ```
 
 ----
@@ -472,13 +484,15 @@ Similarly, `ones` creates a matrix of ones.
 To create diagonal matrices, use `diag`.  The arguments to `diag` can be
 either numbers or matrices.  A number is interpreted as a ``1\times 1``
 matrix. The matrices are stacked diagonally.  The remaining elements are
-filled with ``0``\ s.
+filled with ``0`` s.
 
 !!! tip "Julia differences"
 
-    XXX
+    We qualify the use of `diag`, it is not exported
 
 ```@repl Julia
+sympy.diag(1,2,3)
+sympy.diag(-1, ones(Sym, 2, 2), Sym[5,7,5])
 ```
 
 ----
@@ -523,9 +537,13 @@ To compute the determinant of a matrix, use `det`.
 
 !!! tip "Julia differences"
 
-    XXX
+    This can be called using `det` (if the `LinearAlgebra` package is loaded) or as a method
 
 ```@repl Julia
+M = Sym[1 0 1; 2 -1 3; 4 3 2]
+M.det()
+using LinearAlgebra
+det(M)
 ```
 
 ----
@@ -557,11 +575,10 @@ To put a matrix into reduced row echelon form, use `rref`.  `rref` returns
 a tuple of two elements. The first is the reduced row echelon form, and the
 second is a tuple of indices of the pivot columns.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+M = Sym[1 0 1 3; 2 3 4 7; -1 -3 -3 -4]
+M.rref()
 ```
 
 ----
@@ -600,11 +617,11 @@ Nullspace
 To find the nullspace of a matrix, use `nullspace`. `nullspace` returns a
 `list` of column vectors that span the nullspace of the matrix.
 
-!!! tip "Julia differences"
 
-    XXX
 
 ```@repl Julia
+M = Sym[1 2 3 0 0; 4 10 0 0 1]
+M.nullspace()
 ```
 
 ----
@@ -642,11 +659,10 @@ Columnspace
 To find the columnspace of a matrix, use `columnspace`. `columnspace` returns a
 `list` of column vectors that span the columnspace of the matrix.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+M = Sym[1 1 2; 2 1 3; 3 1 4]
+M.columnspace()
 ```
 
 ----
@@ -685,9 +701,11 @@ output of [roots](tutorial-roots)).
 
 !!! tip "Julia differences"
 
-    XXX
+    The `LinearAlgebra` generic functions have methods `eigvals` and `eigvecs` for this taks
 
 ```@repl Julia
+M = Sym[3 -2 4 -2; 5 3 -3 -2; 5 -2 2 -2; 5 -2 -3 3]
+eigvals(M)
 ```
 
 ----
@@ -723,11 +741,10 @@ To find the eigenvectors of a matrix, use `eigenvects`.  `eigenvects`
 returns a list of tuples of the form `(eigenvalue, algebraic_multiplicity,
 [eigenvectors])`.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+eigvecs(M)
+M.eigenvects()
 ```
 
 ----
@@ -760,11 +777,11 @@ diagonalizable.
 To diagonalize a matrix, use `diagonalize`. `diagonalize` returns a tuple
 `(P, D)`, where `D` is diagonal and `M = PDP^{-1}`.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+P, D = M.diagonalize()
+P * D * inv(P)
+P * D * inv(P) == M
 ```
 
 ----
@@ -811,9 +828,9 @@ To diagonalize a matrix, use `diagonalize`. `diagonalize` returns a tuple
 !!! note "Quick Tip"
 
     `lambda` is a reserved keyword in Python, so to create a Symbol called
-    `\lambda`, while using the same names for SymPy Symbols and Python
+    ``\lambda``, while using the same names for SymPy Symbols and Python
     variables, use `lamda` (without the `b`).  It will still pretty print
-    as `\lambda`.
+    as ``\lambda``.
 
 Note that since `eigenvects` also includes the eigenvalues, you should use
 it instead of `eigenvals` if you also want the eigenvectors. However, as
@@ -824,11 +841,12 @@ If all you want is the characteristic polynomial, use `charpoly`.  This is
 more efficient than `eigenvals`, because sometimes symbolic roots can be
 expensive to calculate.
 
-!!! tip "Julia differences"
 
-    XXX
 
 ```@repl Julia
+@syms lambda => "λ"
+p = M.charpoly(lambda)
+factor(p.as_expr())
 ```
 
 ----
@@ -887,11 +905,11 @@ below is still of interest.
 [#zerotestexampleidea-fn]_ [#zerotestexamplediscovery-fn]_
 [#zerotestexampleimproved-fn]_
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+@syms q::positive
+M = [-2cosh(q/3) exp(-q) 1; exp(q) -2cosh(q/3) 1; 1 1 -2cosh(q/3)]
+M.nullspace()
 ```
 
 ----
@@ -919,11 +937,10 @@ below is still of interest.
 You can trace down which expression is being underevaluated,
 by injecting a custom zero test with warnings enabled.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+my_iszero(x) = x.is_zero
+my_iszero.(M)
 ```
 
 ----
@@ -960,7 +977,7 @@ by injecting a custom zero test with warnings enabled.
 ----
 
 In this case,
-``(-exp(q) - 2*cosh(q/3))*(-2*cosh(q/3) - exp(-q)) - (4*cosh(q/3)**2 - 1)**2``
+`(-exp(q) - 2*cosh(q/3))*(-2*cosh(q/3) - exp(-q)) - (4*cosh(q/3)**2 - 1)**2`
 should yield zero, but the zero testing had failed to catch.
 possibly meaning that a stronger zero test should be introduced.
 For this specific example, rewriting to exponentials and applying simplify would
@@ -969,9 +986,11 @@ while being harmless to other polynomials or transcendental functions.
 
 !!! tip "Julia differences"
 
-    XXX
+    We use broadcasting over the matrix
 
 ```@repl Julia
+my_iszero(x) = x.rewrite(exp).simplify().is_zero
+my_iszero.(M)
 ```
 
 ----
@@ -1045,20 +1064,20 @@ SymPy issue tracker [#sympyissues-fn]_ to get detailed help from the community.
 
 !!! note "Footnotes"
 
-    .. [#zerotestexampleidea-fn] Inspired by https://gitter.im/sympy/sympy?at=5b7c3e8ee5b40332abdb206c
+    * [#zerotestexampleidea-fn] Inspired by https://gitter.im/sympy/sympy?at=5b7c3e8ee5b40332abdb206c
 
-    .. [#zerotestexamplediscovery-fn] Discovered from https://github.com/sympy/sympy/issues/15141
+    * [#zerotestexamplediscovery-fn] Discovered from https://github.com/sympy/sympy/issues/15141
 
-    .. [#zerotestexampleimproved-fn] Improved by https://github.com/sympy/sympy/pull/19548
+    * [#zerotestexampleimproved-fn] Improved by https://github.com/sympy/sympy/pull/19548
 
-    .. [#zerotestsimplifysolution-fn] Suggested from https://github.com/sympy/sympy/issues/10120
+    * [#zerotestsimplifysolution-fn] Suggested from https://github.com/sympy/sympy/issues/10120
 
-    .. [#zerotestnumerictestsolution-fn] Suggested from https://github.com/sympy/sympy/issues/10279
+    * [#zerotestnumerictestsolution-fn] Suggested from https://github.com/sympy/sympy/issues/10279
 
-    .. [#constantproblemwikilink-fn] https://en.wikipedia.org/wiki/Constant_problem
+    * [#constantproblemwikilink-fn] https://en.wikipedia.org/wiki/Constant_problem
 
-    .. [#mathematicazero-fn] How mathematica tests zero https://reference.wolfram.com/language/ref/PossibleZeroQ.html
+    * [#mathematicazero-fn] How mathematica tests zero https://reference.wolfram.com/language/ref/PossibleZeroQ.html
 
-    .. [#matlabzero-fn] How matlab tests zero https://web.archive.org/web/20200307091449/https://www.mathworks.com/help/symbolic/mupad_ref/iszero.html
+    * [#matlabzero-fn] How matlab tests zero https://web.archive.org/web/20200307091449/https://www.mathworks.com/help/symbolic/mupad_ref/iszero.html
 
-    .. [#sympyissues-fn] https://github.com/sympy/sympy/issues
+    * [#sympyissues-fn] https://github.com/sympy/sympy/issues

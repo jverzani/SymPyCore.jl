@@ -2,7 +2,10 @@ Advanced Expression Manipulation
 ==================================
 
 ```@setup Julia
-using SymPy #PythonCall
+using SymPyPythonCall
+Introspection = SymPyPythonCall.Introspection # while using SymPy
+↓(x) = SymPyPythonCall.PyCall.PyObject(x)     # while using SymPy
+𝑆 = sympy.S
 ```
 
 In this section, we discuss some ways that we can perform advanced
@@ -19,9 +22,12 @@ expression looks like internally by using `srepr`
 
 !!! tip "Julia differences"
 
-    XXX
+    The `srepr` function needs qualification
 
 ```@repl Julia
+@syms x, y, z
+expr = x^2 + x*y
+sympy.srepr(expr)
 ```
 
 ----
@@ -49,10 +55,7 @@ tree:
 
 !!! tip "Julia differences"
 
-    XXX
-
-```@repl Julia
-```
+    The diagram is not presented here
 
 ----
 
@@ -109,11 +112,8 @@ tree:
 First, let's look at the leaves of this tree.  Symbols are instances of the
 class Symbol.  While we have been doing
 
-!!! tip "Julia differences"
-
-    XXX
-
 ```@repl Julia
+@syms x
 ```
 
 ----
@@ -133,11 +133,9 @@ class Symbol.  While we have been doing
 
 we could have also done
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+x = symbols("x")
 ```
 
 ----
@@ -155,7 +153,7 @@ we could have also done
 ----
 
 
-Either way, we get a Symbol with the name "x" [#symbols-fn]_.  For the number in the
+Either way, we get a Symbol with the name "`x`".  For the number in the
 expression, 2, we got `Integer(2)`.  `Integer` is the SymPy class for
 integers.  It is similar to the Python built-in type `int`, except that
 `Integer` plays nicely with other SymPy types.
@@ -163,11 +161,9 @@ integers.  It is similar to the Python built-in type `int`, except that
 When we write `x**2`, this creates a `Pow` object.  `Pow` is short for
 "power".
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+sympy.srepr(x^2)
 ```
 
 ----
@@ -188,11 +184,9 @@ When we write `x**2`, this creates a `Pow` object.  `Pow` is short for
 
 We could have created the same object by calling `Pow(x, 2)`
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+sympy.Pow(x, 2)
 ```
 
 ----
@@ -219,9 +213,11 @@ function that does this is `sympify` [#sympify-fn]_.
 
 !!! tip "Julia differences"
 
-    XXX
+    Using `Sym(2)` is more idiomatic. It uses `sympify`, though a more perfomant means would be to create a Python object (which differs between `PyCall` (`PyObect(2)`) and `PythonCall` (`Py(2)`)) and call `Sym` on that.
+
 
 ```@repl Julia
+sympify(2)
 ```
 
 ----
@@ -246,11 +242,9 @@ We have seen that `x**2` is represented as `Pow(x, 2)`.  What about
 `x*y`?  As we might expect, this is the multiplication of `x` and `y`.
 The SymPy class for multiplication is `Mul`.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+sympy.srepr(x * y)
 ```
 
 ----
@@ -271,11 +265,9 @@ The SymPy class for multiplication is `Mul`.
 
 Thus, we could have created the same object by writing `Mul(x, y)`.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+sympy.Mul(x, y)
 ```
 
 ----
@@ -299,11 +291,9 @@ our last two objects, `Pow(x, 2)`, and `Mul(x, y)`.  The SymPy class for
 addition is `Add`, so, as you might expect, to create this object, we use
 `Add(Pow(x, 2), Mul(x, y))`.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+sympy.Add(sympy.Pow(x, 2), sympy.Mul(x, y))
 ```
 
 ----
@@ -325,11 +315,10 @@ addition is `Add`, so, as you might expect, to create this object, we use
 SymPy expression trees can have many branches, and can be quite deep or quite
 broad.  Here is a more complicated example
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+expr = sin(x*2)/2 - x^2 + 1/y
+sympy.srepr(expr)
 ```
 
 ----
@@ -354,10 +343,7 @@ Here is a diagram
 
 !!! tip "Julia differences"
 
-    XXX
-
-```@repl Julia
-```
+    This is not present in this translation
 
 ----
 
@@ -429,11 +415,9 @@ One level up, we see we have `Mul(-1, Pow(x, 2))`.  There is no subtraction
 class in SymPy.  `x - y` is represented as `x + -y`, or, more completely,
 `x + -1*y`, i.e., `Add(x, Mul(-1, y))`.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+sympy.srepr(x - y)
 ```
 
 ----
@@ -452,12 +436,6 @@ class in SymPy.  `x - y` is represented as `x + -y`, or, more completely,
 ----
 
 
-!!! tip "Julia differences"
-
-    XXX
-
-```@repl Julia
-```
 
 ----
 
@@ -507,11 +485,10 @@ division is represented by a power of -1.  Hence, we have `Pow(y, -1)`.
 What if we had divided something other than 1 by `y`, like `x/y`?  Let's
 see.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+expr = x / y
+sympy.srepr(expr)
 ```
 
 ----
@@ -531,12 +508,6 @@ see.
 ----
 
 
-!!! tip "Julia differences"
-
-    XXX
-
-```@repl Julia
-```
 
 ----
 
@@ -594,11 +565,8 @@ expression and the order that it came out from `srepr` or in the graph were
 different.  You may have also noticed this phenomenon earlier in the
 tutorial.  For example
 
-!!! tip "Julia differences"
-
-    XXX
-
 ```@repl Julia
+1 + x
 ```
 
 ----
@@ -658,9 +626,11 @@ as the one used to create it.  For example
 
 !!! tip "Julia differences"
 
-    XXX
+    The `Introspection.func` methods (and others) allows a more `Julia`n calling style
 
 ```@repl Julia
+expr = sympy.Add(x,x)
+Introspection.func(expr)
 ```
 
 ----
@@ -683,11 +653,9 @@ as the one used to create it.  For example
 We created `Add(x, x)`, so we might expect `expr.func` to be `Add`, but
 instead we got `Mul`.  Why is that?  Let's take a closer look at `expr`.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+expr
 ```
 
 ----
@@ -711,14 +679,12 @@ x)`, i.e., `2*x`, which is a `Mul`.   SymPy classes make heavy use of the
 `__new__` class constructor, which, unlike `__init__`, allows a different
 class to be returned from the constructor.
 
-Second, some classes are special-cased, usually for efficiency reasons
-[#singleton-fn]_.
-
-!!! tip "Julia differences"
-
-    XXX
+Second, some classes are special-cased, usually for efficiency reasons.
 
 ```@repl Julia
+Introspection.func(Sym(2))
+Introspection.func(Sym(0))
+Introspection.func(Sym(-1))
 ```
 
 ----
@@ -753,9 +719,12 @@ args
 
 !!! tip "Julia differences"
 
-    XXX
+    Again, `Introspection` allows a more `Julia`n means to call this object method. Unlike `func`, `args` returns `Sym` values. In the example below, they are converted to underling Python values.
 
 ```@repl Julia
+expr = 3 * y^2* x
+Introspection.func(expr)
+Introspection.args(expr)
 ```
 
 ----
@@ -783,9 +752,11 @@ that we can completely reconstruct `expr` from its `func` and its
 
 !!! tip "Julia differences"
 
-    XXX
+    Actually, what is created is the Python value, which if swrapped in `Sym` becoes the original value. Note the use of `\downarrow[tab]` to pass the Python values to the output of `func`.
 
 ```@repl Julia
+u = Introspection.func(expr)(↓(Introspection.args(expr))...)
+↓(expr) == u
 ```
 
 ----
@@ -811,11 +782,10 @@ In a `Mul`, the Rational coefficient will come first in the `args`, but
 other than that, the order of everything else follows no special pattern.  To
 be sure, though, there is an order.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+expr = y^2 * 3*x
+Introspection.args(expr)
 ```
 
 ----
@@ -845,9 +815,10 @@ the third slot of `expr.args`, i.e., `expr.args[2]`.
 
 !!! tip "Julia differences"
 
-    XXX
+    `Julia` is `1` based, not `0` based like `Python`, so the index is `3`
 
 ```@repl Julia
+Introspection.args(expr)[3]
 ```
 
 ----
@@ -868,11 +839,9 @@ the third slot of `expr.args`, i.e., `expr.args[2]`.
 
 So to get the `args` of this, we call `expr.args[2].args`.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+Introspection.args(Introspection.args(expr)[3])
 ```
 
 ----
@@ -894,11 +863,10 @@ So to get the `args` of this, we call `expr.args[2].args`.
 Now what if we try to go deeper.  What are the args of `y`.  Or `2`.
 Let's see.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+Introspection.args(y)
+Introspection.args(Sym(2))
 ```
 
 ----
@@ -948,11 +916,14 @@ tree.  The nested nature of `args` is a perfect fit for recursive functions.
 The base case will be empty `args`.  Let's write a simple function that goes
 through an expression and prints all the `args` at each level.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+function pre(expr)
+   println(expr)
+   for arg in Introspection.args(expr)
+       pre(arg)
+   end
+end
 ```
 
 ----
@@ -979,11 +950,10 @@ automatically by the for loop.
 
 Let's test our function.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+expr = x*y + 1
+pre(expr)
 ```
 
 ----
@@ -1015,11 +985,9 @@ Such traversals are so common in SymPy that the generator functions
 `preorder_traversal` and `postorder_traversal` are provided to make such
 traversals easy.  We could have also written our algorithm as
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+collect(sympy.preorder_traversal(expr))
 ```
 
 ----
@@ -1053,11 +1021,11 @@ an evaluation stopper by wrapping the expression with `UnevaluatedExpr`.
 
 For example:
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+x + x
+sympy.Add(x, x)
+sympy.Add(x, x, evaluate=false)
 ```
 
 ----
@@ -1086,11 +1054,9 @@ If you don't remember the class corresponding to the expression you
 want to build (operator overloading usually assumes `evaluate=True`),
 just use `sympify` and pass a string:
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+sympify("x + x", evaluate = false)
 ```
 
 ----
@@ -1113,11 +1079,9 @@ just use `sympify` and pass a string:
 Note that `evaluate=False` won't prevent future evaluation in later
 usages of the expression:
 
-!!! tip "Julia differences"
-
-    XXX
-
 ```@repl Julia
+expr = sympy.Add(x, x, evaluate = false)
+expr + x
 ```
 
 ----
@@ -1145,11 +1109,9 @@ an expression unevaluated. By *unevaluated* it is meant that the value
 inside of it will not interact with the expressions outside of it to give
 simplified outputs. For example:
 
-!!! tip "Julia differences"
-
-    XXX
-
 ```@repl Julia
+expr = x + sympy.UnevaluatedExpr(x)
+x + expr
 ```
 
 ----
@@ -1177,9 +1139,10 @@ To release it:
 
 !!! tip "Julia differences"
 
-    XXX
+    the `doit` object method finds many other uses.
 
 ```@repl Julia
+ (x + expr).doit()
 ```
 
 ----
@@ -1202,9 +1165,11 @@ Other examples:
 
 !!! tip "Julia differences"
 
-    XXX
+    The `S` module of Python, is not available as `sympy.S`. Rather, we export it through `𝑆`
 
 ```@repl Julia
+sympy.UnevaluatedExpr(𝑆.One * 5 /7) * sympy.UnevaluatedExpr(𝑆.One * 3 / 4)
+x * sympy.UnevaluatedExpr(1/x)
 ```
 
 ----
@@ -1231,11 +1196,10 @@ Other examples:
 A point to be noted is that  `UnevaluatedExpr` cannot prevent the
 evaluation of an expression which is given as argument. For example:
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+expr1 = sympy.UnevaluatedExpr(x + x)
+expr2 = sympify("x + x", evaluate=false)
 ```
 
 ----
@@ -1262,11 +1226,9 @@ Remember that `expr2` will be evaluated if included into another
 expression. Combine both of the methods to prevent both inside and outside
 evaluations:
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+sympy.UnevaluatedExpr(sympify("x + x", evaluate=false)) + y
 ```
 
 ----
@@ -1288,11 +1250,10 @@ evaluations:
 `UnevaluatedExpr` is supported by SymPy printers and can be used to print the
 result in different output forms. For example
 
-!!! tip "Julia differences"
-
-    XXX
-
 ```@repl Julia
+using Latexify
+uexpr = sympy.UnevaluatedExpr(𝑆.One * 5 /7) * sympy.UnevaluatedExpr(𝑆.One * 3 / 4)
+latexify(uexpr)
 ```
 
 ----
@@ -1316,11 +1277,9 @@ result in different output forms. For example
 In order to release the expression and get the evaluated LaTeX form,
 just use `.doit()`:
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+latexify(uexpr.doit())
 ```
 
 ----
@@ -1342,10 +1301,12 @@ just use `.doit()`:
 
 !!! note "Footnotes"
 
-    & We have been using `symbols` instead of `Symbol` because it
-    automatically splits apart strings into multiple `Symbol`\ s.
-  ` * symbols('x y z')` returns a tuple of three `Symbol`\ s.  `Symbol('x y z')` returns a single `Symbol` called `x y z`.
-    * Technically, it is an internal function called `_sympify`,  which differs from `sympify` in that it does not convert strings.  `x +  '2'` is not allowed.
+    * We have been using `symbols` instead of `Symbol` because it
+    automatically splits apart strings into multiple `Symbol`s.
+  ` * symbols('x y z')` returns a tuple of three `Symbol` s.  `Symbol('x y z')`
+    returns a single `Symbol` called `x y z`.
+    * Technically, it is an internal function called `_sympify`,  which differs from `sympify`
+	in that it does not convert strings.  `x +  '2'` is not allowed.
     * Classes like `One` and `Zero` are singletonized, meaning that only one object is ever created,
 	no matter how many times the class is called.  This is done for space efficiency,
 	as these classes are very  common.  For example, `Zero` might occur very often in a sparse matrix

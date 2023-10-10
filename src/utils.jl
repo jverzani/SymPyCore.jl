@@ -41,7 +41,7 @@ Examples:
 ```jldoctest subs
 julia> using SymPy
 
-julia> x,y = symbols("x,y")
+julia> @syms x,y
 (x, y)
 
 julia> ex = (x-y)*(x+2y)
@@ -101,8 +101,11 @@ subs(d::Pair...; kwargs...)           = ex -> subs(ex, [(p.first, p.second) for 
 ## doit
 ##
 """
-`doit` evaluates objects that are not evaluated by default.
+    doit
 
+Evaluates objects that are not evaluated by default. Alias for object method.
+
+## Extended help
 Examples:
 
 ```jldoctest doit
@@ -165,11 +168,11 @@ doit(; deep::Bool=false)                                = ((ex::T) where {T<:Sym
 """
     simplify
 
-SymPy has dozens of functions to perform various kinds of simplification. There is also one general function called `simplify` that attempts to apply all of these functions in an intelligent way to arrive at the simplest form of an expression. (See [Simplification](https://docs.sympy.org/latest/tutorial/simplification.html) for details on `simplify` and other related functionality).
+SymPy has dozens of functions to perform various kinds of simplification. There is also one general function called `simplify` that attempts to apply all of these functions in an intelligent way to arrive at the simplest form of an expression. (See [Simplification](https://docs.sympy.org/latest/tutorial/simplification.html) for details on `simplify` and other related functionality). Other simplification functions are available through the `sympy` object.
 
 For non-symbolic expressions, `simplify` returns its first argument.
 """
-simplify(x,args...;kwargs...) = x
+simplify(x, args...;kwargs...) = x
 
 ##################################################
 ##
@@ -221,9 +224,10 @@ julia> free_symbols(2*x + a*y) # [a, x, y]
  y
 ```
 """
-function free_symbols(ex::Union{T, Vector{T}}) where {T<:SymbolicObject}
+function free_symbols(ex::Union{S, Vector{S}}) where {T,S<:SymbolicObject{T}}
+    !hasproperty(↓(ex), :free_symbols) && return Sym{T}[]
     fs = collect(↓(ex).free_symbols)
-    isempty(fs) && return Sym[]
+    isempty(fs) && return Sym{T}[]
     return Sym.(fs[sortperm(string.(fs))] )
 
 

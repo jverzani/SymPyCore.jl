@@ -2,18 +2,16 @@ Basic Operations
 ==================
 
 ```@setup Julia
-using SymPy #PythonCall
+using SymPyPythonCall
 ```
 
 Here we discuss some of the most basic operations needed for expression
 manipulation in SymPy.  Some more advanced operations will be discussed later
 in the [advanced expression manipulation](tutorial-manipulation) section.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+@syms x, y, z
 ```
 
 ----
@@ -42,9 +40,11 @@ For example
 
 !!! tip "Julia differences"
 
-    XXX
+    We can call `subs` using the `Julia`n notation of `subs(expr, ...)` rather than the object methoc syntax more common in Python, `expr.subs(...)`. Further, we can use "pairs" notation when calling `subs` in this manner.
 
 ```@repl Julia
+expr = cos(x) + 1
+subs(expr, x=>y)
 ```
 
 ----
@@ -71,9 +71,10 @@ Substitution is usually done for one of two reasons:
 
 !!! tip "Julia differences"
 
-    XXX
+    We can also use the object-method syntax.
 
 ```@repl Julia
+expr.subs(x,0)
 ```
 
 ----
@@ -99,11 +100,11 @@ Substitution is usually done for one of two reasons:
    would then get `x**(x**y)`.  If we replaced `y` in this new expression
    with `x**x`, we would get `x**(x**(x**x))`, the desired expression.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+expr = x^y
+expr = subs(expr, y => x^y)
+subs(expr, y => x^x)
 ```
 
 ----
@@ -141,9 +142,12 @@ Substitution is usually done for one of two reasons:
 
 !!! tip "Julia differences"
 
-    XXX
+    As `expand_trig` is not exposed, it is called as a function from the `sympy` module, using the dot notation to access underlying values in the module.
 
 ```@repl Julia
+expr = sin(2x) + cos(2x)
+sympy.expand_trig(expr)
+subs(expr, sin(2x) => 2*sin(x)* cos(x))
 ```
 
 ----
@@ -169,11 +173,11 @@ There are two important things to note about `subs`.  First, it returns a
 new expression.  SymPy objects are immutable.  That means that `subs` does
 not modify it in-place.  For example
 
-!!! tip "Julia differences"
-
-    XXX
-
 ```@repl Julia
+expr = cos(x)
+subs(expr, x=>0)
+expr
+x
 ```
 
 ----
@@ -197,9 +201,13 @@ not modify it in-place.  For example
 ----
 
 
-!! note "Quick Tip"
+!!! note "Quick Tip"
 
     SymPy expressions are immutable.  No function will change them in-place.
+
+!!! tip "Julia differences"
+
+    As with `Pytbon`, `SymPy` expressions are immutable.  No function will change them in-place.
 
 Here, we see that performing `expr.subs(x, 0)` leaves `expr` unchanged.
 In fact, since SymPy expressions are immutable, no function will change them
@@ -208,11 +216,10 @@ in-place.  All functions will return new expressions.
 To perform multiple substitutions at once, pass a list of `(old, new)` pairs
 to `subs`.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+expr = x^3 + 4x*y - z
+subs(expr, x=>2, y=>4, z=>0)
 ```
 
 ----
@@ -239,9 +246,12 @@ with `y`, to get `y^4 - 4x^3 + 4y^2 - 2x + 3`.
 
 !!! tip "Julia differences"
 
-    XXX
+    We use pairs notation, though tuples could also be used
 
 ```@repl Julia
+expr = x^4 - 4x^3 + 4x^2 - 2x + 3
+replacements = [x^i => y^i for i in 0:4 if iseven(i)]
+subs(expr, replacements...)
 ```
 
 ----
@@ -272,9 +282,12 @@ For example
 
 !!! tip "Julia differences"
 
-    XXX
+    We can't use `3x` (literal multiplication) as it isn't parsed correctly. We do not need to use a rational (e.g. `1//2`), as that is parsed as desired.
 
 ```@repl Julia
+str_expr = "x^3 + 3*x - 1/2"
+expr = sympify(str_expr)
+subs(expr, x=>2)
 ```
 
 ----
@@ -309,9 +322,11 @@ To evaluate a numerical expression into a floating point number, use
 
 !!! tip "Julia differences"
 
-    XXX
+    We need to wrap `8` in `Sym` otherwise, `sqrt` will dispatch to the base function in `Julia`. Also, we could use `N(expr)` to get a `Julia` value, as `evalf` returns a symbolic value.
 
 ```@repl Julia
+expr = sqrt(Sym(8))
+expr.evalf()
 ```
 
 ----
@@ -337,9 +352,10 @@ argument to `evalf`.  Let's compute the first 100 digits of `\pi`.
 
 !!! tip "Julia differences"
 
-    XXX
+    We use `PI` of `Sym(pi)` to express the symbolic value of ``\pi``.
 
 ```@repl Julia
+PI.evalf(100)
 ```
 
 ----
@@ -365,9 +381,11 @@ takes a dictionary of `Symbol: point` pairs.
 
 !!! tip "Julia differences"
 
-    XXX
+    A `Julia` `Dict` can be used when the underlying sympy method expects a Python dict.
 
 ```@repl Julia
+expr = cos(2x)
+expr.evalf(subs=Dict(x=>2.4))
 ```
 
 ----
@@ -393,9 +411,12 @@ user's discretion by setting the `chop` flag to True.
 
 !!! tip "Julia differences"
 
-    XXX
+	We don't use the reserved name `one`, as it is a base function name in `Julia`
 
 ```@repl Julia
+o = cos(Sym(1))^2 + sin(Sym(1))^2
+(o-1).evalf()
+(o - 1).evalf(chop=true)
 ```
 
 ----
@@ -434,9 +455,13 @@ the given numerical library, usually NumPy.  For example
 
 !!! tip "Julia differences"
 
-    XXX
+    The `lambdify` function does not use sympy's `lambdify` and has room for improvement, as compared to that in the `Symbolics` suite.
 
 ```@repl Julia
+a = 0:9
+expr = sin(x)
+fn = lambdify(expr)
+fn.(a)
 ```
 
 ----
@@ -468,9 +493,10 @@ library math module, use `"math"`.
 
 !!! tip "Julia differences"
 
-    XXX
+    The library option is not available though some function equivalences may be needed
 
 ```@repl Julia
+fn(0.1)
 ```
 
 ----
@@ -495,9 +521,10 @@ dictionary of `sympy_name:numerical_function` pairs.  For example
 
 !!! tip "Julia differences"
 
-    XXX
+	While passing in a map of function values is supported, creating an arbitray function is not. In `Symbolics` one can `@register` a function, this could be added.
 
 ```@repl Julia
+nothing
 ```
 
 ----

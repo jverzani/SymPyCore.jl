@@ -3,7 +3,9 @@ Introductory Tutorial
 
 !!! tip "Julia differences"
 
-    This is the [SymPy Tutorial](XXX) compiled using the `SymPyCore` package for `Julia` to
+    This is a translation of the
+	[SymPy Tutorial](https://docs.sympy.org/latest/tutorials/intro-tutorial/index.html)
+	using the `SymPyCore` package for `Julia` to
 	show the similarities and differences when calling into the Python package from `Julia`.
 	This version of the tutorial is not endorsed by any member of the SymPy project.
 	If its presence is believed to be inconsistent with the licensing of the original tutorial,
@@ -19,7 +21,7 @@ Introductory Tutorial
     * The macro `@syms` is primarily used to create symbolic variables and functions, not `symbols`.
     * Many sympy calls of the form `obj.method(args...)` are wrapped in the `Julian` style `method(obj, args...)`.
     * when methods are not wrapped, use `sympy.method` or `obj.method` as needed.
-	* The name method in `Julia` is used for specializations of *generic* methods. The package wraps numerous generic methods from Base `Julia` specialized on the first argument being symbolic. (E.g., for the ``\sin`` function a definition like the following is provided: `Base.sin(x::Sym) = sympy.sin(x)`.)
+	* The name method in `Julia` is used for specializations of *generic* functions. The package wraps numerous generic methods from Base `Julia` specialized on the first argument being symbolic. (E.g., for the ``\sin`` function a definition like the following is provided: `Base.sin(x::Sym) = sympy.sin(x)`.)
 	* method in sympy is used for an object method; A function like `sympy.method` is the underlying function from `SymPy`.)
 
 This tutorial aims to give an introduction to SymPy for someone who has not

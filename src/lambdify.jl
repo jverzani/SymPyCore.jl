@@ -14,7 +14,7 @@ is_symbolic(x::SymbolicObject) = true
 is_symbolic(x) = false
 
 """
-    funcname(x)
+    Introspection.funcname(x)
 
 Return name or ""
 """
@@ -28,19 +28,19 @@ function funcname(x::Sym, _sympy_=nothing)
 end
 
 """
-   func(x)
+   Introspection.func(x)
 
 Return function head from an expression
 
 [Invariant:](http://docs.sympy.org/dev/tutorial/manipulation.html)
 
 Every well-formed SymPy expression `ex` must either have `length(args(ex)) == 0` or
-`func(ex)(args(ex)...) = ex`.
+`func(ex)(↓(args(ex))...) = ex`.
 """
 func(ex::Sym, _sympy_=nothing) = return ↓(ex).func
 
 """
-    args(x)
+    Introspection.args(x)
 
 Return arguments of `x`, as a tuple. (Empty if no `:args` property.)
 """
@@ -77,7 +77,10 @@ end
 
 ## --------------------------------------------------
 # Methods for SymbolicUtils extension
-_istree(x::SymbolicObject) = !(↓(x).is_Atom)
+function _istree(x::SymbolicObject)
+    hasproperty(↓(x), "is_Atom") && !x.is_Atom
+    return false
+end
 
 function _operation(x::SymbolicObject)
     @assert _istree(x)
@@ -185,8 +188,11 @@ Base.convert(::Type{Expr}, x::SymbolicObject) = walk_expression(x)
 
 Convert a symbolic SymPy expression into a `Julia` expression. This is needed to use functions in external packages in lambdified functions.
 
+# Extended help
+
 ## Example
-```
+
+```julia
 using SymPy
 @syms x y
 ex = sympy.hyper((2,2),(3,3),x) * y
@@ -194,7 +200,7 @@ ex = sympy.hyper((2,2),(3,3),x) * y
 
 Calling `lambdify(ex)` will fail to make a valid function, as `hyper` is implemented in `HypergeometricFunctions.pFq`. So, we have:
 
-```
+```julia
 using HypergeometricFunctions
 d = Dict("hyper" => :pFq)
 body = SymPy.walk_expression(ex, fns=d)
@@ -210,7 +216,6 @@ function walk_expression(ex; values=Dict(), fns=Dict())
     vals_map = merge(val_map, values)
 
     fn = funcname(ex)
-
     # special case `F(t) = ...` output from ODE
     # this may be removed if it proves a bad idea....
     if fn == "Equality" && lhs(ex).is_Function
@@ -220,10 +225,10 @@ function walk_expression(ex; values=Dict(), fns=Dict())
     if fn == "Symbol" || fn == "Dummy" || fn == "IndexedBase"
         str_ex = string(ex)
         return get(vals_map, str_ex, Symbol(str_ex))
-    elseif fn in ["Integer" , "Float"]
+    elseif fn in ("Integer" , "Float")
         return N(ex)
     elseif fn == "Rational"
-        return convert(Int, numer(ex))//convert(Int, denom(ex))
+        return N(numerator(ex))// N(denominator(ex))
         ## piecewise requires special treatment
     elseif fn == "Piecewise"
         return _piecewise([walk_expression(cond, values=values, fns=fns) for cond in args(ex)]...)
@@ -298,15 +303,15 @@ julia> fn(1,2,3)
 13
 ```
 
-!!! Note:
+!!! note
 
-The default produces slower functions due to the calls to `eval` and
-`Base.invokelatest`.  In the following `g2` (which, as seen, requires
-additional work to compute) is as fast as calling `f` (on non symbolic
-types), whereas `g1` is an order of magnitude slower in this example.
+    The default produces slower functions due to the calls to `eval` and
+    `Base.invokelatest`.  In the following `g2` (which, as seen, requires
+    additional work to compute) is as fast as calling `f` (on non symbolic
+    types), whereas `g1` is an order of magnitude slower in this example.
 
-```
-julia> @vars x
+```julia
+julia> @syms x
 (x,)
 
 julia> f(x) = exp(cot(x))
@@ -326,7 +331,7 @@ g2 (generic function with 1 method)
 
 An alternative, say, is to use `GeneralizedGenerated`'s `mk_function`, as follows:
 
-```
+```julia
 julia> using GeneralizedGenerated
 
 julia> body = convert(Expr, f(x))
@@ -345,18 +350,21 @@ function  lambdify(ex::Sym, vars=free_symbols(ex);
               fns=Dict(), values=Dict(),
               use_julia_code=false,
               invoke_latest=true)
+
     if isempty(vars)
         # can't call N(ex) here...
         v = ex.evalf()
-        if v.is_real == True
-            val = convert(Real, v)
+        if v.is_real == Sym(true)
+            val = _convert(Real, ↓(v))
         else
-            val = Complex(convert(Real, real(v)), convert(Real, imag(v)))
+            val = Complex(convert(Real, ↓(real(v))), convert(Real, ↓(imag(v))))
         end
         return (ts...) -> val
     end
+
     body = convert_expr(ex, fns=fns, values=values, use_julia_code=use_julia_code)
     ex = expr_to_function(body, vars)
+
     if invoke_latest
         fn = eval(ex)
         return (args...) -> Base.invokelatest(fn, args...)
@@ -370,18 +378,14 @@ end
 function convert_expr(ex::Sym;
                       fns=Dict(), values=Dict(),
                       use_julia_code=false)
-    if use_julia_code
-        convert_expr_julia_code(ex)
-    else
-        body = walk_expression(ex, fns=fns, values=values)
-    end
-    body
+    _convert_expr(Val(use_julia_code), ex, fns=fns, values=values)
 end
 
-# XXX -- this uses `sympy` method. Not good!
-function convert_expr_julia_code(ex)
-    Meta.parse(sympy.julia_code(ex)) # issue here with 2.*...
+# _convert_expr(use_julia_code::Val(true}, ex; kwargs...) defined in sympy
+function _convert_expr(::Val{false}, ex::SymbolicObject; fns=Dict(), values=Dict())
+    walk_expression(ex; fns = fns, values=values)
 end
+
 
 # take an expression and arguments and return an Expr of a generic function
 function  expr_to_function(body, vars)
@@ -401,5 +405,3 @@ function lambdify(exs::Array{S, N}, vars = union(free_symbols.(exs)...); T::Data
 end
 
 Base.convert(::Type{Function}, ex::Sym) = lambdify(ex)
-
-export lambdify

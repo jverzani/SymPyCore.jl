@@ -2,7 +2,9 @@ Solvers
 =========
 
 ```@setup Julia
-using SymPy #PythonCall
+using SymPyPythonCall
+↓(x) = x.o; ↑(x) = Sym(x)
+𝑆 = sympy.S
 ```
 
 
@@ -11,11 +13,9 @@ using SymPy #PythonCall
     For a beginner-friendly guide focused on solving common types of equations,
     refer to [Solving](`solving-guide`)
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+@syms x, y, z
 ```
 
 ----
@@ -45,9 +45,10 @@ tutorial that symbolic equations in SymPy are not represented by `=` or
 
 !!! tip "Julia differences"
 
-    XXX
+    Or, using `~`
 
 ```@repl Julia
+x ~ y
 ```
 
 ----
@@ -72,11 +73,12 @@ However, there is an even easier way.  In SymPy, any expression not in an
 = b` if and only if `a - b = 0`, this means that instead of using `x == y`,
 you can just use `x - y`.  For example
 
-!!! tip "Julia differences"
 
-    XXX
 
 ```@repl Julia
+solveset(x^2 ~ 1, x)
+solveset(x^2 - 1 ~ 0, x)
+solveset(x^2 - 1, x)
 ```
 
 ----
@@ -118,11 +120,17 @@ However, it is recommended to use `solveset` instead.
 When solving a single equation, the output of `solveset` is a `FiniteSet` or
 an `Interval` or `ImageSet` of the solutions.
 
+
 !!! tip "Julia differences"
 
-    XXX
+    Finite sets are turned into Set containers in `Julia`. The exported `𝑆` objects mirrow `S` from Python
+
+
 
 ```@repl Julia
+solveset(x^2 - x, x)
+solveset(x - x, x, domain= 𝑆.Reals)
+solveset(sin(x) - 1, x, domain= 𝑆.Reals)
 ```
 
 ----
@@ -151,11 +159,9 @@ an `Interval` or `ImageSet` of the solutions.
 If there are no solutions, an `EmptySet` is returned and if it
 is not able to find solutions then a `ConditionSet` is returned.
 
-!!! tip "Julia differences"
-
-    XXX
-
 ```@repl Julia
+solveset(exp(x), x)
+solveset(cos(x) - x, x)
 ```
 
 ----
@@ -183,11 +189,8 @@ is an example of the syntax of `linsolve`.
 
 * List of Equations Form:
 
-!!! tip "Julia differences"
-
-    XXX
-
 ```@repl Julia
+linsolve([x + y + z - 1, x + y + 2*z - 3 ], (x, y, z))
 ```
 
 ----
@@ -210,9 +213,10 @@ is an example of the syntax of `linsolve`.
 
 !!! tip "Julia differences"
 
-    XXX
+    We paas in a symbolic matrix to `linsolve`
 
 ```@repl Julia
+linsolve(Sym[ 1 1 1 1; 1 1 2 3], (x, y, z))
 ```
 
 ----
@@ -233,11 +237,11 @@ is an example of the syntax of `linsolve`.
 
 * A*x = b Form
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+M = Sym[ 1 1 1 1; 1 1 2 3]
+system = A, b = M[:, 1:end-1], M[:, end]
+linsolve(system, x, y, z)
 ```
 
 ----
@@ -270,9 +274,12 @@ In the `solveset` module, the non linear system of equations is solved using
 
 !!! tip "Julia differences"
 
-    XXX
+    We pass in equations using a tuple, not a vector
 
 ```@repl Julia
+@syms a::real, b::real, c::real, d::real
+nonlinsolve( (a^2 + a, a - b), (a, b))
+nonlinsolve((x*y - 1, x - 2), x, y)
 ```
 
 ----
@@ -298,9 +305,10 @@ In the `solveset` module, the non linear system of equations is solved using
 
 !!! tip "Julia differences"
 
-    XXX
+    Again, we use tuples, not vectors
 
 ```@repl Julia
+nonlinsolve((x^2 + 1, y^2 + 1), (x, y))
 ```
 
 ----
@@ -321,11 +329,12 @@ In the `solveset` module, the non linear system of equations is solved using
 
 3. When both real and complex solution are present:
 
-!!! tip "Julia differences"
-
-    XXX
-
 ```@repl Julia
+system = (x^2 - 2*y^2 -2, x*y - 2)
+vars = (x, y)
+nonlinsolve(system, vars)
+system = (exp(x) - sin(y), 1/y - 3)
+nonlinsolve(system, vars)
 ```
 
 ----
@@ -353,11 +362,12 @@ In the `solveset` module, the non linear system of equations is solved using
 
 4. When the system is positive-dimensional system (has infinitely many solutions):
 
-!!! tip "Julia differences"
 
-    XXX
 
 ```@repl Julia
+nonlinsolve((x*y, x*y - x), (x, y))
+system = (a^2 + a*c, a - b)
+nonlinsolve(system, (a, b))
 ```
 
 ----
@@ -381,44 +391,50 @@ In the `solveset` module, the non linear system of equations is solved using
 
 
 
-!!! note
+Notes:
 
-    1. The order of solution corresponds the order of given symbols.
+1. The order of solution corresponds the order of given symbols.
 
-    2. Currently `nonlinsolve` doesn't return solution in form of `LambertW` (if there
-    is solution present in the form of `LambertW`).
+2. Currently `nonlinsolve` doesn't return solution in form of `LambertW` (if there
+is solution present in the form of `LambertW`).
 
-    `solve` can be used for such cases:
+`solve` can be used for such cases:
 
-    >>> solve([x**2 - y**2/exp(x)], [x, y], dict=True)
-    ⎡⎧         ____⎫  ⎧        ____⎫⎤
-    ⎢⎨        ╱  x ⎬  ⎨       ╱  x ⎬⎥
-    ⎣⎩y: -x⋅╲╱  ℯ  ⎭, ⎩y: x⋅╲╱  ℯ  ⎭⎦
-    >>> solve(x**2 - y**2/exp(x), x, dict=True)
-    ⎡⎧      ⎛-y ⎞⎫  ⎧      ⎛y⎞⎫⎤
-    ⎢⎨x: 2⋅W⎜───⎟⎬, ⎨x: 2⋅W⎜─⎟⎬⎥
-    ⎣⎩      ⎝ 2 ⎠⎭  ⎩      ⎝2⎠⎭⎦
+ ```
+ >>> solve([x**2 - y**2/exp(x)], [x, y], dict=True)
+⎡⎧         ____⎫  ⎧        ____⎫⎤
+⎢⎨        ╱  x ⎬  ⎨       ╱  x ⎬⎥
+⎣⎩y: -x⋅╲╱  ℯ  ⎭, ⎩y: x⋅╲╱  ℯ  ⎭⎦
+>>> solve(x**2 - y**2/exp(x), x, dict=True)
+⎡⎧      ⎛-y ⎞⎫  ⎧      ⎛y⎞⎫⎤
+⎢⎨x: 2⋅W⎜───⎟⎬, ⎨x: 2⋅W⎜─⎟⎬⎥
+⎣⎩      ⎝ 2 ⎠⎭  ⎩      ⎝2⎠⎭⎦
+```
 
-    3. Currently `nonlinsolve` is not properly capable of solving the system of equations
-    having trigonometric functions.
+3. Currently `nonlinsolve` is not properly capable of solving the system of equations
+having trigonometric functions.
 
-    `solve` can be used for such cases (but does not give all solution):
+`solve` can be used for such cases (but does not give all solution):
 
-    >>> solve([sin(x + y), cos(x - y)], [x, y])
-    ⎡⎛-3⋅π   3⋅π⎞  ⎛-π   π⎞  ⎛π  3⋅π⎞  ⎛3⋅π  π⎞⎤
-    ⎢⎜─────, ───⎟, ⎜───, ─⎟, ⎜─, ───⎟, ⎜───, ─⎟⎥
-    ⎣⎝  4     4 ⎠  ⎝ 4   4⎠  ⎝4   4 ⎠  ⎝ 4   4⎠⎦
+```
+>>> solve([sin(x + y), cos(x - y)], [x, y])
+⎡⎛-3⋅π   3⋅π⎞  ⎛-π   π⎞  ⎛π  3⋅π⎞  ⎛3⋅π  π⎞⎤
+⎢⎜─────, ───⎟, ⎜───, ─⎟, ⎜─, ───⎟, ⎜───, ─⎟⎥
+⎣⎝  4     4 ⎠  ⎝ 4   4⎠  ⎝4   4 ⎠  ⎝ 4   4⎠⎦
+```
 
-
+----
 
 `solveset` reports each solution only once.  To get the solutions of a
 polynomial including multiplicity use `roots`.
 
 !!! tip "Julia differences"
 
-    XXX
+    The `roots` function needs qualification
 
 ```@repl Julia
+solveset(x^3 - 6*x^2 + 9*x, x)
+sympy.roots(x^3 - 6*x^2 + 9*x, x)
 ```
 
 ----
@@ -442,13 +458,13 @@ polynomial including multiplicity use `roots`.
 The output `{0: 1, 3: 2}` of `roots` means that `0` is a root of
 multiplicity 1 and `3` is a root of multiplicity 2.
 
-!!! note
+Note:
 
-    Currently `solveset` is not capable of solving the following types of equations:
+Currently `solveset` is not capable of solving the following types of equations:
 
-    * Equations solvable by LambertW (Transcendental equation solver).
+* Equations solvable by LambertW (Transcendental equation solver).
 
-    `solve` can be used for such cases:
+`solve` can be used for such cases:
 
     >>> solve(x*exp(x) - 1, x )
     [W(1)]
@@ -462,9 +478,10 @@ function by passing `cls=Function` to the `symbols` function.
 
 !!! tip "Julia differences"
 
-    XXX
+    We can use `@syms` to define symbolic functions
 
 ```@repl Julia
+@syms f() g()
 ```
 
 ----
@@ -485,11 +502,8 @@ function by passing `cls=Function` to the `symbols` function.
 `f` and `g` are now undefined functions.  We can call `f(x)`, and it
 will represent an unknown function.
 
-!!! tip "Julia differences"
-
-    XXX
-
 ```@repl Julia
+f(x)
 ```
 
 ----
@@ -510,11 +524,8 @@ will represent an unknown function.
 
 Derivatives of `f(x)` are unevaluated.
 
-!!! tip "Julia differences"
-
-    XXX
-
 ```@repl Julia
+diff(f(x), x)
 ```
 
 ----
@@ -543,9 +554,11 @@ would thus use
 
 !!! tip "Julia differences"
 
-    XXX
+    We could use similar notation, as within Python, e.g., `f(x).diff(x)`, but we show the use of `Differential` which hides some repetition
 
 ```@repl Julia
+∂ = Differential(x)
+diffeq = ∂(∂(f(x))) - 2 * ∂(f(x)) + f(x) ~ sin(x)
 ```
 
 ----
@@ -571,11 +584,8 @@ would thus use
 
 To solve the ODE, pass it and the function to solve for to `dsolve`.
 
-!!! tip "Julia differences"
-
-    XXX
-
 ```@repl Julia
+dsolve(diffeq, f(x))
 ```
 
 ----
@@ -600,11 +610,9 @@ To solve the ODE, pass it and the function to solve for to `dsolve`.
 solutions to differential equations cannot be solved explicitly for the
 function.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+dsolve(∂(f) * (1 - sin(f(x))), f(x))
 ```
 
 ----
@@ -625,3 +633,8 @@ function.
 
 The arbitrary constants in the solutions from dsolve are symbols of the form
 `C1`, `C2`, `C3`, and so on.
+
+
+!!! tip "Julia differences"
+
+    The `ics` argument of `dsolve` allows a dictionary to be passed to specify initiial conditions.

@@ -4,17 +4,20 @@ Base.promote_rule(::Type{S}, ::Type{T})  where {S<:Irrational, T<:Sym}= T
 #Base.promote_rule(::Type{T}, ::Type{S})  where {T<:Sym, S<:Irrational}= T
 #Base.promote_rule(::Type{Sym}, ::Type{Bool}) = Sym
 Base.promote_rule(::Type{Bool}, ::Type{T}) where {T <: Sym} = T
+Base.promote_rule(::Type{Nothing}, ::Type{T}) where {T <: Sym} = T
+
 Base.convert(::Type{T}, o::Number) where {T <: Sym} = Sym(o)
+Base.convert(::Type{T}, o::Nothing) where {T <: Sym} = Sym(nothing)
 
 
 import Base: +, -, *, /, //, \, ^, inv
-+(x::Sym, y::Sym) = x.__add__(y)
-*(x::Sym, y::Sym)::Sym = x.__mul__(y)
--(x::Sym, y::Sym)::Sym = x.__sub__(y)
-(-)(x::Sym)::Sym       = x.__neg__()
-/(x::Sym, y::Sym)::Sym = x.__truediv__(y)
-^(x::Sym, y::Sym)::Sym = x.__pow__(y)
-^(x::Sym, y::Rational) = x^convert(Sym,y)
++(x::SymbolicObject, y::SymbolicObject) = x.__add__(y)
+*(x::SymbolicObject, y::SymbolicObject) = x.__mul__(y)
+-(x::SymbolicObject, y::SymbolicObject) = x.__sub__(y)
+(-)(x::SymbolicObject)::SymbolicObject       = x.__neg__()
+/(x::SymbolicObject, y::SymbolicObject) = x.__truediv__(y)
+^(x::SymbolicObject, y::SymbolicObject) = x.__pow__(y)
+^(x::SymbolicObject, y::Rational) = x^convert(Sym,y)
 #^(x::Sym, y::Integer) = x^convert(Sym,y) # no Union{Integer, Rational}, as that has ambiguity
 //(x::Sym, y::Int) = x / Sym(y)
 //(x::Sym, y::Rational) = x / Sym(y)

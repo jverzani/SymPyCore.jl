@@ -50,10 +50,7 @@ using Test
     ∂ = Differential(t)
     eq1 = ∂(x(t)) ~ x(t)*y(t)*sin(t)
     eq2 = ∂(y(t)) ~ y(t)^2*sin(t)
-#    eq1 = Eq(diff(x(t),t),x(t)*y(t)*sin(t))
-#    eq2 = Eq(diff(y(t),t),y(t)^2*sin(t))
-#    out = dsolve([eq1, eq2]) # vector -- deprecated
-    out = dsolve((eq1, eq2)) # tuple
+    out = dsolve((eq1, eq2)) # tuple of equations
 
 
 end

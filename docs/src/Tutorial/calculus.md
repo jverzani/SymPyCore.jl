@@ -6,8 +6,9 @@ integrals, limits, and series expansions in SymPy.  If you are not familiar
 with the math of any part of this section, you may safely skip it.
 
 ```@setup Julia
-using SymPy #PythonCall
+using SymPyPythonCall
 ```
+
 
 ```@repl Julia
 @syms x y z
@@ -719,7 +720,7 @@ absorb higher order terms.
 
 !!! tip "Julia differences"
 
-    `O` would need qualifying, but `sympy.O` isn't working!!
+    `O` needs qualifying
 
 ```@repl Julia
  x + x^3 + x^6 + sympy.O(x^4)
@@ -816,7 +817,7 @@ the `differentiate_finite` function:
 
 !!! tip "Julia differences"
 
-    This function needs qualifying.
+    The `differentiate_finite` function needs qualifying.
 
 ```@repl Julia
 @syms f(), g()
@@ -917,7 +918,7 @@ manually:
 
 ```@repl Julia
 arr = sympy.finite_diff_weights(2, [-3, -1, 2], 0)
-arr[end, end, 1:3]
+arr[end][end]
 ```
 
 ----

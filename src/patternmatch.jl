@@ -6,10 +6,7 @@
 
 create a "wild card" for pattern matching
 """
-Wild(x::AbstractString) = pycall(sympy.Wild, PyAny, x)
-Wild(x::Symbol) = Wild(string(x))
-export Wild
-
+Wild(x::Symbol) = Wild(string(x)) # Wild(::String) in syjmpy.jl
 
 """
     match(pattern, expression, ...)
@@ -51,19 +48,18 @@ Differences from SymPy:
 
 * "types" are specified via calling `func` on the head of an expression: `func(sin(x))` -> `sin`, or directly through `sympy.sin`
 
-* functions are supported, but only with `PyCall` commands.
-
+* functions are only supported by calling into the glue package.
 
 Examples (from the SymPy docs)
 
-```jldoctest replace
+```julia
 julia> using SymPy
 
-julia> x, y, z = symbols("x, y, z")
+julia> @syms x, y, z
 (x, y, z)
 
-julia> f = log(sin(x)) + tan(sin(x^2)); string(f) # `string(f)` only so doctest can run
-"log(sin(x)) + tan(sin(x^2))"
+julia> f = log(sin(x)) + tan(sin(x^2))
+log(sin(x)) + tan(sin(x^2))
 
 ```
 
@@ -71,34 +67,63 @@ julia> f = log(sin(x)) + tan(sin(x^2)); string(f) # `string(f)` only so doctest 
 
 Types are specified through `func`:
 
-```jldoctest replace
-julia> func = SymPy.Introspection.func
+```julia
+julia> func = Introspection.func
 func (generic function with 1 method)
 
-julia> replace(f, func(sin(x)), func(cos(x))) |> string  # type -> type
-"log(cos(x)) + tan(cos(x^2))"
+julia> replace(f, func(sin(x)), func(cos(x))) # type -> type
+log(cos(x)) + tan(cos(x^2))
+```
 
-julia> replace(f, sympy.sin, sympy.cos)  |>  string
-"log(cos(x)) + tan(cos(x^2))"
+The value `sympy.sin` does not work, as it is wrapped. Using `↓(sympy).sin` will work:
+```
+julia> replace(f, ↓(sympy).sin, ↓(sympy).cos)
+log(cos(x)) + tan(cos(x^2))
+```
 
-julia> sin(x).replace(sympy.sin, sympy.cos, map=true)
-(cos(x), Dict{Any, Any}(sin(x) => cos(x)))
+
+
+## "pattern" -> "expression"
+
+Using "`Wild`" variables allows a pattern to be replaced by an expression:
+
+```julia
+julia> a, b = Wild("a"), Wild("b")
+(a_, b_)
+
+julia> replace(f, sin(a), tan(2a))
+log(tan(2*x)) + tan(tan(2*x^2))
+
+julia> replace(f, sin(a), tan(a/2))
+log(tan(x/2)) + tan(tan(x^2/2))
+
+julia> f.replace(sin(a), a)
+log(x) + tan(x^2)
+
+julia> (x*y).replace(a*x, a)
+y
 
 ```
 
-The `func` function finds the head of an expression (`sin` and `cos` above). This could also have been written (perhaps more directly) as:
+In the SymPy docs we have:
 
-```jldoctest replace
-julia> replace(f, sympy.sin, sympy.cos) |> string
-"log(cos(x)) + tan(cos(x^2))"
+Matching is exact by default when more than one Wild symbol is used: matching fails unless the match gives non-zero values for all Wild symbols."
 
+```julia
+julia> replace(2x + y, a*x+b, b-a)  # y - 2
+y - 2
+
+julia> replace(2x + y, a*x+b, b-a, exact=false)  # y + 2/x
+    2
+y + ─
+    x
 ```
 
 ## "type" -> "function"
 
-To replace with a more complicated function, requires some assistance from `Python`, as an anonymous function must be defined witin Python, not `Julia`:
+To replace with a more complicated function, requires some assistance from `Python`, as an anonymous function must be defined witin Python, not `Julia`. This is how it might be done:
 
-```julia
+```
 julia> import PyCall
 
 julia> ## Anonymous function a -> sin(2a)
@@ -112,42 +137,6 @@ julia> ## Anonymous function a -> sin(2a)
 julia> replace(f, sympy.sin, PyCall.py"anonfn")
                    ⎛   ⎛   2⎞⎞
 log(sin(2⋅x)) + tan⎝sin⎝2⋅x ⎠⎠
-```
-
-## "pattern" -> "expression"
-
-Using "`Wild`" variables allows a pattern to be replaced by an expression:
-
-```jldoctest replace
-julia> a, b = Wild("a"), Wild("b")
-(a_, b_)
-
-julia> replace(f, sin(a), tan(2a)) |> string
-"log(tan(2*x)) + tan(tan(2*x^2))"
-
-julia> replace(f, sin(a), tan(a/2)) |> string
-"log(tan(x/2)) + tan(tan(x^2/2))"
-
-julia> f.replace(sin(a), a) |> string
-"log(x) + tan(x^2)"
-
-julia> (x*y).replace(a*x, a)
-y
-
-```
-
-In the SymPy docs we have:
-
-Matching is exact by default when more than one Wild symbol is used: matching fails unless the match gives non-zero values for all Wild symbols."
-
-```jldoctest replace
-julia> replace(2x + y, a*x+b, b-a)  # y - 2
-y - 2
-
-julia> replace(2x + y, a*x+b, b-a, exact=false)  # y + 2/x
-    2
-y + ─
-    x
 ```
 
 ## "pattern" -> "func"
@@ -198,7 +187,7 @@ julia> replace(x*(x*y + 1), PyCall.py"fn1", PyCall.py"fn2")
 """
 function Base.replace(ex::Sym, query::Sym, fn::Function; exact=true, kwargs...)
     ## XXX this is failing!
-    ex.replace(query, PyCall.PyObject((args...) ->fn(args...)); exact=exact, kwargs...)
+    ex.replace(query, ↓((args...) ->fn(args...)); exact=exact, kwargs...)
 end
 
 

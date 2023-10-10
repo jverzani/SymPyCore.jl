@@ -2,7 +2,7 @@ Introduction
 ==============
 
 ```@setup Julia
-using SymPy #PythonCall
+using SymPyPythonCall
 ```
 
 
@@ -19,9 +19,10 @@ compute square roots. We might do something like this
 
 !!! tip "Julia differences"
 
-    XXX
+    Julis has `sqrt` in base
 
 ```@repl Julia
+sqrt(9)
 ```
 
 ----
@@ -44,11 +45,9 @@ compute square roots. We might do something like this
 9 is a perfect square, so we got the exact answer, 3. But suppose we computed
 the square root of a number that isn't a perfect square
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+sqrt(8)
 ```
 
 ----
@@ -80,9 +79,10 @@ left unevaluated by default
 
 !!! tip "Julia differences"
 
-    XXX
+    We see two ways to do this, call the `sqrt` function from `sympy` *or* use the overloaded `sqrt` function for symbolic objects. The latter is more idiomatic.
 
 ```@repl Julia
+sympy.sqrt(3), sqrt(Sym(3))
 ```
 
 ----
@@ -105,11 +105,8 @@ left unevaluated by default
 Furthermore---and this is where we start to see the real power of symbolic
 computation---symbolic results can be symbolically simplified.
 
-!!! tip "Julia differences"
-
-    XXX
-
 ```@repl Julia
+sqrt(Sym(8))
 ```
 
 ----
@@ -146,9 +143,12 @@ Let us define a symbolic expression, representing the mathematical expression
 
 !!! tip "Julia differences"
 
-    XXX
+    While `symbols` may be used in the same manner as the `Python` code, the use of the `@syms` macro is used in this translation of the tutorial to `Julia`.
 
 ```@repl Julia
+@syms x, y
+expr = x + 2y
+
 ```
 
 ----
@@ -175,11 +175,10 @@ ordinary Python variables. But in this case, instead of evaluating to
 something, the expression remains as just `x + 2*y`.  Now let us play around
 with it:
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+expr + 1
+expr = x
 ```
 
 ----
@@ -206,11 +205,9 @@ automatically canceled one another.  This is similar to how `sqrt(8)`
 automatically turned into `2*sqrt(2)` above.  This isn't always the case in
 SymPy, however:
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+x * expr
 ```
 
 ----
@@ -239,9 +236,11 @@ In SymPy, there are functions to go from one form to the other
 
 !!! tip "Julia differences"
 
-    XXX
+    The `expand` and `factor` functions of SymPy are wrapped and exported. For non-exported functions from SymPy, the `sympy` module can be utilized.
 
 ```@repl Julia
+expanded_expr = expand(x * expr)
+factor(expanded_expr)
 ```
 
 ----
@@ -272,15 +271,12 @@ to do all sorts of computations symbolically.  SymPy can simplify expressions,
 compute derivatives, integrals, and limits, solve equations, work with
 matrices, and much, much more, and do it all symbolically.  It includes
 modules for plotting, printing (like 2D pretty printed output of math
-formulas, or `\mathrm{\LaTeX}`), code generation, physics, statistics, combinatorics,
+formulas, or ``\mathrm{\LaTeX}``), code generation, physics, statistics, combinatorics,
 number theory, geometry, logic, and more. Here is a small sampling of the sort
 of symbolic power SymPy is capable of, to whet your appetite.
 
-!!! tip "Julia differences"
-
-    XXX
-
 ```@repl Julia
+@syms x, t, z, nu
 ```
 
 ----
@@ -303,9 +299,10 @@ This will make all further examples pretty print with unicode characters.
 
 !!! tip "Julia differences"
 
-    XXX
+    The ASCII pretty printing is used by `show` by default
 
 ```@repl Julia
+nothing
 ```
 
 ----
@@ -325,11 +322,9 @@ This will make all further examples pretty print with unicode characters.
 
 Take the derivative of `\sin{(x)}e^x`.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+diff(sin(x) * exp(x), x)
 ```
 
 ----
@@ -351,11 +346,9 @@ Take the derivative of `\sin{(x)}e^x`.
 
 Compute `\int(e^x\sin{(x)} + e^x\cos{(x)})\,dx`.
 
-!!! tip "Julia differences"
-
-    XXX
 
 ```@repl Julia
+integrate(exp(x)*sin(x) + exp(x)*cos(x), x)
 ```
 
 ----
@@ -379,9 +372,10 @@ Compute ``\int_{-\infty}^\infty \sin{(x^2)}\,dx``.
 
 !!! tip "Julia differences"
 
-    XXX
+    The `oo` variable is exposed (along with `PI`, `E`, `IM`, `zoo`)
 
 ```@repl Julia
+integrate(sin(x^2), (x, -oo, oo))
 ```
 
 ----
@@ -406,9 +400,10 @@ Find ``\lim_{x\to 0}\frac{\sin{(x)}}{x}``.
 
 !!! tip "Julia differences"
 
-    XXX
+    The `limit` function is wrapped and exported. The wrapping is given an interface which accepts a pair
 
 ```@repl Julia
+limit(sin(x)/x, x => 0)
 ```
 
 ----
@@ -431,9 +426,11 @@ Solve ``x^2 - 2 = 0``.
 
 !!! tip "Julia differences"
 
-    XXX
+    The `solve` function is wrapped and exported, as it and `solveset` are workhorses.
+
 
 ```@repl Julia
+solve(x^2 - x, x)
 ```
 
 ----
@@ -456,9 +453,13 @@ Solve the differential equation ``y'' - y = e^t``.
 
 !!! tip "Julia differences"
 
-    XXX
+    In `Julia`, following the `Symbolics.jl` interface, We provide a the `Differential` function. It cleans up the calls to `diff` a bit, though using `diff` is an option.
 
 ```@repl Julia
+@syms t, y()
+D = Differential(t)
+D² = D∘D
+dsolve(D²(y(t)) - y(t) ~ exp(t), y(t))
 ```
 
 ----
@@ -485,9 +486,12 @@ Find the eigenvalues of
 
 !!! tip "Julia differences"
 
-    XXX
+    The package extends some generic function from the `LinearAlgebra` package
 
 ```@repl Julia
+using LinearAlgebra
+M = Sym[1 2; 2 2]
+eigvals(M)
 ```
 
 ----
@@ -513,9 +517,11 @@ spherical Bessel function ``j_\nu(z)``.
 
 !!! tip "Julia differences"
 
-    XXX
+    The package extends some generic function from the `SpecialFunctions` package. Special functions defined in `sympy` but not `SpecialFunctions`, such as several orthogonal polynomial related function can be qualified using the `sympy` module.
 
 ```@repl Julia
+using SpecialFunctions
+besselj(nu, z).rewrite("jn")
 ```
 
 ----
@@ -540,9 +546,12 @@ Print ``\int_{0}^{\pi} \cos^{2}{\left (x \right )}\, dx`` using ``\mathrm{\LaTeX
 
 !!! tip "Julia differences"
 
-    XXX
+    The `Latexify` package has a recipe for producing ``\LaTeX`` output. The `Integral` function below constructs an integral, but does not evaluate it. Either use `integrate` or the method `doit` to evaluate the integral.
 
 ```@repl Julia
+using Latexify
+out = sympy.Integral(cos(x)^2, (x, 0, PI))
+latexify(out)
 ```
 
 ----
@@ -601,3 +610,8 @@ if you wish to automate or extend them, it is difficult to do.  With SymPy,
 you can just as easily use it in an interactive Python environment or import
 it in your own Python application.  SymPy also provides APIs to make it easy
 to extend it with your own custom functions.
+
+
+!!! tip "Julia differences"
+
+    In `Juila` there are a few other choices for symbolic math, primarily `Symbolics.jl`, `SymEngine.jl`. `Symbolics.jl` is a `Julia` only solution. It is performant and widely used within the suite of `SciML` packages. The `SymEngine` package is much more limited in features, but extremely fast. Using SymPy may be slower, but the library has many more features available.
