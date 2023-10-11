@@ -607,19 +607,26 @@ solution over all the free variables:
 solve(p)
 ```
 
-The output of `solveset` in Python is always a set, which may be finite or not. Finite sets are converted to `Set`s in `Julia`. Infinite sets have no natural counterpart and are not realized. Rather, they can be queried, as with `contains(haystack, needle)`. For example:
+The output of `solveset` in Python is always a set, which may be finite or not. Finite sets are converted to `Set`s in `Julia`. Infinite sets have no natural counterpart and are not realized. Rather, they can be queried, as with "needle `in` haystack". For example:
 
 ```@repl introduction
 u = solveset(sin(x) ≧ 0)  # [\geqq] or with u  = solveset(Ge(sin(x), 0))
-contains(u, PI/2)
-contains(u, 3PI/2)
+PI/2 in u
+3PI/2 in u
 ```
 
 Infinite sets can have unions and intersections taken, but the SymPy methods must be called:
 
 ```@repl introduction
 v = solveset(cos(x) ≧ 0)
-contains.((u, v, u.intersect(v), u.union(v)), 3PI/4)
+[3PI/4 in A for A ∈ (u, v, intersect(u, v), union(u, v))]
+```
+
+Infinite sets can be filtered by intersecting them with an interval. For example,
+
+```@repl introduction
+u = solveset(sin(x) ~ 1//2, x)
+intersect(u, sympy.Interval(0, 2PI))  # a finite set after intersection
 ```
 
 ---

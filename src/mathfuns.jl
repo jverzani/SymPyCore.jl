@@ -169,25 +169,23 @@ Use `solve` to solve algebraic equations.
 
 Examples:
 
-```julia
-julia> using SymPy_PythonCall
+```jldoctest mathfuns
+julia> using SymPyPythonCall
+
 
 julia> @syms x y a b c d
 (x, y, a, b, c, d)
 
 julia> solve(x^2 + 2x + 1, x) # [-1]
-1-element Vector{Sym}:
+1-element Vector{Sym{PythonCall.Py}}:
  -1
 
 julia> solve(x^2 + 2a*x + a^2, x) # [-a]
-1-element Vector{Sym}:
+1-element Vector{Sym{PythonCall.Py}}:
  -a
 
-julia> solve([a*x + b*y-3, c*x + b*y - 1], [x,y]) # Dict(y => (a - 3*c)/(b*(a - c)),x => 2/(a - c))
-Dict{Any, Any} with 2 entries:
-  y => (a - 3*c)/(a*b - b*c)
-  x => 2/(a - c)
-
+julia> u = solve([a*x + b*y-3, c*x + b*y - 1], [x,y]); show(u[x])
+2/(a - c)
 ```
 
 !!! note
@@ -212,8 +210,8 @@ ics: The initial conditions are specified with a dictionary or `nothing`
 
 Example:
 
-```julia jldoctest dsolve
-julia> using SymPy
+```jldoctest dsolve
+julia> using SymPyPythonCall
 
 julia> @syms α, x, f(), g()
 (α, x, f, g)
@@ -221,26 +219,21 @@ julia> @syms α, x, f(), g()
 julia> ∂ = Differential(x)
 Differential(x)
 
-julia> eqn = ∂(f(x)) ~ α * x
-d
-──(f(x)) = x⋅α
-dx
+julia> eqn = ∂(f(x)) ~ α * x; show(eqn)
+Eq(Derivative(f(x), x), x*α)
 ```
 
-```julia
-julia> dsolve(eqn)
-             2
-            x ⋅α
-f(x) = C₁ + ────
-             2
+```jldoctest dsolve
+julia> dsolve(eqn) |> show
+Eq(f(x), C1 + x^2*α/2)
 ```
 
 ```julia jldoctest dsolve
 julia> dsolve(eqn(α=>2); ics=Dict(f(0)=>1))
-Eq(f(x), x^2 + 1)
+        2
+f(x) = x  + 1
 
-julia> eqn = ∂(∂(f(x))) ~ -f(x)
-Eq(Derivative(f(x), (x, 2)), -f(x))
+julia> eqn = ∂(∂(f(x))) ~ -f(x);
 
 julia> dsolve(eqn)
 f(x) = C₁⋅sin(x) + C₂⋅cos(x)
@@ -250,7 +243,7 @@ f(x) = -sin(x) + cos(x)
 
 julia> eqn = ∂(∂(f(x))) - f(x) - exp(x);
 
-julia> dsolve(eqn, ics=Dict(f(0) => 1, f(1) => Sym(1//2)))
+julia> dsolve(eqn, ics=Dict(f(0) => 1, f(1) => Sym(1//2))) |> show
 Eq(f(x), (x/2 + (-exp(2) - 2 + E)/(-2 + 2*exp(2)))*exp(x) + (-E + 3*exp(2))*exp(-x)/(-2 + 2*exp(2)))
 ```
 
@@ -267,12 +260,12 @@ Differential(t)
 julia> eqns = (∂(x(t)) ~ y(t), ∂(y(t)) ~ x(t));
 
 julia> dsolve(eqns)
-2-element Vector{Sym}:
+2-element Vector{Sym{PythonCall.Py}}:
  Eq(x(t), -C1*exp(-t) + C2*exp(t))
   Eq(y(t), C1*exp(-t) + C2*exp(t))
 
 julia> dsolve(eqns, ics = Dict(x(0) => 1, y(0) => 2))
-2-element Vector{Sym}:
+2-element Vector{Sym{PythonCall.Py}}:
  Eq(x(t), 3*exp(t)/2 - exp(-t)/2)
  Eq(y(t), 3*exp(t)/2 + exp(-t)/2)
 
@@ -280,27 +273,21 @@ julia> eqns = (∂(∂(x(t))) ~ 0, ∂(∂(y(t))) ~ -g)
 (Eq(Derivative(x(t), (t, 2)), 0), Eq(Derivative(y(t), (t, 2)), -g))
 
 julia> dsolve(eqns)  # can't solve for initial conditions though! (NotAlgebraic)
-2-element Vector{Sym}:
+2-element Vector{Sym{PythonCall.Py}}:
            x(t) = C₁ + C₂⋅t
  Eq(y(t), C3 + C4*t - g*t^2/2)
 
 julia> @syms t x() y()
 (t, x, y)
 
-julia> eq = (∂(x)(t) ~ x(t)*y(t)*sin(t), ∂(y)(t) ~ y(t)^2 * sin(t))
-(Eq(Derivative(x(t), t), x(t)*y(t)*sin(t)), Eq(Derivative(y(t), t), y(t)^2*sin(t)))
+julia> eq = (∂(x)(t) ~ x(t)*y(t)*sin(t), ∂(y)(t) ~ y(t)^2 * sin(t));
 ```
 
 ```julia
 julia> dsolve(eq)
-
-```
-
-```julia
-julia> dsolve(eq) |> collect
-2-element Vector{Any}:
- Eq(x(t), -exp(C1)/(C2*exp(C1) - cos(t)))
-               Eq(y(t), -1/(C1 - cos(t)))
+Set{Sym{PythonCall.Py}} with 2 elements:
+  Eq(x(t), -exp(C1)/(C2*exp(C1) - cos(t)))
+  Eq(y(t), -1/(C1 - cos(t)))
 ```
 
 """
@@ -317,89 +304,6 @@ Returns right (or left) side of an equation object. Wrappers around `eqn.rhs()` 
 """
 rhs, lhs
 
-## ----
-
-
-
-## ---- deprecate ----
-
-## used with ics=(u,0,1) style
-function _dsolve(eqn::Sym, args...; ics=nothing, kwargs...)
-
-    Base.depwarn("Use of tuple(s), `(u, x₀, u₀)`, to specify initial conditions is deprecated. Use a dictionary: `ics=Dict(u(x₀) => u₀)`.", :_dsolve)
-
-    if isempty(args)
-        var = first(free_symbols(eqn))
-    else
-        var = first(args)
-    end
-    # var might be f(x) or x, we want `x`
-    if Introspection.classname(var) != "Symbol"
-        var = first(var.args)
-    end
-    ## if we have one initial condition, can be passed in a (u,x0,y0) *or* ((u,x0,y0),)
-    ## if more than oneq a tuple of tuples
-    if eltype(ics) <: Tuple
-        __dsolve(eqn, var, ics; kwargs...)
-    else
-        __dsolve(eqn, var, (ics,); kwargs...)
-        end
-end
-
-function __dsolve(eqn::Sym, var::Sym, ics; kwargs...)
-    if length(ics) == 0
-        throw(ArgumentError("""Some initial value specification is needed.
-Specifying the function, as in `dsolve(ex, f(x))`, is deprecated.
-Use `sympy.dsolve(ex, f(x); kwargs...)` directly for that underlying interface.
-"""))
-    end
-
-    out = sympy.dsolve(eqn; kwargs...)
-    ord = sympy.ode_order(eqn, var)
-
-    ## `out` may be an array of solutions. If so we do each one.
-    ## we want to use an array for output only if needed
-    if !isa(out, Array)
-        return _solve_ivp(out, var, ics,ord)
-    else
-        output = Sym[]
-        for o in out
-            a = _solve_ivp(o, var, ics,ord)
-            a != nothing && push!(output, a)
-        end
-        return length(output) == 1 ? output[1] : output
-    end
-end
-
-## Helper.
-## out is an equation in var with constants. Args are intial conditions
-## Return `nothing` if initial condition is not satisfied (found by `solve`)
-function _solve_ivp(out, var, args, o)
-
-    eqns = Sym[(diff(out.rhs(), var, f.n))(var=>x0) - y0 for (f, x0, y0) in args]
-    sols = solve(eqns, Sym["C$i" for i in 1:o], dict=true)
-    if length(sols) == 0
-       return nothing
-    end
-
-    ## massage output
-    ## Might have more than one solution, though unlikely. But if we substitute a variable
-    ## for y0 we will get an array back from solve which may have length 1.
-    if isa(sols, Array)
-        if length(sols) == 1
-            sols = sols[1]
-        else
-            return [out([Pair(k,v) for (k,v) in sol]...) for sol in sols]
-        end
-    end
-
-    out([Pair(k,v) for (k,v) in sols]...)
-end
-
-## For System Of Ordinary Differential Equations
-## may need to collect return values
-# dsolve(eqs::Union{Array, Tuple}, args...; kwargs...) = sympy.dsolve(eqs, args...; kwargs...)
-
 
 ## --------------------------------------------------
 Permutation() = nothing
@@ -412,7 +316,9 @@ PermutationGroup() = nothing
 Give access to the `sympy.combinatorics.permutations` module
 
 ## Example
-```
+```jldoctest permutation
+julia> using SymPyPythonCall
+
 julia> p = Permutation([1,2,3,0])
 (0 1 2 3)
 
@@ -420,12 +326,12 @@ julia> p^2
 (0 2)(1 3)
 
 julia> p^2 * p^2
-(3)
+()
 ```
 
 Rubik's cube example from SymPy documentation
 
-```
+```jldoctest permutation
 julia> F = Permutation([(2, 19, 21, 8),(3, 17, 20, 10),(4, 6, 7, 5)])
 (2 19 21 8)(3 17 20 10)(4 6 7 5)
 
@@ -435,11 +341,7 @@ julia> R = Permutation([(1, 5, 21, 14),(3, 7, 23, 12),(8, 10, 11, 9)])
 julia> D = Permutation([(6, 18, 14, 10),(7, 19, 15, 11),(20, 22, 23, 21)])
 (6 18 14 10)(7 19 15 11)(20 22 23 21)
 
-julia> G = PermutationGroup(F,R,D)
-PermutationGroup([
-    (23)(2 19 21 8)(3 17 20 10)(4 6 7 5),
-    (1 5 21 14)(3 7 23 12)(8 10 11 9),
-    (6 18 14 10)(7 19 15 11)(20 22 23 21)])
+julia> G = PermutationGroup(F,R,D);
 
 julia> G.order()
 3674160

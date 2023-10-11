@@ -41,15 +41,16 @@ Examples:
 ```jldoctest subs
 julia> using SymPyPythonCall
 
+
+
 julia> @syms x,y
 (x, y)
 
 julia> ex = (x-y)*(x+2y)
 (x - y)⋅(x + 2⋅y)
 
-julia> subs(ex, (y, y^2))
-⎛     2⎞ ⎛       2⎞
-⎝x - y ⎠⋅⎝x + 2⋅y ⎠
+julia> subs(ex, (y, y^2)) |> show
+(x - y^2)*(x + 2*y^2)
 
 julia> subs(ex, (x,1), (y,2))
 -5
@@ -117,15 +118,11 @@ julia> @syms x f()
 julia> D = Differential(x)
 Differential(x)
 
-julia> df = D(f(x))
-d
-──(f(x))
-dx
+julia> df = D(f(x)); show(df)
+Derivative(f(x), x)
 
-julia> dfx = subs(df, (f(x), x^2))
-d ⎛ 2⎞
-──⎝x ⎠
-dx
+julia> dfx = subs(df, (f(x), x^2));  show(dfx)
+Derivative(x^2, x)
 
 julia> doit(dfx)
 2⋅x
@@ -137,15 +134,11 @@ Set `deep=true` to apply `doit` recursively to force evaluation of nested expres
 julia> @syms g()
 (g,)
 
-julia> dgfx = g(dfx)
- ⎛d ⎛ 2⎞⎞
-g⎜──⎝x ⎠⎟
- ⎝dx    ⎠
+julia> dgfx = g(dfx);  show(dgfx)
+g(Derivative(x^2, x))
 
-julia> doit(dgfx)
- ⎛d ⎛ 2⎞⎞
-g⎜──⎝x ⎠⎟
- ⎝dx    ⎠
+julia> doit(dgfx) |> show
+g(Derivative(x^2, x))
 
 julia> doit(dgfx, deep=true)
 g(2⋅x)
@@ -218,8 +211,14 @@ julia> @syms x y z a
 (x, y, z, a)
 
 julia> free_symbols(2*x + a*y) # [a, x, y]
-3-element Vector{Sym}:
+3-element Vector{Sym{PythonCall.Py}}:
  a
+ x
+ y
+
+
+julia> free_symbols([x^2, x^2 - 2x*y + y^2])
+2-element Vector{Sym{PythonCall.Py}}:
  x
  y
 ```

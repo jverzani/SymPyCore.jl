@@ -4,7 +4,7 @@
 """
     Wild(x)
 
-create a "wild card" for pattern matching
+Create a "wild card" for pattern matching
 """
 Wild(x::Symbol) = Wild(string(x)) # Wild(::String) in syjmpy.jl
 
@@ -52,13 +52,14 @@ Differences from SymPy:
 
 Examples (from the SymPy docs)
 
-```julia
-julia> using SymPy
+```jldoctest replace
+julia> using SymPyPythonCall
+
 
 julia> @syms x, y, z
 (x, y, z)
 
-julia> f = log(sin(x)) + tan(sin(x^2))
+julia> f = log(sin(x)) + tan(sin(x^2)); show(f)
 log(sin(x)) + tan(sin(x^2))
 
 ```
@@ -67,12 +68,13 @@ log(sin(x)) + tan(sin(x^2))
 
 Types are specified through `func`:
 
-```julia
+```jldoctest replace
 julia> func = Introspection.func
-func (generic function with 1 method)
+#399 (generic function with 1 method)
 
-julia> replace(f, func(sin(x)), func(cos(x))) # type -> type
+julia> replace(f, func(sin(x)), func(cos(x))) |> show # type -> type
 log(cos(x)) + tan(cos(x^2))
+
 ```
 
 The value `sympy.sin` does not work, as it is wrapped. Using `↓(sympy).sin` will work:
@@ -87,17 +89,17 @@ log(cos(x)) + tan(cos(x^2))
 
 Using "`Wild`" variables allows a pattern to be replaced by an expression:
 
-```julia
+```jldoctest replace
 julia> a, b = Wild("a"), Wild("b")
 (a_, b_)
 
-julia> replace(f, sin(a), tan(2a))
+julia> replace(f, sin(a), tan(2a)) |> show
 log(tan(2*x)) + tan(tan(2*x^2))
 
-julia> replace(f, sin(a), tan(a/2))
+julia> replace(f, sin(a), tan(a/2)) |> show
 log(tan(x/2)) + tan(tan(x^2/2))
 
-julia> f.replace(sin(a), a)
+julia> f.replace(sin(a), a) |> show
 log(x) + tan(x^2)
 
 julia> (x*y).replace(a*x, a)
@@ -109,21 +111,19 @@ In the SymPy docs we have:
 
 Matching is exact by default when more than one Wild symbol is used: matching fails unless the match gives non-zero values for all Wild symbols."
 
-```julia
+```jldoctest replace
 julia> replace(2x + y, a*x+b, b-a)  # y - 2
 y - 2
 
-julia> replace(2x + y, a*x+b, b-a, exact=false)  # y + 2/x
-    2
-y + ─
-    x
+julia> replace(2x + y, a*x+b, b-a, exact=false) |> show
+y + 2/x
 ```
 
 ## "type" -> "function"
 
 To replace with a more complicated function, requires some assistance from `Python`, as an anonymous function must be defined witin Python, not `Julia`. This is how it might be done:
 
-```
+```julia
 julia> import PyCall
 
 julia> ## Anonymous function a -> sin(2a)

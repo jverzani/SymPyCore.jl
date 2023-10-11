@@ -271,7 +271,7 @@ Take a symbolic expression and return a `Julia` function or expression to build 
 
 Example:
 
-```jldoctest
+```jldoctest lambdify
 julia> using SymPyPythonCall
 
 julia> @syms x y z
@@ -310,20 +310,16 @@ julia> fn(1,2,3)
     additional work to compute) is as fast as calling `f` (on non symbolic
     types), whereas `g1` is an order of magnitude slower in this example.
 
-```julia
+```julia lambdify
 julia> @syms x
 (x,)
 
 julia> f(x) = exp(cot(x))
 f (generic function with 1 method)
 
-julia> g1 = lambdify(f(x))
-#88 (generic function with 1 method)
+julia> g1 = lambdify(f(x));
 
-julia> ex = lambdify(f(x), invoke_latest=false)
-:(function var"##271"(x)
-      exp(cot(x))
-  end)
+julia> ex = lambdify(f(x), invoke_latest=false);
 
 julia> @eval g2(x) = (\$ex)(x)
 g2 (generic function with 1 method)

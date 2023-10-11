@@ -13,8 +13,6 @@ makedocs(
     pages = [
         "Home" => "index.md",
         "Introduction" => "introduction.md",
-        "Reference/API" => "reference.md",
-        "Example usage" => "examples.md",
         "SymPy Tutorial" => [
             "Home"             => "Tutorial/index.md",
             "Preliminaries"    => "Tutorial/preliminaries.md",
@@ -29,6 +27,7 @@ makedocs(
 #            "printing"         => "Tutorial/printing.md",
             "Next"             => "Tutorial/next.md"
         ],
+        "Reference/API" => "reference.md"
     ],
 
 )
