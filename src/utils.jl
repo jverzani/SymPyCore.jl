@@ -39,7 +39,7 @@ value.
 Examples:
 
 ```jldoctest subs
-julia> using SymPy
+julia> using SymPyPythonCall
 
 julia> @syms x,y
 (x, y)
@@ -109,7 +109,7 @@ Evaluates objects that are not evaluated by default. Alias for object method.
 Examples:
 
 ```jldoctest doit
-julia> using SymPy
+julia> using SymPyPythonCall
 
 julia> @syms x f()
 (x, f)
@@ -212,7 +212,7 @@ Return vector of free symbols of expression or vector of expressions. The result
 Example:
 
 ```jldoctest
-julia> using SymPy
+julia> using SymPyPythonCall
 
 julia> @syms x y z a
 (x, y, z, a)
@@ -224,21 +224,16 @@ julia> free_symbols(2*x + a*y) # [a, x, y]
  y
 ```
 """
-function free_symbols(ex::Union{S, Vector{S}}) where {T,S<:SymbolicObject{T}}
+function free_symbols(ex::S) where {T, S<:SymbolicObject{T}}
     !hasproperty(↓(ex), :free_symbols) && return Sym{T}[]
     fs = collect(↓(ex).free_symbols)
     isempty(fs) && return Sym{T}[]
     return Sym.(fs[sortperm(string.(fs))] )
+end
 
-
-
-    fs[sortperm(string.(fs))]   # some sorting order to rely on
-    pex = PyObject(ex)
-    #fs.__class__.__name__ == "set"
-    if PyCall.hasproperty(pex, :free_symbols)
-        fs = collect(Sym, pex.free_symbols)
-        fs[sortperm(string.(fs))]   # some sorting order to rely on
-    else
-        Sym[]
-    end
+function free_symbols(exs::Vector{S}) where {S<:SymbolicObject}
+    !hasproperty(↓(exs), :free_symbols) && return Sym{T}[]
+    fs = collect(↓(exs).free_symbols)
+    isempty(fs) && return eltype(exs)[]
+    return Sym.(fs[sortperm(string.(fs))] )
 end

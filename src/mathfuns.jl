@@ -22,6 +22,16 @@ function Base.Int(x::Sym)
     convert(Int, ↓(x.evalf()))
 end
 
+Base.complex(::Type{Sym}) = Sym
+Base.complex(r::Sym) = real(r) + imag(r) * im
+function Base.complex(r::Sym, i)
+    isreal(r) || throw(ArgumentError("r and i must not be complex"))
+    isreal(i) || throw(ArgumentError("r and i must not be complex"))
+    N(r) + N(i) * im
+end
+Base.complex(xs::AbstractArray{Sym}) = complex.(xs) # why is this in base?
+
+
 Base.:==(x::Sym{T}, y) where {T} = ==(promote(x, y)...)
 Base.:==(x, y::Sym{T}) where {T} = ==(promote(x, y)...)
 Base.isequal(x::T, y::T) where {T <: SymbolicObject} =
@@ -84,10 +94,10 @@ end
 
 Base.trunc(x::Sym) = x.is_Number != true ? x :
     (x.is_positive == true) ? floor(x) : ceil(x)
-Base.isfinite(x::Sym) = x.is_finite
-Base.isinf(x::Sym) = x.is_infinite
-Base.isinteger(x::Sym) = x.is_integer
-Base.isreal(x::Sym) = x.is_real
+Base.isfinite(x::Sym) = x.is_finite == true
+Base.isinf(x::Sym) = x.is_infinite == true
+Base.isinteger(x::Sym) = x.is_integer == true
+Base.isreal(x::Sym) = x.is_real == true
 Base.isnan(x::Sym) = x == Sym(NaN)
 Base.copysign(x::Sym, y::Sym) = abs(x)*sign(y)
 Base.flipsign(x::Sym, y) = isless(y, 0) ? -x : x
@@ -140,6 +150,10 @@ end
 Specify an equation.
 
 Alternative syntax to `Eq(lhs, rhs)` or `lhs ⩵ rhs` (`\\Equal[tab]`). Notation borrowed from `Symbolics.jl`.
+
+See [`rhs`](@ref) or `lhs` to extract the two sides.
+
+Inequalities may be defined using other functions imported from `CommonEq`.
 """
 Base.:~(lhs::Number, rhs::SymbolicObject) = Eq(lhs, rhs)
 Base.:~(lhs::SymbolicObject, rhs::Number) = Eq(lhs, rhs)
@@ -150,6 +164,8 @@ Base.:~(lhs::SymbolicObject, rhs::SymbolicObject) = Eq(lhs, rhs)
     solve
 
 Use `solve` to solve algebraic equations.
+
+# Extended help
 
 Examples:
 
@@ -181,18 +197,7 @@ Dict{Any, Any} with 2 entries:
     Use a tuple, not a vector, of equations when there is more than one.
 
 """
-solve() = ()
-
-
-"""
-    nonlinsolve
-
-!!! note "Systems"
-    Use a tuple, not a vector, of equations when there is more than one.
-
-"""
-nonlinsolve() = ()
-
+solve() = nothing
 
 ## dsolve allowing initial condiation to be specified
 
@@ -299,19 +304,18 @@ julia> dsolve(eq) |> collect
 ```
 
 """
-function dsolve(eqn, args...;
-                ics::Union{Nothing, AbstractDict, Tuple}=nothing,
-                kwargs...)
-    if isa(ics, Tuple) # legacy
-        _dsolve(eqn, args...; ics=ics, kwargs...)
-    else
-        sympy.dsolve(eqn, args...; ics=ics, kwargs...)
-    end
-end
+dsolve() = nothing
 
 rhs(x::SymbolicObject) = x.rhs()
 lhs(x::SymbolicObject) = x.lhs()
 
+"""
+    rhs(eqn)
+    lhs(eqn)
+
+Returns right (or left) side of an equation object. Wrappers around `eqn.rhs()` and `eqn.lhs()`.
+"""
+rhs, lhs
 
 ## ----
 
@@ -395,3 +399,50 @@ end
 ## For System Of Ordinary Differential Equations
 ## may need to collect return values
 # dsolve(eqs::Union{Array, Tuple}, args...; kwargs...) = sympy.dsolve(eqs, args...; kwargs...)
+
+
+## --------------------------------------------------
+Permutation() = nothing
+PermutationGroup() = nothing
+
+"""
+    Permutation
+    PermutationGroup
+
+Give access to the `sympy.combinatorics.permutations` module
+
+## Example
+```
+julia> p = Permutation([1,2,3,0])
+(0 1 2 3)
+
+julia> p^2
+(0 2)(1 3)
+
+julia> p^2 * p^2
+(3)
+```
+
+Rubik's cube example from SymPy documentation
+
+```
+julia> F = Permutation([(2, 19, 21, 8),(3, 17, 20, 10),(4, 6, 7, 5)])
+(2 19 21 8)(3 17 20 10)(4 6 7 5)
+
+julia> R = Permutation([(1, 5, 21, 14),(3, 7, 23, 12),(8, 10, 11, 9)])
+(1 5 21 14)(3 7 23 12)(8 10 11 9)
+
+julia> D = Permutation([(6, 18, 14, 10),(7, 19, 15, 11),(20, 22, 23, 21)])
+(6 18 14 10)(7 19 15 11)(20 22 23 21)
+
+julia> G = PermutationGroup(F,R,D)
+PermutationGroup([
+    (23)(2 19 21 8)(3 17 20 10)(4 6 7 5),
+    (1 5 21 14)(3 7 23 12)(8 10 11 9),
+    (6 18 14 10)(7 19 15 11)(20 22 23 21)])
+
+julia> G.order()
+3674160
+```
+"""
+Permutation, PermutationGroup

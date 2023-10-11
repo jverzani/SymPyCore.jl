@@ -39,8 +39,5 @@ Base.inv(x::Sym) = x.__pow__(Sym(-1))
 -(x::Sym, y::Bool)::Sym = x.__sub__(Int(y))
 /(x::Sym, y::Bool)::Sym = x.__truediv__(Int(y))
 ^(x::Sym, y::Bool)::Sym = x.__pow__(Int(y))
-function Base.convert(::Type{Bool}, x::Sym{T}) where {T}
-    x == Sym(true) && return true
-    x == Sym(false) && return false
-    return nothing
-end
+
+Base.convert(::Type{Bool}, x::Sym{T}) where {T} = _convert(Bool, ↓(x))

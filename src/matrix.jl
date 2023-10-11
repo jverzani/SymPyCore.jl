@@ -20,7 +20,7 @@ LinearAlgebra.qr(A::AbstractArray{Sym,2}) = ↑(↓(A).QRdecomposition())
 
 # solve Ax=b for x, avoiding generic `lu`, which can be very slow for bigger n values
 # fix suggested by @olof3 in issue 355
-function LinearAlgebra.:\(A::AbstractArray{Sym,2}, b::AbstractArray{S,1}) where {S}
+function LinearAlgebra.:(\)(A::AbstractArray{T,2}, b::AbstractArray{S,1}) where {S, T<:Sym}
     m,n  = size(A)
     x =  [Sym("x$i") for  i in 1:n]
     out = solve(A*x-b, x)
@@ -47,10 +47,6 @@ function LinearAlgebra.eigvals(A::AbstractMatrix{T}) where {T <: Sym}
     eigs = A.eigenvects()
     vcat((fill(λ, N(k)) for (λ,k,v) ∈ eigs)...)
 end
-
-LinearAlgebra.norm(x::AbstractVector{T}, args...; kwargs...) where {T <: SymbolicObject} =
-    ↑(getproperty(sympy.Matrix(Tuple(xᵢ for xᵢ ∈ x)), :norm)(↓(args)...; ↓ₖ(kwargs)...))
-
 
 ## Issue #359 so that A  +  λI is of type Sym
 Base.:+(A::AbstractMatrix{T}, J::UniformScaling) where {T <: SymbolicObject}    = _sym_plus_I(A,J)

@@ -28,30 +28,31 @@ Several functions are exported
 import SymPyCore: ↑, ↓, ↓ₖ
 import SymPyCore: SymbolicObject, Sym, SymFunction
 import SymPyCore: symbols, free_symbols
-import SymPyCore: solve
-import SymPyCore: subs, lambdify
-import SymPyCore: ask
+import SymPyCore: simplify, expand, together, apart, factor, cancel
+import SymPyCore: solve, dsolve, nsolve, linsolve, nonlinsolve, solveset
+import SymPyCore: subs, lambdify, simplify
+import SymPyCore: ask, doit
 import SymPyCore: N
-import SymPyCore: Differential, Wild
+import SymPyCore: limit, diff, integrate, Differential, Heaviside
 import SymPyCore: rhs, lhs
+import SymPyCore: Wild, Permutation, PermutationGroup
 #import SymPyCore: ∨, ∧, ¬  # infix logical operators
 
 # more exports defined in SymPyCore/src/gen_methods_sympy
 export Sym, SymFunction
 export sympy, PI, E, IM, oo, zoo, TRUE, FALSE
 export @syms, sympify, symbols, free_symbols
-export simplify, expand_trig, expand, together, apart, factor, cancel
+export simplify, expand, together, apart, factor, cancel
 export solve, dsolve, nsolve, linsolve, nonlinsolve, solveset
-export real_roots, roots, nroots
-export limit, integrate
-export degree, sign
-export series, summation, hessian
+export real_roots,  nroots # roots
+export sign #,degree
+export series, summation #, hessian
 export subs, lambdify
-export refine, ask
+export ask, doit # refine,
 export N
 export limit, diff, integrate, Differential, Heaviside
 export rhs, lhs
-export Wild, cse
+export Wild #, cse
 export Permutation, PermutationGroup
 #export ∨, ∧, ¬
 export 𝑄, 𝑆, Introspection
@@ -124,6 +125,7 @@ end
 core_src_path = joinpath(pathof(SymPyCore), "../../src/SymPy")
 include(joinpath(core_src_path, "constructors_sympy.jl"))
 include(joinpath(core_src_path, "gen_methods_sympy.jl"))
+include(joinpath(core_src_path, "additional_methods_sympy.jl"))
 include(joinpath(core_src_path, "show_sympy.jl"))
 
 
@@ -144,87 +146,3 @@ function SymPyCore.:↑(::Type{_PyType}, x)
 
     Sym(x)
 end
-
-
-# Mathfunctions that
-Base.log(x::Sym) = sympy.log(x) # generated method confuses two argument form
-Base.log(n::Number, x::Sym) = sympy.log(x, n) # Need to switch order here
-Base.log(n::Sym{T}, x::Sym{T}) where {T} = sympy.log(x, n) # Need to switch order here
-Base.log2(x::SymbolicObject)  = sympy.log(x, Sym(2)) # sympy.log has different order
-Base.log10(x::SymbolicObject) = sympy.log(x, Sym(10)) # sympy.log has different order
-Base.atan(x::Sym) = sympy.atan(x) # generated method confuses two argument form
-Base.atan(x::Sym, y) = sympy.atan2(x, y)
-Base.angle(z::Sym) = atan(imag(z), real(z))
-Base.binomial(a::Sym, b::Sym) = sympy.binomial(a, b)
-function limit(ex::Sym, xc::Pair; kwargs...) # allow pairs
-    sympy.limit(↓(ex), Sym(first(xc)), Sym(last(xc)); kwargs...)
-end
-Base.xor(x::Sym, y::Sym) = ↑(_sympy_.Xor(↓(x), ↓(y)))
-SpecialFunctions.beta(a::Sym, b::Sym) = sympy.beta(a,b)
-SpecialFunctions.besseli(n::Number, b::Sym) = sympy.besseli(n, b)
-SpecialFunctions.besselj(n::Number, b::Sym) = sympy.besselj(n, b)
-SpecialFunctions.besselk(n::Number, b::Sym) = sympy.besselk(n, b)
-SpecialFunctions.bessely(n::Number, b::Sym) = sympy.bessely(n, b)
-
-
-
-# lambdify using use_julia_code (`sympy` not available in `lambify.jl`)
-function SymPyCore._convert_expr(use_julia_code::Val{true}, ex; kwargs...)
-    Meta.parse(string(sympy.julia_code(ex)))
-end
-
-SymPyCore.Wild(x::AbstractString) = sympy.Wild(string(x))
-
-"""
-    Permutation
-    PermutationGroup
-
-Give access to the `sympy.combinatorics.permutations` module
-
-## Example
-```
-julia> p = Permutation([1,2,3,0])
-(0 1 2 3)
-
-julia> p^2
-(0 2)(1 3)
-
-julia> p^2 * p^2
-(3)
-```
-
-Rubik's cube example from SymPy documentation
-
-```
-julia> F = Permutation([(2, 19, 21, 8),(3, 17, 20, 10),(4, 6, 7, 5)])
-(2 19 21 8)(3 17 20 10)(4 6 7 5)
-
-julia> R = Permutation([(1, 5, 21, 14),(3, 7, 23, 12),(8, 10, 11, 9)])
-(1 5 21 14)(3 7 23 12)(8 10 11 9)
-
-julia> D = Permutation([(6, 18, 14, 10),(7, 19, 15, 11),(20, 22, 23, 21)])
-(6 18 14 10)(7 19 15 11)(20 22 23 21)
-
-julia> G = PermutationGroup(F,R,D)
-PermutationGroup([
-    (23)(2 19 21 8)(3 17 20 10)(4 6 7 5),
-    (1 5 21 14)(3 7 23 12)(8 10 11 9),
-    (6 18 14 10)(7 19 15 11)(20 22 23 21)])
-
-julia> G.order()
-3674160
-```
-"""
-function Permutation(x; kwargs...)
-    if typeof(x) <: UnitRange
-        x = collect(x)
-    end
-    # should do this _check_permutation_format(x)
-    # call this way to avoid ↓(x) call
-    Sym(_combinatorics_.permutations.Permutation(x; kwargs...))
-end
-PermutationGroup(args...; kwargs...) = combinatorics.PermutationGroup(args...; kwargs...)
-
-# Instrospection, assumptions use a struct to imitate old use of module; we pass in _sympy_
-const Introspection = SymPyCore.Introspection(_sympy_ = _sympy_) # introspection
-const 𝑄 = SymPyCore.𝑄(_sympy_=_sympy_)

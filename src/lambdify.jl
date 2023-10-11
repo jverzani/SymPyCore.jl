@@ -272,7 +272,7 @@ Take a symbolic expression and return a `Julia` function or expression to build 
 Example:
 
 ```jldoctest
-julia> using SymPy
+julia> using SymPyPythonCall
 
 julia> @syms x y z
 (x, y, z)

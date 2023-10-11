@@ -67,9 +67,9 @@ end
 
     # no signbit
 
-    @test copysign(x,y)(x=>1, y=>-2) == -2
-    @test copysign(Sym(1), Sym(-2)) == -1
-    @test copysign(Sym(-1), Sym(2)) == 1
+    @test copysign(x,y)(x=>1, y=>-2) == copysign(1, -2)
+    @test copysign(Sym(1), Sym(-2)) == copysign(1, -2)
+    @test copysign(Sym(-1), Sym(2)) == copysign(-1, 2)
 
     @test flipsign(x, y)(x=>5, y=>3) == 5
     @test flipsign(Sym(5), Sym(3)) == 5
@@ -405,7 +405,7 @@ end
     ## issue #408 with inv
     @syms n::(integer,positive)
     A = sympy.MatrixSymbol("A", n, n)
-    @test A.inv() == A.I ## XXX inv(A) == A.I
+    @test hash(A.inv()) == hash(A.I) ## XXX inv(A) == A.I
 
     # ceil broken
     @syms x

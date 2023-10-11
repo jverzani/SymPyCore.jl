@@ -76,7 +76,8 @@ function N(x)
     x.is_complex == Sym(true) && return complex(N(real(x)), N(imag(x)))
 
     try
-        lambdify(x)()
+        #lambdify(x)()
+        N(x.evalf())
     catch err
         @info "FAILED to find type for $x. Please report"
         x
