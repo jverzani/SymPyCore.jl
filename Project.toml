@@ -1,7 +1,7 @@
 name = "SymPyCore"
 uuid = "458b697b-88f0-4a86-b56b-78b75cfb3531"
 authors = ["jverzani <jverzani@gmail.com> and contributors"]
-version = "1.0.0-DEV"
+version = "0.1.0"
 
 [deps]
 CommonEq = "3709ef60-1bee-4518-9f2f-acd86f176c50"
@@ -14,6 +14,11 @@ SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 
 [compat]
 julia = "1"
+CommonEq = "0.2"
+CommonSolve = "0.2"
+Latexify = "0.15, 0.16"
+RecipesBase = "0.7, 0.8, 1.0, 1.1"
+SpecialFunctions = "0.8, 0.9, 0.10, 1.0, 2"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

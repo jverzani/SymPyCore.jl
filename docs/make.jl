@@ -8,7 +8,7 @@ makedocs(
     sitename = "SymPyCore",
     format = Documenter.HTML(),
     modules = [SymPyCore],
-    doctest = true, #false, # <-- problematic
+    doctest = true,
     warnonly = [:cross_references, :missing_docs], # <-- what can be relaxed
     pages = [
         "Home" => "index.md",
@@ -24,7 +24,7 @@ makedocs(
             "Matrices"         => "Tutorial/matrices.md",
             "Manipulation"     => "Tutorial/manipulation.md",
             "Gotchas"          => "Tutorial/gotchas.md",
-#            "printing"         => "Tutorial/printing.md",
+            "printing"         => "Tutorial/printing.md",
             "Next"             => "Tutorial/next.md"
         ],
         "Reference/API" => "reference.md"
@@ -38,6 +38,7 @@ makedocs(
 # Documenter can also automatically deploy documentation to gh-pages.
 # See "Hosting Documentation" and deploydocs() in the Documenter manual
 # for more information.
-#=deploydocs(
-    repo = "<repository url>"
-)=#
+
+deploydocs(
+    repo = "github.com/jverzani/SymPyCore.jl.git"
+)
