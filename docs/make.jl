@@ -8,7 +8,7 @@ makedocs(
     sitename = "SymPyCore",
     format = Documenter.HTML(),
     modules = [SymPyCore],
-    doctest = true,
+    doctest = false, # true once SymPyPythonCall brought on board
     warnonly = [:cross_references, :missing_docs], # <-- what can be relaxed
     pages = [
         "Home" => "index.md",
