@@ -29,8 +29,8 @@ function Base.:(==)(x::SymbolicObject, y::SymbolicObject)
 
     if hasproperty(↓(x), "is_Boolean") && convert(Bool, ↑(↓(x).is_Boolean))
         u = convert(Bool, x)
-        hasproperty(↓(y), "is_Boolean") || return false
-        v = convert(Bool, ↑(↓(y).is_Boolean))
+        hasproperty(↓(y), "is_Boolean") && convert(Bool, ↑(↓(y).is_Boolean)) || return false
+        v = convert(Bool, y)
         return u == v
     end
 
@@ -58,7 +58,9 @@ end
 
 Base.isless(x::S, y) where {T,S<:SymbolicObject{T}} = isless(promote(x,y)...)
 Base.isless(x, y::S) where {T, S<:SymbolicObject{T}} = isless(promote(x,y)...)
-function Base.isless(x::SymbolicObject{T}, y::SymbolicObject{T}) where {T}
+Base.isless(x::S, y::Missing) where {T,S<:SymbolicObject{T}} = true
+Base.isless(::Missing, y::S)  where {T,S<:SymbolicObject{T}} = false
+function Base.isless(x::S, y::S) where {T,S<:SymbolicObject{T}}
 
     (isnan(x) || isnan(y)) && return !isnan(x)
 
@@ -66,7 +68,15 @@ function Base.isless(x::SymbolicObject{T}, y::SymbolicObject{T}) where {T}
         return Lt(x, y) == Sym(true) ? true : false
     end
 
-    out = x.compare(y)
+    if hasproperty(↓(x), "compare")
+        out = x.compare(y)
+    elseif hasproperty(↓(y), "compare")
+        out = - (y.compare(x))
+    else
+        @show :huh, x, y
+        out = -1
+    end
+
     out == -1  ? true : false
 
 end

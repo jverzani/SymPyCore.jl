@@ -119,7 +119,36 @@ end
 end
 
 
-@testset "Core" begin
+@testset "Equality" begin
+    T,F, No, N,M = Sym(true), Sym(false), Sym(nothing), Sym(NaN), missing
+    @syms x y=>"x" z::real=>"x"
+
+
+    @test x == x
+    @test x == y
+    @test x != z
+    @test T == T
+    @test T == true
+    @test F == F
+    @test F == false
+    @test No == No
+    @test No == nothing
+    @test N != N
+    @test isequal(N, N)
+    @test isequal(oo, N) == isequal(Inf, NaN)
+    @test ismissing(N == M)
+    @test ismissing(M == M)
+    @test isequal(M, M)
+
+    a = (T,F,No,N,M,x,y,z)
+    for i ∈ 1:length(a)
+        for j ∈ (i+1):length(a)
+            u,v = a[i], a[j]
+            @test isless(u,v) + isequal(u,v) + isless(v,u) == 1
+        end
+    end
+
+
 
 end
 
