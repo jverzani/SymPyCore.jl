@@ -5,7 +5,7 @@ It has examples from the [Introductory Tutorial](https://docs.sympy.org/latest/t
 
 
 ```@setup introduction
-using SymPy_PythonCall
+using SymPyPythonCall
 ```
 
 ## Overview
@@ -24,6 +24,11 @@ In this document, we use `SymPy` to refer to either the `SymPy` or `SymPyPythonC
 
 * For commonly used object methods, a `Julia`n interface is defined. For `diff` a `diff(obj::Sym, ...)` method is defined. For `subs` a `subs(obj::Sym, ...)` interface is defined, and exported. As `subs` has paired-off values, specifying the substitution, the `Julia`n interface allows pairs notation (`a => b`) to be used.
 
+## The package
+
+Either the `SymPyPyCall` or `SymPyPythonCall` packages needs to be loaded, e.g., `using SymPyPyCall`. The two can't be used in the same session.
+
+When either is installed, the `SymPyCore` is installed; the underlying glue package (either `PyCall`, `PythonCall`) should be installed; and that glue package should install the `sympy` library of `Python`.
 
 ## Symbols
 
