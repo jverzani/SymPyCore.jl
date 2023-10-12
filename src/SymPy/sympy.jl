@@ -1,9 +1,9 @@
 ## Common code
 
 using LinearAlgebra
+import SpecialFunctions
 import CommonEq
 import CommonSolve
-import SpecialFunctions
 
 #=
 Several functions are exported
