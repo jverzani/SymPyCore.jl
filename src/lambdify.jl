@@ -1,6 +1,32 @@
 ## Work with symbolic expression tree including lambdify
 
 # to keep SymPy.Introspection alive
+Introspection_docs = md"""
+     Introspection
+
+Struct holding functins used to inspect an object
+
+* `Introspection.func`: Return pointer to Python function.
+* `Introspection.operation`: Return `Julia` generic function for given underlying function
+* `Introspection.funcname`: Returns name of function
+* `Introspection.args`: Returns arguments for expression or empty tuple
+* `Introspection.arguments`: Return arguments
+* `Introspection.istree`: Check if object is an expression (with operation and arguments) or not
+* `Introspection.class`: Returns `__class__` value
+* `Introspection.classname`: Returns `__class__` value as a string
+* `Introspection.similarterm`: Create a similar term
+
+[Invariant:](http://docs.sympy.org/dev/tutorial/manipulation.html)
+
+As `args` returns symbolic objects, this becomes:
+every well-formed SymPy expression `ex` must either have `length(args(ex)) == 0` or
+`func(ex)(↓(args(ex))...) = ex`.
+
+Using the methods designed for `SymbolicUtils` usage, this becomes
+every expression one of `!istree(ex)`  or `operation(ex)(args(ex)...) == ex` should hold.
+"""
+
+@doc Introspection_docs
 Base.@kwdef struct Introspection{T}
     _sympy_::T
     funcname::Function  = (x::Sym) -> SymPyCore.funcname(x, _sympy_)
@@ -8,6 +34,9 @@ Base.@kwdef struct Introspection{T}
     args::Function      = (x::Sym) -> SymPyCore.args(x, _sympy_)
     class::Function     = (x::Sym) -> SymPyCore.class(x, _sympy_)
     classname::Function = (x::Sym) -> SymPyCore.classname(x, _sympy_)
+    operation::Function = (x::Sym) -> SymPyCore._operation(x)
+    arguments::Function = (x::Sym) -> SymPyCore.args(x, _sympy_)
+    istree::Function    = (x::Sym) -> SymPyCore._istree(x)
 end
 
 is_symbolic(x::SymbolicObject) = true
@@ -27,23 +56,7 @@ function funcname(x::Sym, _sympy_=nothing)
     end
 end
 
-"""
-   Introspection.func(x)
-
-Return function head from an expression
-
-[Invariant:](http://docs.sympy.org/dev/tutorial/manipulation.html)
-
-Every well-formed SymPy expression `ex` must either have `length(args(ex)) == 0` or
-`func(ex)(↓(args(ex))...) = ex`.
-"""
 func(ex::Sym, _sympy_=nothing) = return ↓(ex).func
-
-"""
-    Introspection.args(x)
-
-Return arguments of `x`, as a tuple. (Empty if no `:args` property.)
-"""
 function args(x::Sym, _sympy_=nothing)
     y = ↓(x)
     if hasproperty(y, :args)
@@ -78,12 +91,12 @@ end
 ## --------------------------------------------------
 # Methods for SymbolicUtils extension
 function _istree(x::SymbolicObject)
-    hasproperty(↓(x), "is_Atom") && !x.is_Atom
+    hasproperty(↓(x), "is_Atom") && return !x.is_Atom
     return false
 end
 
 function _operation(x::SymbolicObject)
-    @assert _istree(x)
+    #@assert _istree(x)
     nm = funcname(x)
     λ = get(sympy_fn_julia_fn, nm, nothing)
     isnothing(λ) && return getfield(Main, Symbol(nm))

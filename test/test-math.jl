@@ -124,12 +124,12 @@ end
 
 @testset  "nan"  begin
     #  issue  346
-    a = sympy.nan
-    a′ = NaN
+    a = NaN
+    b = Sym(a)
 
-    @test (a < 0) == (a′ < 0)
-    @test (a > 0) == (a′ > 0)
-    @test (a == 0) == (a′ == 0)
+    @test (a < 0) == (b < 0)
+    @test (a > 0) == (b > 0)
+    @test (a == 0) == (b == 0)
 
 end
 

@@ -26,22 +26,29 @@ Base.:(==)(x::Missing, y::S) where {T, S<:SymbolicObject{T}} = missing
 function Base.:(==)(x::SymbolicObject, y::SymbolicObject)
 
     isnan(x) && isnan(y) && return false
+    a, b = convert(Bool3, x), convert(Bool3, y)
+    a == b == true  && return true
+    a == b == false && return true
 
-    if hasproperty(↓(x), "is_Boolean") && convert(Bool, ↑(↓(x).is_Boolean))
-        u = convert(Bool, x)
-        hasproperty(↓(y), "is_Boolean") && convert(Bool, ↑(↓(y).is_Boolean)) || return false
-        v = convert(Bool, y)
-        return u == v
+    if hasproperty(↓(x), "equals") && hasproperty(↓(y), "equals")
+        u = ↑(↓(x).equals(↓(y)))
+        v = convert(Bool3, u)
+        v == true && return true
+        v == false && return false
     end
-
-    if hasproperty(↓(x), "equals")
-        !hasproperty(↓(y), "equals") && return false
-        ↓(x).equals == ↓(y).equals || return false
-        u = x.equals(y)
-        return convert(Bool, u == Sym(true))
-    end
-
     return (hash(x) == hash(y))
+end
+
+# Bool3: used with ==; true, false or nothing
+struct Bool3 end
+function Base.convert(::Type{Bool3}, x::Sym{T}) where {T}
+    y = ↓(x)
+    if hasproperty(y, "is_Boolean")
+        _convert(Bool, y.is_Boolean) && return _convert(Bool, y)
+    elseif hasproperty(y, "__bool__")
+        _convert(Bool, y != ↓(Sym(nothing))) && return _convert(Bool, y)
+    end
+    return nothing
 end
 
 #=
@@ -78,5 +85,16 @@ function Base.isless(x::S, y::S) where {T,S<:SymbolicObject{T}}
     end
 
     out == -1  ? true : false
+
+end
+
+Base.:<(x::S, y) where {T,S<:SymbolicObject{T}} = <(promote(x,y)...)
+Base.:<(x, y::S) where {T, S<:SymbolicObject{T}} = <(promote(x,y)...)
+Base.:<(x::S, y::Missing) where {T,S<:SymbolicObject{T}} = missing
+Base.:<(::Missing, y::S)  where {T,S<:SymbolicObject{T}} = missing
+function Base.:<(x::S, y::S) where {T,S<:SymbolicObject{T}}
+
+    (isnan(x) || isnan(y)) && return false
+    isless(x, y)
 
 end

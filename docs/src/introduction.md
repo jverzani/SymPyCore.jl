@@ -10,7 +10,7 @@ using SymPyPythonCall
 
 ## Overview
 
-In this document, we use `SymPy` to refer to either the `SymPy` or `SymPyPythonCall` packages that interface `Julia` with SymPy from `Python` using `SymPyCore`. The only difference being the glue package for interop between `Julia` and `Python`.
+In this document, we use `SymPy` to refer to either the `SymPyPyCall` or `SymPyPythonCall` packages that interface `Julia` with SymPy from `Python` using `SymPyCore`. The only difference being the glue package for interop between `Julia` and `Python`. (It is planned that `SymPyPyCall` will be renamed `SymPy` when a breaking change is released for `SymPy`.)
 
 `SymPy` provides a `Julia`n interface to SymPy, a `Python` library for symbolic math, as alternative to working with `Python` objects directly using one of the glue packages. Some implementation details are:
 
@@ -28,7 +28,7 @@ In this document, we use `SymPy` to refer to either the `SymPy` or `SymPyPythonC
 
 Either the `SymPyPyCall` or `SymPyPythonCall` packages needs to be loaded, e.g., `using SymPyPyCall`. The two can't be used in the same session.
 
-When either is installed, the `SymPyCore` is installed; the underlying glue package (either `PyCall`, `PythonCall`) should be installed; and that glue package should install the `sympy` library of `Python`.
+When either is installed, the `SymPyCore` package is installed; the underlying glue package (either `PyCall`, `PythonCall`) should be installed; and that glue package should install the `sympy` library of `Python`.
 
 ## Symbols
 
@@ -46,6 +46,7 @@ x = Sym("x")
 
 This creates a symbolic object `x`, which can be manipulated through further function calls.
 
+### The `@syms` macro
 
 There is the `@syms` macro that makes creating multiple variables a
 bit less typing, as it creates variables in the local scope -- no
@@ -67,13 +68,15 @@ ys = [Sym("y$i") for i in 1:5]
 The former much more succinct, but the latter pattern of use when the number of terms is a variable.
 
 
-The `@syms` macro is recommended, and will be modeled in the following, as it makes the specification of assumptions and symbolic functions more natural.
+The `@syms` macro is recommended, and will be modeled in the following, as it makes the specification of assumptions, collections of indexed variables,  and symbolic functions more natural.
 
 ### Assumptions
 
-Finally, there is the `symbols` constructor for producing symbolic objects. With `symbols` (and with `@syms`) it is
-possible to pass assumptions onto the variables. A list of possible
-assumptions is
+In `Python`'s SymPy documentation the `symbols` constructor is
+suggested as idiomatic for producing symbolic objects. This function
+can similarly be used within `Julia`. With `symbols` (and with
+`@syms`) it is possible to pass assumptions onto the variables. A list
+of possible assumptions is
 [here](http://docs.sympy.org/dev/modules/core.html#module-sympy.core.assumptions). Some
 examples are:
 
@@ -95,6 +98,8 @@ solve(x^2 + 1)   # ±i are not real
 ```@repl introduction
 solve(y1 + 1)    # -1 is not positive
 ```
+
+----
 
 The `@syms` macro allows annotations, akin to type annotations, to specify assumptions on new variables:
 
@@ -118,7 +123,7 @@ use `Sym` to create a variable from a function name in Base.
 
 ### Special constants
 
-`Julia` has its math constants, like `pi` and `e`, `SymPy` as well. A few of these have `Julia` counterparts provided by `SymPyPythonCall`. For example, these two constants are defined (where `oo` is for infinity):
+`Julia` has its math constants, like `pi` and `e`, `SymPy` as well. A few of these have `Julia` counterparts provided by `SymPyCore`. For example, these two constants are defined (where `oo` is for infinity):
 
 ```@repl introduction
 PI,  oo
@@ -160,14 +165,19 @@ ex = x + y + z
 ex.subs([(x,1), (y, pi)])
 ```
 
-!!! note
-
-    The calling pattern for `subs` is different from a typical `Julia` function call. The `subs` call is `object.method(arguments...)` whereas a more "`Julia`n" function call is `method(objects, arguments...)`, as `Julia` offers multiple dispatch of methods. `SymPyPythonCall` uses the Python calling method, adding in `Julia`n style when appropriate for generic usage within `Julia`. `SymPyPythonCall` imports many generic functions from the underlying `sympy` module and specializes them on a symbolic first argument.
 
 !!! note
     The SymPy documentation for many functions can be read from the terminal using `Base.Docs.getdoc(ex)`, as in `Base.Docs.getdoc(sin(x))`.
 
-For `subs`, the simple substitution `ex.object(x,a)` is similar to simple function evaluation, so `Julia`'s call notation will work. To specify the pairing off of `x` and `a`, the `=>`  pairs notation is used.
+
+The `SymPyCore` package also offers a more `Julia`n interface, through the method `subs`. This replaces the specification of pairs by a tuple with the `=>` infix operator for `Pair` construction:
+
+```@repl introduction
+subs(ex, x=>1, y=>pi)
+```
+
+
+For `subs`, the simple substitution `ex.object(x,a)` or `subs(ex, x=>s)` is similar to simple function evaluation, so `Julia`'s call notation for symbolic expressions is reserved for substitution, where to specify the pairing off of `x` and `a`, the `=>`  pairs notation is used.
 
 This calling style will be equivalent to the last:
 
@@ -175,8 +185,7 @@ This calling style will be equivalent to the last:
 ex(x=>1, y=>pi)
 ```
 
-A straight call is also possble, where the order of the variables is determined by `free_symbols`.
-This is useful for expressions of a single variable, but being more explicit through the use of paired values is recommended.
+A straight call is also possble, where the order of the variables is determined by `free_symbols`. This is useful for expressions of a single variable, but being more explicit through the use of paired values is recommended.
 
 
 ## Conversion from symbolic to numeric
@@ -217,14 +226,14 @@ N(PI.evalf(30))
 will produce a `Julia` number,
 
 
-Explicit conversion via `convert(T, ex)` can also be done, and is
-necessary at times if `N` does not give the desired type.
+Explicit conversion via `convert(T, ex)` can also be done in some cases, but may need to be combined with a call to `evalf` in some compound cases.
+
 
 ## Algebraic expressions
 
-`SymPyPythonCall` overloads many of `Julia`'s functions to work with symbolic objects, such as seen above with `asin`. The usual mathematical operations such as `+`, `*`, `-`, `/` etc. work through `Julia`'s promotion mechanism, where numbers are promoted to symbolic objects, others dispatch internally to related SymPy functions.
+`SymPyCore` overloads many of `Julia`'s functions to work with symbolic objects, such as seen above with `asin`. The usual mathematical operations such as `+`, `*`, `-`, `/` etc. work through `Julia`'s promotion mechanism, where numbers are promoted to symbolic objects, others dispatch internally to related SymPy functions.
 
-In most all  cases, thinking about this distinction between numbers and symbolic numbers is unnecessary, as numeric values passed to `SymPyPythonCall` functions are typically promoted to symbolic expressions. This conversion will take math constants to their corresponding `SymPyPythonCall` counterpart, rational expressions to rational expressions, and floating point values to floating point values. However there are edge cases. An expression like `1//2 * pi * x` will differ from the seemingly identical  `1//2 * (pi * x)`. The former will produce a floating point value from `1//2 * pi` before being promoted to a symbolic instance. Using the symbolic value `PI` makes this expression work either way.
+In most all  cases, thinking about this distinction between numbers and symbolic numbers is unnecessary, as numeric values passed to `SymPyCore` functions are typically promoted to symbolic expressions. This conversion will take math constants to their corresponding `SymPyCore` counterpart, rational expressions to rational expressions, and floating point values to floating point values. However there are edge cases. An expression like `1//2 * pi * x` will differ from the seemingly identical  `1//2 * (pi * x)`. The former will produce a floating point value from `1//2 * pi` before being promoted to a symbolic instance. Using the symbolic value `PI` makes this expression work either way.
 
 Most of `Julia`'s
 [mathematical](http://julia.readthedocs.org/en/latest/manual/mathematical-operations/#elementary-functions)
@@ -236,7 +245,9 @@ expected, as the former call first dispatches to a generic defintion,
 but the latter two expressions do not.
 
 
-`SymPyPythonCall` makes it very easy to work with polynomial and rational expressions. First we create some variables:
+----
+
+`SymPyPythonCore makes it very easy to work with polynomial and rational expressions. First we create some variables:
 
 ```@repl introduction
 @syms x y z
@@ -286,7 +297,7 @@ collect(q, y)
 
 These are identical expressions, though viewed differently.
 
-A more broad-brush approach is to let `SymPyPythonCall` simplify the values. In this case, the common value of `x` is factored out:
+A more broad-brush approach is to let `SymPyPythonCore` simplify the values. In this case, the common value of `x` is factored out:
 
 ```@repl introduction
 simplify(q)
@@ -409,7 +420,7 @@ simplify(sin(2theta) - 2sin(theta)*cos(theta))
 The `expand_trig` function will expand such expressions:
 
 ```@repl introduction
-expand_trig(sin(2theta))
+sympy.expand_trig(sin(2theta))
 ```
 
 
@@ -459,10 +470,6 @@ Polynomials are a special class in SymPy and must be constructed. The `poly` con
 q = sympy.poly(p, x)
 q.coeffs()
 ```
-
-!!! note
-
-    This is `sympy` not `SymPyPythonCall` qualifying the method call. Using `sympy.Poly` is not supported. The `Poly` constructor from SymPy is *not* a function, so is not exported when `SymPyCall` is loaded.
 
 
 ## Polynomial roots: solve, real_roots, polyroots, nroots
@@ -620,7 +627,7 @@ PI/2 in u
 3PI/2 in u
 ```
 
-Infinite sets can have unions and intersections taken, but the SymPy methods must be called:
+Infinite sets can have unions and intersections taken:
 
 ```@repl introduction
 v = solveset(cos(x) ≧ 0)
@@ -634,16 +641,18 @@ u = solveset(sin(x) ~ 1//2, x)
 intersect(u, sympy.Interval(0, 2PI))  # a finite set after intersection
 ```
 
----
+There are more sympy methods for working with sets, beyond those mirroring `Julia` generics.
+
+----
 
 Systems of equations can be solved as well. We specify them within a
-vector of expressions, `[ex1, ex2, ..., exn]` where a found solution
+tuple of expressions, `(ex1, ex2, ..., exn)` where a found solution
 is one where all the expressions are 0. For example, to solve this
 linear system: $2x + 3y = 6, 3x - 4y=12$, we have:
 
 ```@repl introduction
 @syms x::real, y::real
-exs = [2x+3y-6, 3x-4y-12]
+exs = (2x+3y-6, 3x-4y-12)
 ```
 
 ```@repl introduction
@@ -704,21 +713,25 @@ n = 3
 @syms x, c
 @syms as[1:3]
 @syms bs[1:3]
-p = sum([as[i+1]*x^i for i in 0:(n-1)]);
-
-d = solve(p-q, bs);
+p = sum(as[i]*x^(i-1) for i ∈ 1:n)
+q = sum(bs[i]*(x-c)^(i-1) for i ∈ 1:n)
+d = solve(p-q, bs)
 ```
 
 
 ### Solving using logical operators
 
-The `solve` function does not need to just solve `ex = 0`. There are other means to specify an equation. Ideally, it would be nice to say `ex1 == ex2`, but the interpretation of `==` is not for this. Rather, `SymPyPythonCall` introduces `Eq` for equality. So this expression
+The `solve` function does not need to just solve `ex = 0`. There are other means to specify an equation. Ideally, it would be nice to say `ex1 == ex2`, but the interpretation of `==` is not for this. Rather, `SymPyPythonCore` introduces `Eq` for equality. So this expression
 
 ```@repl introduction
 solve(Eq(x, 1))
 ```
 
-gives 1, as expected from solving `x == 1`.
+gives ``1``, as expected from solving `x == 1`.
+
+!!! note "Equals"
+
+    Mathematics uses `=` for equations. `Julia` uses `=` for assignment and `==` for generic equality, and `===` to test for identical values. There is no general infix equation operation in `Julia`, though `~` is used by the `Symbolics` package its ecosystem. SymPy uses `Eq` for expressing an equation. For `SymPyCore`, both `Eq` and `~` may be used to indicate an equation between unknowns.
 
 In addition to `Eq`, there are `Lt`, `Le`, `Ge`, `Gt`. The Unicode
 operators (e.g., `\leq`  and not  `\leq`)  are not aliased to these, but there are alternatives

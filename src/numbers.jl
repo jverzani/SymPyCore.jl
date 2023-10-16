@@ -1,7 +1,9 @@
 ## promote
 
-## convert is either convert or pyconvert
+## convert is either convert or pyconvert; defined in python_connection
 _convert() = ()
+Base.convert(::Type{S}, x::Sym{T}) where {S<:Number, T} = _convert(S, ↓(x))
+
 
 ## N
 # special case numbers in sympy.core.numbers
@@ -32,7 +34,11 @@ function N(x)
     end
 
     if _istree(x)
-        return _convert(Float64, y.evalf())
+        z = y.evalf()
+        if _convert(Bool, Sym(z.is_complex))
+            return Complex(convert(Float64, real(Sym((z)))), convert(Float64, imag(Sym(z))))
+        end
+        return _convert(Float64, z)
     end
 
     if x.is_real == true
@@ -76,7 +82,6 @@ function N(x)
     x.is_complex == Sym(true) && return complex(N(real(x)), N(imag(x)))
 
     try
-        #lambdify(x)()
         N(x.evalf())
     catch err
         @info "FAILED to find type for $x. Please report"
@@ -85,7 +90,8 @@ function N(x)
 end
 
 function N(x::Sym, digits::Int; kwargs...)
-    @show :XXX
+    @info "deprecated; use `N(x.evalf())"
+    N(x.evalf(digits; kwargs...))
 end
 
 

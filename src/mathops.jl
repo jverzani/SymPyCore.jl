@@ -14,7 +14,7 @@ import Base: +, -, *, /, //, \, ^, inv
 +(x::SymbolicObject, y::SymbolicObject) = x.__add__(y)
 *(x::SymbolicObject, y::SymbolicObject) = x.__mul__(y)
 -(x::SymbolicObject, y::SymbolicObject) = x.__sub__(y)
-(-)(x::SymbolicObject)::SymbolicObject       = x.__neg__()
+(-)(x::SymbolicObject)                  = x.__neg__()
 /(x::SymbolicObject, y::SymbolicObject) = x.__truediv__(y)
 ^(x::SymbolicObject, y::SymbolicObject) = x.__pow__(y)
 ^(x::SymbolicObject, y::Rational) = x^convert(Sym,y)
@@ -40,4 +40,10 @@ Base.inv(x::Sym) = x.__pow__(Sym(-1))
 /(x::Sym, y::Bool)::Sym = x.__truediv__(Int(y))
 ^(x::Sym, y::Bool)::Sym = x.__pow__(Int(y))
 
-Base.convert(::Type{Bool}, x::Sym{T}) where {T} = _convert(Bool, ↓(x))
+# strict conversion Sym(true) only
+function Base.convert(::Type{Bool}, x::Sym{T}) where {T}
+    y = ↓(x)
+    hasproperty(y, "is_Boolean") && return _convert(Bool, y)
+    hasproperty(y, "__bool__") && return _convert(Bool, y)
+    return false
+end
