@@ -3,8 +3,6 @@ Solvers
 
 ```@setup Julia
 using SymPyPythonCall
-↓(x) = x.o; ↑(x) = Sym(x)
-𝑆 = sympy.S
 ```
 
 

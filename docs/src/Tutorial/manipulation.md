@@ -3,9 +3,6 @@ Advanced Expression Manipulation
 
 ```@setup Julia
 using SymPyPythonCall
-Introspection = SymPyPythonCall.Introspection # while using SymPy
-↓(x) = SymPyPythonCall.PyCall.PyObject(x)     # while using SymPy
-𝑆 = sympy.S
 ```
 
 In this section, we discuss some ways that we can perform advanced
