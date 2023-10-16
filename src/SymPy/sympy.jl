@@ -1,9 +1,9 @@
 ## Common code
 
 using LinearAlgebra
+import SpecialFunctions
 import CommonEq
 import CommonSolve
-import SpecialFunctions
 
 #=
 Several functions are exported
@@ -93,6 +93,9 @@ const TRUE = Sym(_TRUE_)
 const _FALSE_ =_pynull()
 const FALSE = Sym(_FALSE_)
 
+const _𝑄_ = _pynull()
+const 𝑄 = Sym(_𝑄_)
+
 const _𝑆_ = _pynull()
 const 𝑆 = Sym(_𝑆_)
 
@@ -109,12 +112,13 @@ function __init__()
     _copy!(_oo_, _sympy_.oo)
     _copy!(_zoo_, _sympy_.zoo)
     _copy!(_𝑆_, _sympy_.S)
+    _copy!(_𝑄_, _sympy_.Q)
     _copy!(_TRUE_, _pyobject(true))
     _copy!(_FALSE_, _pyobject(false))
 
     # pytypemapping
-    basictype = _sympy_core_.basic.Basic
-    _pytype_mapping(basictype, Sym)
+    #basictype = _sympy_core_.basic.Basic
+    #_pytype_mapping(basictype, Sym)
 
 
 end
@@ -127,22 +131,3 @@ include(joinpath(core_src_path, "constructors_sympy.jl"))
 include(joinpath(core_src_path, "gen_methods_sympy.jl"))
 include(joinpath(core_src_path, "additional_methods_sympy.jl"))
 include(joinpath(core_src_path, "show_sympy.jl"))
-
-
-
-# Create a symbolic type. There are various containers to recurse in to be
-# caught here
-function SymPyCore.:↑(::Type{_PyType}, x)
-    class_nm = SymPyCore.classname(x)
-    class_nm == "set"       && return Set(Sym.(collect(x)))
-    class_nm == "tuple" && return Tuple(↑(xᵢ) for xᵢ ∈ x)
-    class_nm == "list" && return [↑(xᵢ) for xᵢ ∈ x]
-    class_nm == "dict" && return Dict(↑(k) => ↑(x[k]) for k ∈ x)
-
-    class_nm == "FiniteSet" && return Set(Sym.(collect(x)))
-    class_nm == "MutableDenseMatrix" && return _up_matrix(x) #map(↑, x.tolist())
-
-    # others ... more hands on than pytype_mapping
-
-    Sym(x)
-end

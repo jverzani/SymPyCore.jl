@@ -42,8 +42,11 @@ end
 PermutationGroup(args...; kwargs...) = combinatorics.PermutationGroup(args...; kwargs...)
 
 # Instrospection, assumptions use a struct to imitate old use of module; we pass in _sympy_
-const Introspection = SymPyCore.Introspection(_sympy_ = _sympy_) # introspection
-const 𝑄 = SymPyCore.𝑄(_sympy_=_sympy_)
+@doc SymPyCore.Introspection_docs Introspection = SymPyCore.Introspection(_sympy_ = _sympy_) # introspection
+
+# 𝑄 alternative to sympy.Q (maybe unnecessary)
+#@doc SymPyCore.Q_docs
+#𝑄 = sympy.Q #SymPyCore.𝑄(_sympy_=_sympy_)
 
 # lambdify using use_julia_code (`sympy` not available in `lambify.jl`)
 function SymPyCore._convert_expr(use_julia_code::Val{true}, ex; kwargs...)

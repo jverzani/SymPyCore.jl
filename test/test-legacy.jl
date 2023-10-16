@@ -31,7 +31,7 @@ import SymPyCore: SymFunction
 
     # Renaming with @syms
     @syms a=>"α₁"
-    @test string(a.name) == "α₁"
+    @test string(a) == "α₁"
 
     ## extract symbols
     @syms z
@@ -53,7 +53,7 @@ import SymPyCore: SymFunction
     # @test N(Sym(catalan)) == catalan XXX <<--- expose catalan?
 
 
-    ## function conversion
+    ## function conversion (just calls lambdify)
     f1 = convert(Function, x^2)
     @test f1(2) == 4
 
@@ -178,7 +178,7 @@ import SymPyCore: SymFunction
 
     ## method calls via getproperty
     p = (x-1)*(x-2)
-    @test sympy.roots(p) == Dict{Any,Any}(Sym(1) => 1, Sym(2)=> 1) # sympy.roots
+    @test sympy.roots(p) == Dict(Sym(1) => Sym(1), Sym(2) => Sym(1)) # sympy.roots
     p = sympy.poly(p, x) # XXX sympy.Poly(p, x)
     @test p.coeffs() == Any[1,-3,2] # p.coeffs
 
@@ -280,12 +280,10 @@ import SymPyCore: SymFunction
     a, b, t = symbols("a, b, t")
     @test integrate(sin(x), (x, a, b)) == cos(a) - cos(b)
     @test integrate(sin(x), (x, a, b)).replace(a, 0).replace(b, pi) == 2.0
-    @test integrate(sin(x) * sympy.DiracDelta(x)) == sin(Sym(0)) # XXX integrate(sin(x) * DiracDelta(x)) == sin(Sym(0))
-    @test integrate(sympy.Heaviside(x), (x, -1, 1)) == 1 ## XXX integrate(Heaviside(x), (x, -1, 1)) == 1
-    #= not working XXX
+    @test integrate(sin(x) * sympy.DiracDelta(x)) == 0
+    @test integrate(Heaviside(x), (x, -1, 1)) == 1
     curv = sympy.Curve([exp(t)-1, exp(t)+1], (t, 0, log(Sym(2))))
-    @test sympy.line_integrate(x + y, curv, [x,y]) == 3 * sqrt(Sym(2)) ## XXX line_integrate(x + y, curv, [x,y]) == 3 * sqrt(Sym(2))
-    =#
+    @test sympy.line_integrate(x + y, curv, [x,y]) == 3 * sqrt(Sym(2))
 
     ## summation
     summation(1/x^2, (x, 1, 10))
@@ -817,8 +815,8 @@ end
     @test complex(zcomplex) !== zcomplex
 
     ## issue 284 N(PI,50)
-    ## XXX @test N(PI, 50) ≈ pi <--- issue with pyconvert????
-    @test_broken length(string(N(PI,50))) == 50 # XXX 2 + 50
+    #N(PI, 50) ≈ pi <--- issue with pyconvert????
+    #@test length(string(N(PI,50))) == 50 # XXX 2 + 50
     ## issue 284 lambdify of Pi
     ## XXX mpi = SymPy.PyCall.pyimport("sympy.parsing.mathematica")."mathematica"("Pi")
     #= XXX

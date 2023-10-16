@@ -123,7 +123,11 @@ an `Interval` or `ImageSet` of the solutions.
 
 !!! tip "Julia differences"
 
-    Finite sets are turned into Set containers in `Julia`. The exported `𝑆` objects mirrow `S` from Python
+    Finite sets are turned into Set containers in `Julia`.
+
+!!! tip "Julia differences"
+
+    The exported `𝑆` objects mirror `S` from Python. Using `sympy.S` fails, as the underlying object has a `__call__` method, so `sympy.S` is a callable function, not an object. The construction `↓(sympy).S` works, but is cumbersome and `\itS[tab]` seems easy enough to enter.
 
 
 

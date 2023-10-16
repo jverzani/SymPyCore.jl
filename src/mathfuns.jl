@@ -32,26 +32,6 @@ end
 Base.complex(xs::AbstractArray{Sym}) = complex.(xs) # why is this in base?
 
 
-Base.:==(x::Sym{T}, y) where {T} = ==(promote(x, y)...)
-Base.:==(x, y::Sym{T}) where {T} = ==(promote(x, y)...)
-Base.isequal(x::T, y::T) where {T <: SymbolicObject} =
-    hash(x) == hash(y)
-Base.isless(x::Sym{T}, y) where {T} = isless(promote(x,y)...)
-Base.isless(x, y::Sym{T}) where {T} = isless(promote(x,y)...)
-function Base.isless(x::Sym{T}, y::Sym{T}) where {T}
-    if isnan(x) || isnan(y) # issue 346
-        # NaN case breaks guarantee that one of isequal(a,b), isless(a,b), isless(b,a) is true
-        isnan(x) && isnan(y) && return false
-        isnan(x) && return false
-        isnan(y) && return false
-    end
-    if x.is_real == true && y.is_real == true
-        return Lt(x, y) == Sym(true) ? true : false
-    end
-    out = x.compare(y)
-    out == -1  ? true : false
-end
-
 
 Base.abs2(x::SymbolicObject) = x * conj(x)
 Base.cbrt(x::Sym) = x^(1//3)
@@ -98,7 +78,7 @@ Base.isfinite(x::Sym) = x.is_finite == true
 Base.isinf(x::Sym) = x.is_infinite == true
 Base.isinteger(x::Sym) = x.is_integer == true
 Base.isreal(x::Sym) = x.is_real == true
-Base.isnan(x::Sym) = x == Sym(NaN)
+Base.isnan(x::Sym) = _convert(Bool, ↓(x) == ↓(Sym(NaN)))
 Base.copysign(x::Sym, y::Sym) = abs(x)*sign(y)
 Base.flipsign(x::Sym, y) = isless(y, 0) ? -x : x
 # Base.divrem(x::Sym, y::Sym) = (div(x,y), rem(x,y)) # XXX

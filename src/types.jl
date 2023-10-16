@@ -4,21 +4,7 @@
 ## Symbol class for controlling dispatch
 abstract type SymbolicObject{T} <: Number end
 
-import Base: ==
-function Base.:(==)(x::SymbolicObject, y::SymbolicObject)
-    if hasproperty(↓(x), "is_Boolean") && convert(Bool, ↑(↓(x).is_Boolean))
-        u = convert(Bool, x)
-        v=convert(Bool, y)
-        return u==v
-    end
 
-    if hasproperty(↓(x), "equals")
-        u = x.equals(y)
-        return convert(Bool, u == Sym(true))
-    else
-        return (hash(x) == hash(y))
-    end
-end
 
 
 # SymPy.symbols constructor
