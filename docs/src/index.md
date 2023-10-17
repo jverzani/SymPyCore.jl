@@ -18,4 +18,4 @@ The `SymPyCore` package aims to unify the underlying code, leaving only a small 
 
 While both glue packages provide a means to interact directly with the `sympy` library in `Python`, `SymPyCore` adds some conveniences, including many `Julia`n idioms for easier use within `Julia`.
 
-The *Example usage* page shows basic usages. The translation of the *SymPy Tutorial* is extensive.
+The *SympyCore introduction* page shows basic usages. The `Julia` translation of the *SymPy Tutorial* is more extensive.

@@ -48,7 +48,7 @@ export real_roots,  nroots # roots
 export sign #,degree
 export series, summation #, hessian
 export subs, lambdify
-export ask, doit # refine,
+export ask, doit, rewrite # refine,
 export N
 export limit, diff, integrate, Differential, Heaviside
 export rhs, lhs
@@ -57,7 +57,7 @@ export Permutation, PermutationGroup
 #export ∨, ∧, ¬
 export 𝑄, 𝑆, Introspection
 
-export _sympy_, ↓, ↑ # remove later; for development only
+export ↓, ↑
 
 # emacs and indent; this goes last
 import SymPyCore: Lt, ≪, Le, ≦, Eq, ⩵, Ne, ≶, ≷, Ge, ≫, Gt, ≧

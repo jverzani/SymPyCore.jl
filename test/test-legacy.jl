@@ -776,7 +776,7 @@ end
     u = Heaviside(t)
     λ = lambdify(u)
     @test all((iszero(λ(-1)), isone(λ(1))))
-    VersionNumber(string(_sympy_.__version__)) >= v"1.9" && @test λ(0) == 1//2
+    VersionNumber(string(↓(sympy).__version__)) >= v"1.9" && @test λ(0) == 1//2
     u = Heaviside(t, 1)
     λ = lambdify(u)
     @test all((iszero(λ(-1)), isone(λ(0)), isone(λ(1))))
