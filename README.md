@@ -4,7 +4,7 @@
 
 [![Build Status](https://github.com/jverzani/SymPyCore.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/jverzani/SymPyCore.jl/actions/workflows/CI.yml?query=branch%3Amain)
 
-[SymPy](https://www.sympy.org/) is Python library for symbolic mathematics.
+[SymPy](https://www.sympy.org/) is a Python library for symbolic mathematics.
 
 At present, there are two means to call `Python` code from `Julia`. As such, two packages have been developed to call into SymPy:
 
