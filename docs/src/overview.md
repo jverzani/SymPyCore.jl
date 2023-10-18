@@ -5,6 +5,7 @@ An interface between `Julia` and the SymPy library of `Python` requires a connec
 ```@setup overview
 using SymPyPythonCall
 PythonCall = SymPyPythonCall.PythonCall
+pyimport = PythonCall.pyimport
 ```
 
 ```julia
@@ -74,8 +75,12 @@ Methods of `sympy` are also called using the conversion operators above.
 
 We follow part of the `SymPy` docs to see how to access one of the numerous external modules of `sympy` beyond those exposed immediately by `SymPy`. In this case, the `stats` module.
 
+```julia
+julia> import PythonCall: pyimport
+
+```
+
 ```@repl overview
-import PythonCall: pyimport
 _stats_ = pyimport("sympy.stats");
 ```
 
