@@ -40,7 +40,7 @@ import SymPyCore: Wild, Permutation, PermutationGroup
 
 # more exports defined in SymPyCore/src/gen_methods_sympy
 export Sym, SymFunction
-export sympy, PI, E, IM, oo, zoo, TRUE, FALSE
+export sympy, PI, E, IM, oo, zoo
 export @syms, sympify, symbols, free_symbols
 export simplify, expand, together, apart, factor, cancel
 export solve, dsolve, nsolve, linsolve, nonlinsolve, solveset
@@ -87,11 +87,8 @@ const oo = Sym(_oo_)
 const _zoo_ =_pynull()
 const zoo = Sym(_zoo_)
 
-const _TRUE_ =_pynull()
-const TRUE = Sym(_TRUE_)
-
-const _FALSE_ =_pynull()
-const FALSE = Sym(_FALSE_)
+Base.@deprecate_binding TRUE Sym(true)
+Base.@deprecate_binding FALSE Sym(false)
 
 const _𝑄_ = _pynull()
 const 𝑄 = Sym(_𝑄_)
@@ -113,13 +110,6 @@ function __init__()
     _copy!(_zoo_, _sympy_.zoo)
     _copy!(_𝑆_, _sympy_.S)
     _copy!(_𝑄_, _sympy_.Q)
-    _copy!(_TRUE_, _pyobject(true))
-    _copy!(_FALSE_, _pyobject(false))
-
-    # pytypemapping
-    #basictype = _sympy_core_.basic.Basic
-    #_pytype_mapping(basictype, Sym)
-
 
 end
 
