@@ -29,8 +29,7 @@ import SymPyCore: ↑, ↓, ↓ₖ
 import SymPyCore: SymbolicObject, Sym, SymFunction
 import SymPyCore: symbols, free_symbols
 import SymPyCore: simplify, expand, together, apart, factor, cancel
-#import SymPyCore: solve, dsolve, nsolve, linsolve, nonlinsolve, solveset
-import SymPyCore: dsolve
+import SymPyCore: solve, dsolve, nsolve, linsolve, nonlinsolve, solveset
 import SymPyCore: subs, lambdify, simplify
 import SymPyCore: ask, doit
 import SymPyCore: N
