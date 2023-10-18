@@ -116,13 +116,36 @@ sqrt(2)*(-sqrt(2)*pi*exp(1/2)*erf(sqrt(2)/2)/2 + sqrt(2)*pi*exp(1/2)/2)*exp(-1/2
 
 The familiar  answer could be found by calling `N` or `evalf`.
 
-One more distribution is illusrated, the uniform distribution over a symbolic interval $[a,b]$:
+One more distribution is illustrated, the uniform distribution over a symbolic interval $[a,b]$:
 
 ```@repl overview
 @syms 𝑈 a::real b::real
 U = stats.Uniform(𝑈, a, b)
 stats.E(U)
 stats.variance(U) |> factor
+```
+
+### The mpmath library
+
+According to its [website](https://mpmath.org/):
+`mpmath` is a free (BSD licensed) Python library for real and complex floating-point arithmetic with arbitrary precision. It has been developed by Fredrik Johansson since 2007, with help from many contributors.
+For Sympy, versions prior to 1.0 included `mpmath`, but SymPy now depends on it`mpmath` as an external dependency.
+
+
+The `mpmath` library provides numeric, not symbolic routines. To access these directly, the `mpmath` library can be loaded, in the manner just described. Here we use `_pyimport`, a wrapper allowing the same code to work with `SymPyPythonCall` and `SymPyPyCall`:
+
+```@repl overview
+_mpmath_ = SymPyPythonCall._pyimport("mpmath")
+mpmath = Sym(_mpmath_)
+```
+
+To compare values, consider the `besselj` function which has an implementation in `Julia`'s `SpecialFunctions` package, `SymPy` itself, and `mpmath`. `SymPyCore` provides an overloaded method for a symbolic second argument which is available once `SpecialFunctions` is loaded.
+
+```@repl
+using SpecialFunctions
+@syms x
+nu, c = 1//2, pi/3
+(mpmath.besselj(nu,c), besselj(nu, x)(c).evalf(), besselj(nu, c))
 ```
 
 ## Different output types

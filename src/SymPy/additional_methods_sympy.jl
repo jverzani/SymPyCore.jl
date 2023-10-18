@@ -18,6 +18,7 @@ SpecialFunctions.besselj(n::Number, b::Sym) = sympy.besselj(n, b)
 SpecialFunctions.besselk(n::Number, b::Sym) = sympy.besselk(n, b)
 SpecialFunctions.bessely(n::Number, b::Sym) = sympy.bessely(n, b)
 
+
 LinearAlgebra.norm(x::AbstractVector{T}, args...; kwargs...) where {T <: SymbolicObject} =
     ↑(getproperty(sympy.Matrix(Tuple(xᵢ for xᵢ ∈ x)), :norm)(↓(args)...; ↓ₖ(kwargs)...))
 
