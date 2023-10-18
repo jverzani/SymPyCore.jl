@@ -46,9 +46,9 @@ export simplify, expand, together, apart, factor, cancel
 export solve, dsolve, nsolve, linsolve, nonlinsolve, solveset
 export real_roots,  nroots # roots
 export sign #,degree
-export series, summation #, hessian
+export series, summation, hessian
 export subs, lambdify
-export ask, doit, rewrite # refine,
+export ask, doit, rewrite
 export N
 export limit, diff, integrate, Differential, Heaviside
 export rhs, lhs
