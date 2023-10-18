@@ -83,7 +83,6 @@ generic_methods = (
     #(:_sympy_, :besselk ,     :SpecialFunctions, :besselk),
     #(:_sympy_, :bessely ,     :SpecialFunctions, :bessely),
     (:_sympy_, :beta ,        :SpecialFunctions, :beta),
-    (:_sympy_, :digamma ,     :SpecialFunctions, :digamma),
     (:_sympy_, :elliptic_e ,  :SpecialFunctions, :ellipe),
     (:_sympy_, :elliptic_k ,  :SpecialFunctions, :ellipk),
     (:_sympy_, :erf ,         :SpecialFunctions, :erf),
