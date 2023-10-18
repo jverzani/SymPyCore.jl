@@ -5,7 +5,6 @@ An interface between `Julia` and the SymPy library of `Python` requires a connec
 ```@setup overview
 using SymPyPythonCall
 PythonCall = SymPyPythonCall.PythonCall
-pyimport = PythonCall.pyimport
 ```
 
 ```julia
@@ -13,8 +12,7 @@ julia> import PythonCall
 ```
 
 ```@repl overview
-const _sympy_ = PythonCall.pynew()
-PythonCall.pycopy!(_sympy_, PythonCall.pyimport("sympy"));
+_sympy_ = PythonCall.pyimport("sympy");
 ```
 
 The `_sympy_` object holds references to the underlying sympy library. As an example, the following creates a symbolic variable, `x`, and calls the `sin` function on it:
@@ -75,13 +73,9 @@ Methods of `sympy` are also called using the conversion operators above.
 
 We follow part of the `SymPy` docs to see how to access one of the numerous external modules of `sympy` beyond those exposed immediately by `SymPy`. In this case, the `stats` module.
 
-```julia
-julia> import PythonCall: pyimport
-
-```
 
 ```@repl overview
-_stats_ = pyimport("sympy.stats");
+_stats_ = PythonCall.pyimport("sympy.stats");
 ```
 
 The `stats` module holds several probability functions, similar to the `Distributions` package of `Julia`. This set of commands creates a normally distributed random variable, `X`, with symbolic parameters:
@@ -137,10 +131,10 @@ According to its [website](https://mpmath.org/):
 For Sympy, versions prior to 1.0 included `mpmath`, but SymPy now depends on it`mpmath` as an external dependency.
 
 
-The `mpmath` library provides numeric, not symbolic routines. To access these directly, the `mpmath` library can be loaded, in the manner just described. Here we use `_pyimport`, a wrapper allowing the same code to work with `SymPyPythonCall` and `SymPyPyCall`:
+The `mpmath` library provides numeric, not symbolic routines. To access these directly, the `mpmath` library can be loaded, in the manner just described.
 
 ```@repl overview
-_mpmath_ = SymPyPythonCall._pyimport("mpmath")
+_mpmath_ = PythonCall.pyimport("mpmath")
 mpmath = Sym(_mpmath_)
 ```
 
