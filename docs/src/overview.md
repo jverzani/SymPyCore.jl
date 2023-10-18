@@ -140,7 +140,7 @@ mpmath = Sym(_mpmath_)
 
 To compare values, consider the `besselj` function which has an implementation in `Julia`'s `SpecialFunctions` package, `SymPy` itself, and `mpmath`. `SymPyCore` provides an overloaded method for a symbolic second argument which is available once `SpecialFunctions` is loaded.
 
-```@repl
+```@repl overview
 using SpecialFunctions
 @syms x
 nu, c = 1//2, pi/3
