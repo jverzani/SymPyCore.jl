@@ -36,7 +36,7 @@ import SymPyCore: N
 import SymPyCore: limit, diff, integrate, Differential, Heaviside
 import SymPyCore: rhs, lhs
 import SymPyCore: Wild, Permutation, PermutationGroup
-#import SymPyCore: ∨, ∧, ¬  # infix logical operators
+import SymPyCore: ∨, ∧, ¬  # infix logical operators
 
 # more exports defined in SymPyCore/src/gen_methods_sympy
 export Sym, SymFunction
@@ -54,7 +54,7 @@ export limit, diff, integrate, Differential, Heaviside
 export rhs, lhs
 export Wild #, cse
 export Permutation, PermutationGroup
-#export ∨, ∧, ¬
+export ∨, ∧, ¬
 export 𝑄, 𝑆, Introspection
 
 export ↓, ↑
