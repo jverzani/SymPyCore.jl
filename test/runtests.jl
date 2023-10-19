@@ -1,5 +1,4 @@
-using Test
+# run tests under SymPyPythonCall only
+using SymPyPythonCall
 
-@testset "Tests are done in glue packages" begin
-    @test 2 + 2 == 4
-end
+include("runtests-sympycore.jl")
