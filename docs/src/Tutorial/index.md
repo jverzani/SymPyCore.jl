@@ -18,11 +18,13 @@ Introductory Tutorial
     * Julia uses `^` not `**` for exponentiation
     * Julia is ``1``-based, not ``0``-based
 	* Julia uses `"` for strings, not `'`
-    * The macro `@syms` is primarily used to create symbolic variables and functions, not `symbols`.
+    * The macro `@syms` is primarily used to create symbolic variables and functions, not `symbols`, though that function can be used.
     * Many sympy calls of the form `obj.method(args...)` are wrapped in the `Julian` style `method(obj, args...)`.
     * when methods are not wrapped, use `sympy.method` or `obj.method` as needed.
 	* The name method in `Julia` is used for specializations of *generic* functions. The package wraps numerous generic methods from Base `Julia` specialized on the first argument being symbolic. (E.g., for the ``\sin`` function a definition like the following is provided: `Base.sin(x::Sym) = sympy.sin(x)`.)
 	* method in sympy is used for an object method; A function like `sympy.method` is the underlying function from `SymPy`.)
+
+	In this translation of the Python tutorial, `Julia` specific notes are contained in admonition boxes styled exactly like this one. The code shown is run (using `SymPyPythonCall`) and styled to look like the `Julia` REPL. The original Python code, is hidden with an expandable DIV tag. Footnotes were removed, as they aren't supported within Documenter.
 
 This tutorial aims to give an introduction to SymPy for someone who has not
 used the library before.  Many features of SymPy will be introduced in this

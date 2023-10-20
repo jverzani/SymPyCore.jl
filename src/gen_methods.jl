@@ -72,7 +72,7 @@ generic_methods = (
 
 
     # collect
-    (:_sympy_, :collect, :Base, :collect),
+    #(:_sympy_, :collect, :Base, :collect),
 
     # SpecialFunctions
     (:_sympy_, :airyai ,      :SpecialFunctions, :airyai),

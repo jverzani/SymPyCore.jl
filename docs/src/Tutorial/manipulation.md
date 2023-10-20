@@ -206,7 +206,7 @@ Note that in the `srepr` output, we see `Integer(2)`, the SymPy version of
 integers, even though technically, we input `2`, a Python int.  In general,
 whenever you combine a SymPy object with a non-SymPy object via some function
 or operation, the non-SymPy object will be converted into a SymPy object.  The
-function that does this is `sympify` [#sympify-fn]_.
+function that does this is `sympify`.
 
 !!! tip "Julia differences"
 

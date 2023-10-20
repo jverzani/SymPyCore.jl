@@ -9,6 +9,11 @@ Here we discuss some of the most basic operations needed for expression
 manipulation in SymPy.  Some more advanced operations will be discussed later
 in the [advanced expression manipulation](tutorial-manipulation) section.
 
+!!! tip "Julia differences"
+
+    We access SymPy from `Julia` by loading either the `SymPyPyCall` or `SymPyPythonCall` packages. Once loaded, commands like the following one should run without complaint.
+
+
 
 ```@repl Julia
 @syms x, y, z

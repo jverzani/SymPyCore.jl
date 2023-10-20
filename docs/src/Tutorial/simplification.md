@@ -300,11 +300,11 @@ collect
 
 !!! tip "Julia differences"
 
-    The `collect` method when the first argument is symbolic, dispatches to `sympy.collect`, which has the semantics below. A call like `collect(Sym, ...)` will not behave as expected.
+    As the `collect` function of `SymPy` does not match the generic meaning of `collect` from Base `Julia`, it must be qualified.
 
 ```@repl Julia
 expr = x*y + x - 3 + 2*x^2 - z*x^2 + x^3
-collected_expr = collect(expr, x)
+collected_expr = sympy.collect(expr, x)
 ```
 
 ----

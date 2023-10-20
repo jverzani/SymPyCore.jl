@@ -9,7 +9,7 @@ using SymPyPythonCall
 !!! note
 
     For a beginner-friendly guide focused on solving common types of equations,
-    refer to [Solving](`solving-guide`)
+    refer to [Solving](https://docs.sympy.org/latest/guides/solving/index.html#solving-guide)
 
 
 ```@repl Julia
@@ -36,14 +36,14 @@ using SymPyPythonCall
 A Note about Equations
 ======================
 
-Recall from the [gotchas](tutorial_gotchas_equals) section of this
+Recall from the [gotchas](./gotchas/#Equals-signs) section of this
 tutorial that symbolic equations in SymPy are not represented by `=` or
 `==`, but by `Eq`.
 
 
 !!! tip "Julia differences"
 
-    Or, using `~`
+    The infix operator `~` is an elternative to `Eq`.
 
 ```@repl Julia
 x ~ y
@@ -121,7 +121,7 @@ an `Interval` or `ImageSet` of the solutions.
 
 !!! tip "Julia differences"
 
-    Finite sets are turned into Set containers in `Julia`.
+    Finite sets are turned into `Set` containers in `Julia`.
 
 !!! tip "Julia differences"
 
@@ -215,7 +215,7 @@ linsolve([x + y + z - 1, x + y + 2*z - 3 ], (x, y, z))
 
 !!! tip "Julia differences"
 
-    We paas in a symbolic matrix to `linsolve`
+    We paas in a symbolic matrix to `linsolve`. The variables are passed as a tuple or as, in this case, three variables, but not as a vector. (The `↓` conversion of a vector creates ``n\times 1` matrix, not a list, as is expected by the underlying function.)
 
 ```@repl Julia
 linsolve(Sym[ 1 1 1 1; 1 1 2 3], (x, y, z))
@@ -276,7 +276,7 @@ In the `solveset` module, the non linear system of equations is solved using
 
 !!! tip "Julia differences"
 
-    We pass in equations using a tuple, not a vector
+    We can pass in equations using a tuple or a vector, but the variables are passed as a tuple or individually, not within a vector.
 
 ```@repl Julia
 @syms a::real, b::real, c::real, d::real
@@ -307,7 +307,7 @@ nonlinsolve((x*y - 1, x - 2), x, y)
 
 !!! tip "Julia differences"
 
-    Again, we use tuples, not vectors
+    Again, we use tuples, not vectors, to pass in the variables
 
 ```@repl Julia
 nonlinsolve((x^2 + 1, y^2 + 1), (x, y))
@@ -548,7 +548,7 @@ diff(f(x), x)
 ----
 
 
-(see the [`Derivatives](tutorial-derivatives) section for more on
+(see the [`Derivatives](./calculus#Derivatives) section for more on
 derivatives).
 
 To represent the differential equation `f''(x) - 2f'(x) + f(x) = \sin(x)`, we

@@ -488,7 +488,7 @@ filled with ``0`` s.
 
 !!! tip "Julia differences"
 
-    We qualify the use of `diag`, it is not exported
+    We qualify the use of `diag`, it is not exported. It has a different calling pattern than the `diag` method of the standard `LinearAlgebra` package.
 
 ```@repl Julia
 sympy.diag(1,2,3)
@@ -697,7 +697,7 @@ Eigenvalues, Eigenvectors, and Diagonalization
 
 To find the eigenvalues of a matrix, use `eigenvals`.  `eigenvals`
 returns a dictionary of `eigenvalue: algebraic_multiplicity` pairs (similar to the
-output of [roots](tutorial-roots)).
+output of [roots](./solvers#tutorial-roots)).
 
 !!! tip "Julia differences"
 
@@ -902,8 +902,6 @@ while being defaulted with `_iszero`.
 Here is an example of solving an issue caused by undertested zero. While the
 output for this particular matrix has since been improved, the technique
 below is still of interest.
-[#zerotestexampleidea-fn]_ [#zerotestexamplediscovery-fn]_
-[#zerotestexampleimproved-fn]_
 
 
 ```@repl Julia
@@ -1045,39 +1043,36 @@ containing only numerics, hyperbolics, and exponentials.
 For other matrices, you should use different method opted for their domains.
 
 Possible suggestions would be either taking advantage of rewriting and
-simplifying, with tradeoff of speed [#zerotestsimplifysolution-fn]_ ,
-or using random numeric testing, with tradeoff of accuracy
-[#zerotestnumerictestsolution-fn]_ .
+simplifying, with tradeoff of speed,
+or using random numeric testing, with tradeoff of accuracy.
 
 If you wonder why there is no generic algorithm for zero testing that can work
 with any symbolic entities,
-it's because of the constant problem stating that zero testing is undecidable
-[#constantproblemwikilink-fn]_ ,
+it's because of the constant problem stating that zero testing is undecidable,
 and not only the SymPy, but also other computer algebra systems
-[#mathematicazero-fn]_ [#matlabzero-fn]_
 would face the same fundamental issue.
 
 However, discovery of any zero test failings can provide some good examples to
 improve SymPy,
 so if you have encountered one, you can report the issue to
-SymPy issue tracker [#sympyissues-fn]_ to get detailed help from the community.
+SymPy issue tracker to get detailed help from the community.
 
 !!! note "Footnotes"
 
-    * [#zerotestexampleidea-fn] Inspired by https://gitter.im/sympy/sympy?at=5b7c3e8ee5b40332abdb206c
+    * Inspired by https://gitter.im/sympy/sympy?at=5b7c3e8ee5b40332abdb206c
 
-    * [#zerotestexamplediscovery-fn] Discovered from https://github.com/sympy/sympy/issues/15141
+    * Discovered from https://github.com/sympy/sympy/issues/15141
 
-    * [#zerotestexampleimproved-fn] Improved by https://github.com/sympy/sympy/pull/19548
+    *  Improved by https://github.com/sympy/sympy/pull/19548
 
-    * [#zerotestsimplifysolution-fn] Suggested from https://github.com/sympy/sympy/issues/10120
+    * Suggested from https://github.com/sympy/sympy/issues/10120
 
-    * [#zerotestnumerictestsolution-fn] Suggested from https://github.com/sympy/sympy/issues/10279
+    *  Suggested from https://github.com/sympy/sympy/issues/10279
 
-    * [#constantproblemwikilink-fn] https://en.wikipedia.org/wiki/Constant_problem
+    * https://en.wikipedia.org/wiki/Constant_problem
 
-    * [#mathematicazero-fn] How mathematica tests zero https://reference.wolfram.com/language/ref/PossibleZeroQ.html
+    *  How mathematica tests zero https://reference.wolfram.com/language/ref/PossibleZeroQ.html
 
-    * [#matlabzero-fn] How matlab tests zero https://web.archive.org/web/20200307091449/https://www.mathworks.com/help/symbolic/mupad_ref/iszero.html
+    *  How matlab tests zero https://web.archive.org/web/20200307091449/https://www.mathworks.com/help/symbolic/mupad_ref/iszero.html
 
-    * [#sympyissues-fn] https://github.com/sympy/sympy/issues
+    * https://github.com/sympy/sympy/issues

@@ -136,7 +136,7 @@ expressions with variables.
 
 As we will see later, in SymPy, variables are defined using `symbols`.
 Unlike many symbolic manipulation systems, variables in SymPy must be defined
-before they are used (the reason for this will be discussed in the [next section](tutorial-gotchas-symbols)).
+before they are used (the reason for this will be discussed in the next section]).
 
 Let us define a symbolic expression, representing the mathematical expression
 `x + 2y`.

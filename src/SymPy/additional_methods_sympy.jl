@@ -53,3 +53,7 @@ PermutationGroup(args...; kwargs...) = combinatorics.PermutationGroup(args...; k
 function SymPyCore._convert_expr(use_julia_code::Val{true}, ex; kwargs...)
     Meta.parse(string(_sympy_.julia_code(↓(ex))))
 end
+
+
+# deprecations
+Base.@deprecate collect(x::SymbolicObject, args...; kwargs...) sympy.collect(x, args...; kwargs...)

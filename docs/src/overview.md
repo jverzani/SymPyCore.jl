@@ -71,7 +71,7 @@ Methods of `sympy` are also called using the conversion operators above.
 
 ## Using other SymPy modules
 
-We follow part of the `SymPy` docs to see how to access one of the numerous external modules of `sympy` beyond those exposed immediately by `SymPy`. In this case, the `stats` module.
+We now show how to access one of the numerous external modules of `sympy` beyond those exposed immediately by `SymPy`. In this case, the `stats` module.
 
 
 ```@repl overview
@@ -81,9 +81,9 @@ _stats_ = PythonCall.pyimport("sympy.stats");
 The `stats` module holds several probability functions, similar to the `Distributions` package of `Julia`. This set of commands creates a normally distributed random variable, `X`, with symbolic parameters:
 
 ```@repl overview
-𝑋,mu = _sympy_.symbols("X,mu")
-sigma = _sympy_.symbols("sigma")
-X = _stats_.Normal(𝑋,mu,sigma)
+𝑋,mu = _sympy_.symbols("X, mu")
+sigma = _sympy_.symbols("sigma", positive=true)
+X = _stats_.Normal(𝑋, mu, sigma)
 _stats_.E(X)
 _stats_.E(X^2)
 _stats_.variance(X)
@@ -147,6 +147,8 @@ nu, c = 1//2, pi/3
 (mpmath.besselj(nu,c), besselj(nu, x)(c).evalf(), besselj(nu, c))
 ```
 
+
+
 ## Different output types
 
 `SymPyPythonCall` provides a few conversions into containers of symbolic objects, like for lists, tuples, finite sets, and matrices
@@ -162,10 +164,10 @@ The output of many integration problems is a piecewise function:
 u = integrate(x^n, x)
 ```
 
-The `u` object is of type `Sym`, but there are no methods for working with it. The `.args` call will break this into its argument, which again will by symbolic. The `SymPyPythonCall.Introspection.args` function will perform the same thing.
+The `u` object is of type `Sym`, but there are no methods for working with it. The `.args` call will break this into its argument, which again will by symbolic. The `Introspection.args` function will perform the same thing.
 
 ```@repl overview
-as = SymPyPythonCall.Introspection.args(u)
+as = Introspection.args(u)
 ```
 
 The `as` object is a tuple of `Sym` objects. Consider the first one:
@@ -177,7 +179,7 @@ c1 = first(as)
 The value of `c1` prints as a tuple, but is of type `Sym` and sympy type `CondExprPair`. Though the underlying python type is iterable or indexable, the wrapped type is not. It can  be made iterable in a manner of ways: by calling `↓(c1)`; by finding the underlying Python object through the attribute `.o`, as in `c1.o`; or by calling the `Py` method of `PythonCall`, as in `PythonCall.Py(c1)`. More generically, `PythonCall` provides a `PyIterable` wrapper. As there is no defined `lastindex`, the latter is a bit more cumbersome to use. This pattern below, expands the conditions into a dictionary:
 
 ```@repl overview
-[Sym(↓(a[1])) => Sym(↓(a[1])) for a ∈ as]
+[Sym(↓(a)[1]) => Sym(↓(a)[0]) for a ∈ as]
 ```
 
-The Python objects are iterated over, so 0-based indexing is used above. These pieces are then converted to `Sym` objects for familiarity.
+The Python object, `↓(a)` is indexed, so 0-based indexing is used above. These pieces are then converted to `Sym` objects for familiarity.

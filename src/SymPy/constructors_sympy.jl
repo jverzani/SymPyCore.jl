@@ -14,7 +14,7 @@ end
 Sym(x::Complex{T}) where {T} = Sym(real(x)) + Sym(imag(x)) * IM
 sympify(x; kwargs...) = ↑(_sympy_.sympify(x; kwargs...))
 
-# ↓ for Vector, Matrix
+# ↓ for Vector, Matrix we convert to a matrix
 import SymPyCore: ↓
 (↓)(x::Vector{<:Sym}) = _sympy_.Matrix(Tuple(map(↓, reshape(x, length(x), 1))))
 function (↓)(M::AbstractMatrix{<:Sym})

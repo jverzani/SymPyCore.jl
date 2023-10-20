@@ -12,7 +12,7 @@ using SymPyPythonCall
 
 In this document, we use `SymPy` to refer to either the `SymPyPyCall` or `SymPyPythonCall` packages that interface `Julia` with SymPy from `Python` using `SymPyCore`. The only difference being the glue package for interop between `Julia` and `Python`. (It is planned that `SymPyPyCall` will be renamed `SymPy` when a breaking change is released for `SymPy`.)
 
-`SymPy` provides a `Julia`n interface to SymPy, a `Python` library for symbolic math, as alternative to working with `Python` objects directly using one of the glue packages. Some implementation details are:
+`SymPy` provides a `Julia`n interface to SymPy, a `Python` library for symbolic math, as alternative to working with `Python` objects directly using one of the glue packages. See the [overview](./overview.html) page for more details. Some brief implementation details are:
 
 * Symbolic values in `Python` are wrapped in a subtype, typically `Sym{T}`, of `SymbolicObject{T}` or a container holding such values. The conversion from a Python object to a symbolic object in `Julia` is implemented in the `↑` method. Similarly, the  `↓` method takes a symbolic object and finds a Python counterpart for passing to underlying methods of SymPy.
 
@@ -28,7 +28,7 @@ In this document, we use `SymPy` to refer to either the `SymPyPyCall` or `SymPyP
 
 Either the `SymPyPyCall` or `SymPyPythonCall` packages needs to be loaded, e.g., `using SymPyPyCall`. The two can't be used in the same session.
 
-When either is installed, the `SymPyCore` package is installed; the underlying glue package (either `PyCall`, `PythonCall`) should be installed; and that glue package should install the `sympy` library of `Python`.
+When either is installed, the `SymPyCore` package is installed; the underlying glue package (either `PyCall` or `PythonCall`) should be installed; and that glue package should install the `sympy` library of `Python`.
 
 ## Symbols
 
@@ -55,7 +55,7 @@ variables:
 
 ```@repl introduction
 @syms a b c
-a,b,c = Sym("a,b,c")
+a,b,c = Sym("a"), Sym("b"), Sym("c")
 ```
 
 Here are two ways to make related variables:
@@ -118,15 +118,14 @@ In this example, the Julia variables `a1` and `a2` are defined to store SymPy
 symbols with the "pretty" names `α₁` and `α₂` respectively.
 
 As can be seen, there are several ways to create symbolic values, but
-the recommended way is to use `@syms`. One caveat is that one can't
-use `Sym` to create a variable from a function name in Base.
+the recommended way is to use `@syms`.
 
 ### Special constants
 
 `Julia` has its math constants, like `pi` and `e`, `SymPy` as well. A few of these have `Julia` counterparts provided by `SymPyCore`. For example, these two constants are defined (where `oo` is for infinity):
 
 ```@repl introduction
-PI,  oo
+PI,  oo  # also Sym(pi) or Sym(Inf)
 ```
 
 Numeric values themselves can be symbolic. This example shows the
@@ -245,15 +244,18 @@ expected, as the former call first dispatches to a generic defintion,
 but the latter two expressions do not.
 
 
-----
 
-`SymPyPythonCore makes it very easy to work with polynomial and rational expressions. First we create some variables:
+
+### The expand, factor, collect, and simplify functions
+
+`SymPyCore makes it very easy to work with polynomial and rational expressions.
+
+First we create some variables:
 
 ```@repl introduction
 @syms x y z
 ```
 
-### The expand, factor, collect, and simplify functions
 
 A typical polynomial expression in a single variable can be written in two common ways, expanded or factored form. Using `factor` and `expand` can move between the two.
 
@@ -286,18 +288,21 @@ q = x*y + x*y^2 + x^2*y + x
 Then we can collect the terms by the variable `x`:
 
 ```@repl introduction
-collect(q, x)
+sympy.collect(q, x)
 ```
 
 or the variable `y`:
 
 ```@repl introduction
-collect(q, y)
+sympy.collect(q, y)
 ```
 
 These are identical expressions, though viewed differently.
 
-A more broad-brush approach is to let `SymPyPythonCore` simplify the values. In this case, the common value of `x` is factored out:
+!!! note
+    `SymPy`'s `collect` function has a different meaning than the `collect` generic, which turns an iterable into a vector or, more generally, an array. The expression above dispatches to `SymPy`'s as `q` is symbolic.
+
+A more broad-brush approach is to let `SymPyCore` simplify the values. In this case, the common value of `x` is factored out:
 
 ```@repl introduction
 simplify(q)
@@ -320,7 +325,7 @@ following as a factorable object in terms of the variable `exp(x)`:
 factor(exp(2x) + 3exp(x) + 2)
 ```
 
-## Rational expressions: apart, together, cancel
+### Rational expressions: apart, together, cancel
 
 When working with rational expressions, SymPy does not do much
 simplification unless asked. For example this expression is not
@@ -365,15 +370,15 @@ no common (rational) factors and leading terms which are integers:
 ```@repl introduction
 cancel(r)
 ```
-## Powers
+### Powers
 
 The SymPy [tutorial](http://docs.sympy.org/dev/tutorial/simplification.html#powers) offers a thorough explanation on powers and which get simplified and under what conditions. Basically
 
-* $x^a x^b = x^{a+b}$ is always true. However
+* The simplicfication $x^a x^b = x^{a+b}$ is always true. However
 
-* $x^a y^a=(xy)^a$ is only true with assumptions, such as $x,y \geq 0$ and $a$ is real, but not in general. For example, $x=y=-1$ and $a=1/2$ has $x^a \cdot y^a = i \cdot i =  -1$, where as $(xy)^a = 1$.
+* The simplification $x^a y^a=(xy)^a$ is only true with assumptions, such as $x,y \geq 0$ and $a$ is real, but not in general. For example, $x=y=-1$ and $a=1/2$ has $x^a \cdot y^a = i \cdot i =  -1$, where as $(xy)^a = 1$.
 
-* $(x^a)^b = x^{ab}$ is only true with assumptions. For example $x=-1, a=2$, and $b=1/2$ gives $(x^a)^b = 1^{1/2} = 1$, whereas $x^{ab} = -1^1 = -1$.
+* As well, the simplification $(x^a)^b = x^{ab}$ is only true with assumptions. For example $x=-1, a=2$, and $b=1/2$ gives $(x^a)^b = 1^{1/2} = 1$, whereas $x^{ab} = -1^1 = -1$.
 
 
 We see that with assumptions, the following expression does simplify to $0$:
@@ -396,7 +401,7 @@ The `simplify` function calls `powsimp` to simplify powers, as above. The `powsi
 sympy.powsimp(x^a * y^a - (x*y)^a, force=true)
 ```
 
-## Trigonometric simplification
+### Trigonometric simplification
 
 For trigonometric expressions, `simplify` will use `trigsimp` to simplify:
 
@@ -411,7 +416,7 @@ Calling either `simplify` or `trigsimp` will apply the Pythagorean identity:
 simplify(p)
 ```
 
-While often forgotten,  the `trigsimp` function is, of course,  aware of the double angle formulas:
+The `trigsimp` function is, of course,  aware of the double angle formulas:
 
 ```@repl introduction
 simplify(sin(2theta) - 2sin(theta)*cos(theta))
@@ -423,8 +428,9 @@ The `expand_trig` function will expand such expressions:
 sympy.expand_trig(sin(2theta))
 ```
 
+## Polynomials
 
-## Coefficients
+### Coefficients of a polynomial
 
 Returning to polynomials, there are a few functions to find various pieces of the polynomials. First we make a general quadratic polynomial:
 
@@ -472,7 +478,7 @@ q.coeffs()
 ```
 
 
-## Polynomial roots: solve, real_roots, polyroots, nroots
+### Polynomial roots: solve, real_roots, polyroots, nroots
 
 SymPy provides functions to find the roots of a polynomial. In
 general, a polynomial with real coefficients of degree $n$ will have
@@ -548,10 +554,11 @@ provided. The answers are still symbolic:
 nroots(p)
 ```
 
+## Solving equations
 
-## The solve function
+### The solve function
 
-The `solve` function is more general purpose than just finding roots of univariate polynomials. The function tries to solve for when an expression is 0, or a set of expressions are all 0.
+The `solve` function is more general purpose than just finding roots of univariate polynomials. The function tries to solve for when an expression is $0$, or a set of expressions are all $0$.
 
 For example, it can be used to solve when $\cos(x) = \sin(x)$:
 
@@ -605,6 +612,8 @@ xs = solve(p, x);
 
 The extra argument `x` is passed to `solve` so that `solve` knows
 which variable to solve for.
+
+### The `solveset` function
 
 The `solveset` function is similar:
 
@@ -721,7 +730,7 @@ d = solve(p-q, bs)
 
 ### Solving using logical operators
 
-The `solve` function does not need to just solve `ex = 0`. There are other means to specify an equation. Ideally, it would be nice to say `ex1 == ex2`, but the interpretation of `==` is not for this. Rather, `SymPyPythonCore` introduces `Eq` for equality. So this expression
+The `solve` function does not need to just solve `ex = 0`. There are other means to specify an equation. Ideally, it would be nice to say `ex1 == ex2`, but the interpretation of `==` is not for this. Rather, `SymPyCore` introduces `Eq` for equality. So this expression
 
 ```@repl introduction
 solve(Eq(x, 1))
@@ -744,11 +753,17 @@ So, the above could have been written with the following nearly identical expres
 solve(x ⩵ 1)
 ```
 
+Or as
+
+```@repl introduction
+solve(x ~ 1)
+```
+
 Here is an alternative way of asking a previous question on a pair of linear equations:
 
 ```@repl introduction
 @syms x::real, y::real
-exs = (2x+3y ⩵ 6, 3x-4y ⩵ 12)    ## Using \Equal[tab]
+exs = (2x+3y ~ 6, 3x-4y ~ 12)
 d = solve(exs);
 ```
 
@@ -756,4 +771,65 @@ Here  is  one other way  to  express  the same
 
 ```@repl introduction
 Eq.( (2x+3y,3x-4y), (6,12)) |>  solve == d
+```
+
+## Matrices
+
+A matrix of symbolic values could be represented in `Julia` as either a symbolic matrix or a matrix of symbolic elements. In `SymPy` the default is to use the latter:
+
+```@repl introduction
+@syms x y
+A = [1 x; x^2 x^3]
+```
+
+The `getproperty` method for matrices with symbolic values is overridden to allow object methods to be called:
+
+```@repl introduction
+A.det()
+```
+
+In addition, many of the generic methods from the `LinearAlgebra` package will work, as shown here where the trace is taken:
+
+```@repl introduction
+using LinearAlgebra
+tr(A)
+```
+
+
+To create symbolic matrices, a bit of work is needed, as `↑` converts symbolic matrices to matrices of symbolic values. Here are few ways
+
+Using an immutable matrix will work, but we specify the matrix through a tuple of row vectors, as the `ImmutableMatrix` type of SymPy is preserved by `↑`:
+
+
+
+```@repl introduction
+B = [1 2 3; 3 4 5]
+sympy.ImmutableMatrix(tuple(eachrow(B)...))
+```
+
+A mutable `Matrix` can be created by inhibiting the call to `↑` and calling `Sym` directly. (This is not recommended, as matrices with symbolic values require an extra call with `↓`.)
+
+```@repl introduction
+ Sym(↓(sympy).Matrix(tuple(eachrow(B)...)))
+```
+
+
+The `MatrixSymbol` feature of `SymPy` allows for the definition of sized matrices where the element values are not of interest:
+
+```@repl introduction
+A, B = sympy.MatrixSymbol("A", 2, 3), sympy.MatrixSymbol("B", 3, 1)
+A * B
+```
+
+As seen, `A * B` is defined. The values can be seen through:
+
+```@repl introduction
+sympy.Matrix(A * B)
+```
+
+However, `B * A` will error:
+
+
+```@repl introduction
+try  B * A catch err "Error" end
 ```

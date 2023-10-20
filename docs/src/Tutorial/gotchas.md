@@ -27,7 +27,7 @@ library.
 
 !!! tip "Julia differences"
 
-    `SymPyCore` is loaded as a backend by either `using SymPy` or `using SymPyPythonCall`.
+    `SymPyCore` is loaded as a backend by either `using SymPyPyCall` or `using SymPyPythonCall`.
 
 ----
 
@@ -49,7 +49,7 @@ Python session.  Now, suppose we start to do a computation.
 
 !!! tip "Julia differences"
 
-    Only a select set of functions and classes are imported in `julia`, others can be accessed from the `sympy` module that is created when the package is loaded.
+    Only a select set of functions and classes are imported in `julia`, others can be accessed from the `sympy` module that is created when the package is loaded. Further SymPy libraries can be imported, as shown in the Overview documentation page.
 
 ```@repl Julia
 x + 1
@@ -81,7 +81,7 @@ To define variables, we must use `symbols`.
 
 !!! tip "Julia differences"
 
-    The `symbols` constructor, used in the `Python` version of this tutorial, is replaced here by `@syms`, though it can be used, as `x=symbols("x")`.
+    The `symbols` constructor, used in the `Python` version of this tutorial, is replaced here by `@syms`, though it can be also be used as illustrated in the Python examples: `x = symbols("x")`.
 
 ```@repl Julia
 @syms x     # x = symbols("x") is an alternative
@@ -382,7 +382,7 @@ the result of `==`. There is a separate object, called Eq, which can be used to 
 
 !!! tip "Julia differences"
 
-    In `Julia`, in addition to `Eq` as a function, the infix operator `~` also makes expressions.
+    In `Julia`, in addition to `Eq` as a function, the infix operator `~` can also be utilized to make equations.
 
 ```@repl Julia
 x + 1 ~ 4

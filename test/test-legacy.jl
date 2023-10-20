@@ -517,7 +517,7 @@ import SymPyCore: SymFunction
     ## test cse output
     @test sympy.cse(x) == (Any[], Sym[x])
     @test sympy.cse([x]) == (Any[], [reshape([x],1,1)])
-    @test sympy.cse([x, x]) == (Any[],  [reshape([x,x], 2, 1)] )
+    @test sympy.cse([x, x]) == (Any[], [reshape([x,x], 2, 1)] )
     @test sympy.cse([x x; x x]) == (Any[], [[x x; x x]])
 
     ## sympy"..."(...)
