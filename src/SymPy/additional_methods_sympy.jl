@@ -56,4 +56,5 @@ end
 
 
 # deprecations
+import Base: collect
 Base.@deprecate collect(x::SymbolicObject, args...; kwargs...) sympy.collect(x, args...; kwargs...)
