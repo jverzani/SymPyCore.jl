@@ -231,8 +231,5 @@ function free_symbols(ex::S) where {T, S<:SymbolicObject{T}}
 end
 
 function free_symbols(exs::Vector{S}) where {S<:SymbolicObject}
-    !hasproperty(↓(exs), :free_symbols) && return Sym{T}[]
-    fs = collect(↓(exs).free_symbols)
-    isempty(fs) && return eltype(exs)[]
-    return Sym.(fs[sortperm(string.(fs))] )
+    return sort(unique(reduce(vcat, free_symbols.(exs))))
 end

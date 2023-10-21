@@ -1,8 +1,8 @@
 # SymPyCore.jl
 
-Documentation for SymPyCore.jl.
+Documentation for SymPyCore.jl, a package allowing the use of `Python`'s SymPy library from within a `Julia` session.
 
-
+----
 
 [SymPy](https://www.sympy.org/) is Python library for symbolic mathematics.
 
@@ -19,3 +19,12 @@ The `SymPyCore` package aims to unify the underlying code, leaving only a small 
 While both glue packages provide a means to interact directly with the `sympy` library in `Python`, `SymPyCore` adds some conveniences, including many `Julia`n idioms for easier use within `Julia`.
 
 The *SympyCore introduction* page shows basic usages. The `Julia` translation of the *SymPy Tutorial* is more extensive.
+
+
+## Alternatives
+
+`Julia` provides a few alternatives to `SymPy` for symbolic math. Two that are more performant though not as feature rich are:
+
+* [Symbolics](https://symbolics.juliasymbolics.org) which is used within the SciML suite of packages.
+
+* [SymEngine](https://github.com/symengine/symengine.jl) an interface to the underlying C++ symengine library

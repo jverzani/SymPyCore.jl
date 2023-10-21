@@ -37,7 +37,7 @@ Sym(x::Rational{T}) where {T} = Sym(numerator(x))/Sym(denominator(x))
 # containers
 Sym(x::Tuple) = Tuple(Sym(xᵢ) for xᵢ ∈ x)
 Sym(x::Vector) = Sym[Sym(xᵢ) for xᵢ ∈ x]
-
+_pytype(::Sym{T}) where {T} = T
 
 
 Base.collect(s::Sym) = Sym.(collect(↓(s)))
