@@ -69,6 +69,10 @@ sympy.expand_log(log(2x))
 
 Methods of `sympy` are also called using the conversion operators above.
 
+### Some functions of SymPy are Julia methods
+
+A few select functions of SymPy are available as `Julia` methods where *typically* the dispatch is based on the first element being symbolic. Other methods must by qualified, as in `sympy.expand_log`. Historically, `SymPy` was pretty expansive with what it chose to export, but that is no longer the case. Currently, only a few foundational function are exported. E.g., `expand` but not `expand_log`; `simplify` but not `trigsimp`. This should reduce name collisions with other packages. The drawback, is we can add more `Julia`n interfaces when a method is defined. Open an issue, should you think this advantageous.
+
 ## Using other SymPy modules
 
 We now show how to access one of the numerous external modules of `sympy` beyond those exposed immediately by `SymPy`. In this case, the `stats` module.
