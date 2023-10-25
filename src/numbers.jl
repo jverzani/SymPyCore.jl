@@ -4,7 +4,6 @@
 _convert() = ()
 Base.convert(::Type{S}, x::Sym{T}) where {S<:Number, T} = _convert(S, ↓(x))
 
-
 ## N
 # special case numbers in sympy.core.numbers
 sympy_core_numbers = ((:Zero, 0),
@@ -42,8 +41,8 @@ function N(x)
     end
 
     if x.is_real == true
-        x.is_zero && return 0
-        x.is_infinite && return (y.is_negative ? -1 : 1) * Inf
+        x.is_zero == true && return 0
+        x.is_infinite == true && return (y.is_negative ? -1 : 1) * Inf
         if x.is_integer == true
             u = abs(x)
             T = Le(u, typemax(Int)) == Sym(true) ? Int : BigInt

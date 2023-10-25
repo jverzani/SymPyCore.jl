@@ -49,6 +49,11 @@ PermutationGroup(args...; kwargs...) = combinatorics.PermutationGroup(args...; k
 #@doc SymPyCore.Q_docs
 #𝑄 = sympy.Q #SymPyCore.𝑄(_sympy_=_sympy_)
 
+function SymPyCore.ask(x::Sym)
+    u = sympy.ask(x)
+    return convert(SymPyCore.Bool3, u)
+end
+
 # lambdify using use_julia_code (`sympy` not available in `lambify.jl`)
 function SymPyCore._convert_expr(use_julia_code::Val{true}, ex; kwargs...)
     Meta.parse(string(_sympy_.julia_code(↓(ex))))

@@ -129,7 +129,7 @@ new_exported_methods = (
     (:_sympy_, :summation,   :summation),
     (:_sympy_, :hessian,     :hessian),
     #
-    (:_sympy_, :ask,         :ask),
+    #(:_sympy_, :ask,         :ask),
     (:_sympy_, :refine,      :refine),
     #
     (:_sympy_, :Heaviside,   :Heaviside),

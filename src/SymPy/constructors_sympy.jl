@@ -1,7 +1,6 @@
 ## constructors
 
 Sym(x::Number) = ↑(_sympy_.sympify(x))
-Sym(x::Bool) = x ? Sym(_sympy_.logic.boolalg.BooleanFalse) : Sym(_sympy_.logic.boolalg.BooleanFalse)
 Sym(x::AbstractString) = ↑(_sympy_.sympify(x))
 Sym(x::Irrational{:π}) = PI
 Sym(x::Irrational{:ℯ}) = E
