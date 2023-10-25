@@ -178,13 +178,16 @@ end
     @test ismissing(M == M)
     @test isequal(M, M)
 
-    a = (T,F,No,N,M,x,y,z)
+    a = (T,F,N,M,x,y,z)
     for i ∈ 1:length(a)
         for j ∈ (i+1):length(a)
             u,v = a[i], a[j]
             @test isless(u,v) + isequal(u,v) + isless(v,u) == 1
         end
     end
+
+    @syms x::positive
+    @test Lt(x, 0) == false # sympy.logic.boolalg.BooleanFalse == false
 
 end
 
@@ -262,4 +265,24 @@ end
     @test doit(dgfx, deep=true) == g(2*x)
     @test dgfx |> doit(deep=true) == g(2*x)
 
+end
+
+@testset "getproperty" begin
+    # test getproperty override
+
+    # properties have 3-valued logic
+    @syms x::positive y
+    @test x.is_real
+    @test !x.is_zero
+    @test y.is_real == nothing
+    @test Sym(7).is_prime
+    @test !Sym(8).is_prime
+    @test x.isprime == nothing
+
+    # we get modules back
+    @test Introspection.classname(sympy.logic) == "module"
+
+    # get callable object for objects with __call__ method
+    @test x.subs isa SymPyCore.SymbolicCallable
+    @test x.subs(x,2) isa Sym # calls return Sym objects (or containers of)
 end

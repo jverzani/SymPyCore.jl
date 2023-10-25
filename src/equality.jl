@@ -44,7 +44,9 @@ struct Bool3 end
 function Base.convert(::Type{Bool3}, x::Sym{T}) where {T}
     y = ↓(x)
     if hasproperty(y, "is_Boolean")
-        _convert(Bool, y.is_Boolean) && return _convert(Bool, y)
+        if _convert(Bool, y.is_Boolean)
+            return _convert(Bool, y)
+        end
     elseif hasproperty(y, "__bool__")
         _convert(Bool, y != ↓(Sym(nothing))) && return _convert(Bool, y)
     end
@@ -71,6 +73,9 @@ function Base.isless(x::S, y::S) where {T,S<:SymbolicObject{T}}
 
     (isnan(x) || isnan(y)) && return !isnan(x)
 
+    u,v = convert(Bool3, x), convert(Bool3, y)
+    u != nothing && v != nothing && return isless(u,v)
+
     if x.is_real == true && y.is_real == true
         return Lt(x, y) == Sym(true) ? true : false
     end
@@ -80,7 +85,7 @@ function Base.isless(x::S, y::S) where {T,S<:SymbolicObject{T}}
     elseif hasproperty(↓(y), "compare")
         out = - (y.compare(x))
     else
-        @show :huh, x, y
+        @show :huh_shouldnt_get_here, x, y
         out = -1
     end
 

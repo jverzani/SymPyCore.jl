@@ -129,7 +129,7 @@ new_exported_methods = (
     (:_sympy_, :summation,   :summation),
     (:_sympy_, :hessian,     :hessian),
     #
-    (:_sympy_, :ask,         :ask),
+    #(:_sympy_, :ask,         :ask),
     (:_sympy_, :refine,      :refine),
     #
     (:_sympy_, :Heaviside,   :Heaviside),
@@ -176,7 +176,7 @@ for passing to an underlying Python function.
 #↓(x::AbstractString) = ↓(↑(x))
 ↓(x::Tuple) = Tuple(↓(xᵢ) for xᵢ ∈ x)
 ↓(x::AbstractArray) = map(↓, x)
-
+↓(x::Pair) = (↓(first(x)), ↓(last(x))) # Not the most useful?
 
 ↓ₖ(kw) = collect(k => ↓(v) for (k,v) ∈ kw) # unsym NamedTuple?
 
