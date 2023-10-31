@@ -1,5 +1,5 @@
 using Test
-import SymPyPyCall.SymPyCore: ∨, ∧, ¬
+import SymPyCore: ∨, ∧, ¬
 
 @testset "Logical" begin
     ## More logical expressions

@@ -11,7 +11,7 @@ in the [advanced expression manipulation](tutorial-manipulation) section.
 
 !!! tip "Julia differences"
 
-    We access SymPy from `Julia` by loading either the `SymPyPyCall` or `SymPyPythonCall` packages. Once loaded, commands like the following one should run without complaint.
+    We access SymPy from `Julia` by loading either the `SymPy` or `SymPyPythonCall` packages. Once loaded, commands like the following one should run without complaint.
 
 
 

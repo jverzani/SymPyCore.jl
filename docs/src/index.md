@@ -12,7 +12,7 @@ As there are two means to call `Python` code from `Julia`, two packages have bee
 
 * [SymPyPythonCall.jl](https://github.com/jverzani/SymPyPythonCall.jl) is a `Julia` package using `PythonCall.jl` to provide a "`Julia`n" interface to SymPy providing a nearly identical experience as `SymPy.jl`.
 
-The `SymPyCore` package aims to unify the underlying code, leaving only a small amount of glue code in the primary packages. Currently these are called `SymPyPyCall` and `SymPyPythonCall` to avoid the name collision, but it is expected that the next breaking versions of `SymPy`  will use `SymPyCore`.
+The `SymPyCore` package aims to unify the underlying code, leaving only a small amount of glue code in the primary packages. The most recent versions of the above use this backend.
 
 ----
 

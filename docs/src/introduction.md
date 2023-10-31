@@ -10,7 +10,7 @@ using SymPyPythonCall
 
 ## Overview
 
-In this document, we use `SymPy` to refer to either the `SymPyPyCall` or `SymPyPythonCall` packages that interface `Julia` with SymPy from `Python` using `SymPyCore`. The only difference being the glue package for interop between `Julia` and `Python`. (It is planned that `SymPyPyCall` will be renamed `SymPy` when a breaking change is released for `SymPy`.)
+In this document, we use `SymPy` to refer to either the `SymPy` or `SymPyPythonCall` packages that interface `Julia` with SymPy from `Python` using `SymPyCore`. The only difference being the glue package for interop between `Julia` and `Python`.
 
 `SymPy` provides a `Julia`n interface to SymPy, a `Python` library for symbolic math, as alternative to working with `Python` objects directly using one of the glue packages. See the [overview](./overview.html) page for more details. Some brief implementation details are:
 
@@ -26,7 +26,7 @@ In this document, we use `SymPy` to refer to either the `SymPyPyCall` or `SymPyP
 
 ## The package
 
-Either the `SymPyPyCall` or `SymPyPythonCall` packages needs to be loaded, e.g., `using SymPyPyCall`. The two can't be used in the same session.
+Either the `SymPy` or `SymPyPythonCall` packages needs to be loaded, e.g., `using SymPy`. The two can't be used in the same session.
 
 When either is installed, the `SymPyCore` package is installed; the underlying glue package (either `PyCall` or `PythonCall`) should be installed; and that glue package should install the `sympy` library of `Python`.
 
