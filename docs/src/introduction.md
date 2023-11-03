@@ -184,7 +184,7 @@ This calling style will be equivalent to the last:
 ex(x=>1, y=>pi)
 ```
 
-A straight call is also possble, where the order of the variables is determined by `free_symbols`. This is useful for expressions of a single variable, but being more explicit through the use of paired values is recommended.
+A straight call is also possible, where the order of the variables is determined by `free_symbols`. This is useful for expressions of a single variable, but being more explicit through the use of paired values is recommended.
 
 
 ## Conversion from symbolic to numeric
@@ -240,7 +240,7 @@ functions are overloaded to work with symbolic expressions. `Julia`'s
 generic definitions are used, as possible. This also introduces some
 edge cases. For example, `x^(-2)` will balk due to the negative,
 integer exponent, but either `x^(-2//1)` or `x^Sym(-2)` will work as
-expected, as the former call first dispatches to a generic defintion,
+expected, as the former call first dispatches to a generic definition,
 but the latter two expressions do not.
 
 
@@ -443,7 +443,7 @@ If given a polynomial, like `p`, there are different means to extract the coeffi
 
 * SymPy provides a `coeffs` method for `Poly` objects, but `p` must first be converted to one.
 
-* SymPy provides the `coeff` method for expressions, which allows extration of a coeffiecient for a given monomial
+* SymPy provides the `coeff` method for expressions, which allows extraction of a coefficient for a given monomial
 
 
 

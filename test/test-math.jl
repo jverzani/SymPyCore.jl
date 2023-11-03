@@ -378,7 +378,7 @@ end
     @test Sym(1) / true == Sym(1) == true / Sym(1)
     @test true^Sym(1)   == Sym(1) == Sym(1)^true
 
-    ## Issue #390 on div (__div__ was depracated, use __truediv__)
+    ## Issue #390 on div (__div__ was deprecated, use __truediv__)
     #XXX@test Sym(2):-Sym(2):-Sym(2) |> collect == [2, 0, -2]
 
     ## Lambda function to create a lambda
@@ -394,7 +394,7 @@ end
     t = series(exp(x), x, 0, 2)
     @test lambdify(t)(1/2) == 1 + 1/2
 
-    ## Issue #405 with ambigous methods
+    ## Issue #405 with ambiguous methods
     @syms α
     M = Sym[1 2; 3 4]
     @test α * M == M * α

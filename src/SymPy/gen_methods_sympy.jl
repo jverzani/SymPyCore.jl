@@ -51,7 +51,7 @@ for (ometh, jmod, jmeth) ∈ SymPyCore.object_methods
 end
 
 ## --------------------------------------------------
-## Some trignometric functions which need PI defined
+## Some trigonometric functions which need PI defined
 
 Base.sinpi(x::Sym) = sin(PI*x)
 Base.cospi(x::Sym) = cos(PI*x)

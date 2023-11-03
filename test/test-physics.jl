@@ -37,7 +37,7 @@ import_from(sympy.physics.quantum.spin)
 
 
     # Optics
-    # sympy.physics.optics.RayTransferMatrix not a functino
+    # sympy.physics.optics.RayTransferMatrix not a function
     @test sympy.physics.optics.RayTransferMatrix(1,2,3,4) == convert(SymMatrix,Sym[1 2; 3 4])
     @test sympy.physics.optics.FlatMirror() == convert(SymMatrix,Sym[1 0; 0 1])
 

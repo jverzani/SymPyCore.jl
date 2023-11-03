@@ -107,7 +107,7 @@ end
     @test subs(ex, Dict(x=>1)) == 0
     @test ex(x=>1) == 0
     @test ex(x=>2, y=>2) == 0
-    @test ex.subs(Dict(x=>1)) == 0 ## shoul break. Awkward mix of python/julia
+    @test ex.subs(Dict(x=>1)) == 0 ## should break. Awkward mix of python/julia
 
     # Test subs on simple numbers
     @syms x y
@@ -121,7 +121,7 @@ end
     for i=1:4
         x = Sym("x$i")
         ex=ex*x
-        dict1[string(x)] = i ## This shoudn't work!!
+        dict1[string(x)] = i ## This shouldn't work!!
         dict2[x] = i
     end
     for d in (dict1,)

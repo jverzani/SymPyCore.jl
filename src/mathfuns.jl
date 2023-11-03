@@ -169,7 +169,7 @@ julia> u = solve([a*x + b*y-3, c*x + b*y - 1], [x,y]); show(u[x])
 ```
 
 !!! note
-    A very nice example using `solve` is a [blog](https://newptcai.github.io/euclidean-plane-geometry-with-julia.html) entry on [Napolean's theorem](https://en.wikipedia.org/wiki/Napoleon%27s_theorem) by Xing Shi Cai.
+    A very nice example using `solve` is a [blog](https://newptcai.github.io/euclidean-plane-geometry-with-julia.html) entry on [Napoleon's theorem](https://en.wikipedia.org/wiki/Napoleon%27s_theorem) by Xing Shi Cai.
 
 !!! note "Systems"
     Use a tuple, not a vector, of equations when there is more than one.

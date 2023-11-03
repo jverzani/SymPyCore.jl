@@ -526,7 +526,7 @@ dictionary of `sympy_name:numerical_function` pairs.  For example
 
 !!! tip "Julia differences"
 
-	While passing in a map of function values is supported, creating an arbitray function is not. In `Symbolics` one can `@register` a function, this could be added.
+	While passing in a map of function values is supported, creating an arbitrary function is not. In `Symbolics` one can `@register` a function, this could be added.
 
 ```@repl Julia
 nothing

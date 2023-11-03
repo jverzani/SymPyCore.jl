@@ -42,7 +42,7 @@ function Permutation(x; kwargs...)
 end
 PermutationGroup(args...; kwargs...) = combinatorics.PermutationGroup(args...; kwargs...)
 
-# Instrospection, assumptions use a struct to imitate old use of module; we pass in _sympy_
+# Introspection, assumptions use a struct to imitate old use of module; we pass in _sympy_
 @doc SymPyCore.Introspection_docs Introspection = SymPyCore.Introspection(_sympy_ = _sympy_) # introspection
 
 # 𝑄 alternative to sympy.Q (maybe unnecessary)

@@ -4,7 +4,7 @@ using SymPyCore
 import SymbolicUtils
 
 #==
-Check if x represents an expression tree. If returns true, it will be assumed that operation(::T) and arguments(::T) methods are defined. Definining these three should allow use of SymbolicUtils.simplify on custom types. Optionally symtype(x) can be defined to return the expected type of the symbolic expression.
+Check if x represents an expression tree. If returns true, it will be assumed that operation(::T) and arguments(::T) methods are defined. Defining these three should allow use of SymbolicUtils.simplify on custom types. Optionally symtype(x) can be defined to return the expected type of the symbolic expression.
 ==#
 function SymbolicUtils.istree(x::SymPyCore.Sym)
     SymPyCore._istree(x)
