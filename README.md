@@ -12,6 +12,6 @@ At present, there are two means to call `Python` code from `Julia`. As such, two
 
 * [SymPyPythonCall.jl](https://github.com/jverzani/SymPyPythonCall.jl) is a `Julia` package using `PythonCall.jl` to provide a "`Julia`n" interface to SymPy providing a nearly identical experience as `SymPy.jl`.
 
-The `SymPyCore` package aims to unify the underlying code, leaving only a small amount of glue code in the primary packages. As of version `0.2` `SymPyPythonCall.jl` uses the `SymPyCore` backend. The [SymPyPyCall.jl](https://github.com/jverzani/SymPyPyCall.jl) package uses `SymPyCore` and `PyCall`, like `SymPy`. It is expected that the next breaking version of `SymPy` will be based on `SymPyPyCall`.
+The `SymPyCore` package aims to unify the underlying code, leaving only a small amount of glue code in the primary packages. As of version `0.2` of `SymPyPythonCall.jl`  and version `2.0` of `SymPy` the `SymPyCore` package is used.
 
-To use `SymPyCore` you should install one of the two primary packages, and load that into a session. Installation of either `SymPyPythonCall` or `SymPyPyCall` should install the core package, the glue package, and arrange for the underlying sympy library of Python to be installed.
+To use `SymPyCore` you should install one of the two primary packages, and load that into a session. Installation of either `SymPyPythonCall` or `SymPy` should install the core package, the glue package, and arrange for the underlying sympy library of Python to be installed.

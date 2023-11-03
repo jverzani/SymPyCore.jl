@@ -246,7 +246,7 @@ import SymPyCore: SymFunction
 
     ## limits
     @syms x
-    # @test limit(x -> sin(x)/x, 0) == 1 # XXX deprected; use x=>c
+    # @test limit(x -> sin(x)/x, 0) == 1 # XXX deprecated; use x=>c
     #@test limit(sin(x)/x, x, 0) |> float == 1 #XXX deprecated
     @test limit(sin(x)/x, x => 0) == 1
     @syms x h
@@ -360,7 +360,7 @@ import SymPyCore: SymFunction
 
     ## vector vector
     @test v .+ v == 2v
-    ##@test_throws MethodError  v .+ rv ##  no longer an error, broadcase
+    ##@test_throws MethodError  v .+ rv ##  no longer an error, broadcast
     @test v .- v == [0, 0]
     @test_throws DIMERROR  v - rv
     @test_throws DimensionOrMethodError   v * v ## error
@@ -755,7 +755,7 @@ end
     f = x -> x^2 + 1 +log(abs( 11*x-15 ))/99
     @test limit(f(x), x=>15//11) == -oo
 
-    ## Issue #390 on div (__div__ was depracated, use __truediv__)
+    ## Issue #390 on div (__div__ was deprecated, use __truediv__)
     #XXX@test Sym(2):-Sym(2):-Sym(2) |> collect == [2, 0, -2]
 
     ## Lambda function to create a lambda
@@ -836,7 +836,7 @@ end
     ## issue with `pycall_hasproperty` and nothing values.
     @test Sym(2.5).is_rational == nothing
 
-    ## Issue #405 with ambigous methods
+    ## Issue #405 with ambiguous methods
     @syms α
     M = Sym[1 2; 3 4] ## XXX M = SymMatrix([1 2; 3 4])
     @test α * M == M * α

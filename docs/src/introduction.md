@@ -10,7 +10,7 @@ using SymPyPythonCall
 
 ## Overview
 
-In this document, we use `SymPy` to refer to either the `SymPyPyCall` or `SymPyPythonCall` packages that interface `Julia` with SymPy from `Python` using `SymPyCore`. The only difference being the glue package for interop between `Julia` and `Python`. (It is planned that `SymPyPyCall` will be renamed `SymPy` when a breaking change is released for `SymPy`.)
+In this document, we use `SymPy` to refer to either the `SymPy` or `SymPyPythonCall` packages that interface `Julia` with SymPy from `Python` using `SymPyCore`. The only difference being the glue package for interop between `Julia` and `Python`.
 
 `SymPy` provides a `Julia`n interface to SymPy, a `Python` library for symbolic math, as alternative to working with `Python` objects directly using one of the glue packages. See the [overview](./overview.html) page for more details. Some brief implementation details are:
 
@@ -26,7 +26,7 @@ In this document, we use `SymPy` to refer to either the `SymPyPyCall` or `SymPyP
 
 ## The package
 
-Either the `SymPyPyCall` or `SymPyPythonCall` packages needs to be loaded, e.g., `using SymPyPyCall`. The two can't be used in the same session.
+Either the `SymPy` or `SymPyPythonCall` packages needs to be loaded, e.g., `using SymPy`. The two can't be used in the same session.
 
 When either is installed, the `SymPyCore` package is installed; the underlying glue package (either `PyCall` or `PythonCall`) should be installed; and that glue package should install the `sympy` library of `Python`.
 
@@ -184,7 +184,7 @@ This calling style will be equivalent to the last:
 ex(x=>1, y=>pi)
 ```
 
-A straight call is also possble, where the order of the variables is determined by `free_symbols`. This is useful for expressions of a single variable, but being more explicit through the use of paired values is recommended.
+A straight call is also possible, where the order of the variables is determined by `free_symbols`. This is useful for expressions of a single variable, but being more explicit through the use of paired values is recommended.
 
 
 ## Conversion from symbolic to numeric
@@ -240,7 +240,7 @@ functions are overloaded to work with symbolic expressions. `Julia`'s
 generic definitions are used, as possible. This also introduces some
 edge cases. For example, `x^(-2)` will balk due to the negative,
 integer exponent, but either `x^(-2//1)` or `x^Sym(-2)` will work as
-expected, as the former call first dispatches to a generic defintion,
+expected, as the former call first dispatches to a generic definition,
 but the latter two expressions do not.
 
 
@@ -443,7 +443,7 @@ If given a polynomial, like `p`, there are different means to extract the coeffi
 
 * SymPy provides a `coeffs` method for `Poly` objects, but `p` must first be converted to one.
 
-* SymPy provides the `coeff` method for expressions, which allows extration of a coeffiecient for a given monomial
+* SymPy provides the `coeff` method for expressions, which allows extraction of a coefficient for a given monomial
 
 
 

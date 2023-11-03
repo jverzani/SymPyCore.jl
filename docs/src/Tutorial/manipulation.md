@@ -210,7 +210,7 @@ function that does this is `sympify`.
 
 !!! tip "Julia differences"
 
-    Using `Sym(2)` is more idiomatic. It uses `sympify`, though a more perfomant means would be to create a Python object (which differs between `PyCall` (`PyObect(2)`) and `PythonCall` (`Py(2)`)) and call `Sym` on that.
+    Using `Sym(2)` is more idiomatic. It uses `sympify`, though a more performant means would be to create a Python object (which differs between `PyCall` (`PyObject(2)`) and `PythonCall` (`Py(2)`)) and call `Sym` on that.
 
 
 ```@repl Julia

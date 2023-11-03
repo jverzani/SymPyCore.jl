@@ -174,7 +174,7 @@ using LinearAlgebra
     @test A * A' isa Matrix{<:Sym}
 
     # XXX No SymMatrix?
-    # ## Issue 413 wth matrix exponential; SymMatrix multiplication
+    # ## Issue 413 with matrix exponential; SymMatrix multiplication
     # @syms a
     # A,A1 = [1 0; 0 a], [1 1; a 2]
     # @test exp(A) == [exp(Sym(1)) 0; 0 exp(a)]

@@ -34,7 +34,7 @@ end
 ## subs
 ##
 """
-`subs` is used to subsitute a value in an expression with another
+`subs` is used to substitute a value in an expression with another
 value.
 Examples:
 

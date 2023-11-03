@@ -4,7 +4,7 @@
 Introspection_docs = md"""
      Introspection
 
-Struct holding functins used to inspect an object
+Struct holding functions used to inspect an object
 
 * `Introspection.func`: Return pointer to Python function.
 * `Introspection.operation`: Return `Julia` generic function for given underlying function

@@ -131,7 +131,7 @@ end
 
 # These have 0-based indexing defined for them to match SymPy
 
-# The traditional infix mathmatical operations are defined, but no dot broadcasting.
+# The traditional infix mathematical operations are defined, but no dot broadcasting.
 
 # The `convert(Matrix{Sym}, M)` call is useful to covert to a Julia matrix
 

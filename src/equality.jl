@@ -1,5 +1,5 @@
-## Equality invovles
-## =  assignement has no change
+## Equality involves
+## =  assignment has no change
 ## ==  - we want to promote to Sym to compare
 ## hash - call out to
 ## ===

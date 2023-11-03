@@ -27,7 +27,7 @@ library.
 
 !!! tip "Julia differences"
 
-    `SymPyCore` is loaded as a backend by either `using SymPyPyCall` or `using SymPyPythonCall`.
+    `SymPyCore` is loaded as a backend by either `using SymPy` or `using SymPyPythonCall`.
 
 ----
 

@@ -142,7 +142,7 @@ To get the shape of a matrix, use :func:`~.shape()` function.
 
 !!! tip "Julia differences"
 
-    We can use `Julia` generics or object mathods of sympy
+    We can use `Julia` generics or object methods of sympy
 
 ```@repl Julia
 M = Sym[1 2 3; -2 0 4]
@@ -701,7 +701,7 @@ output of [roots](./solvers#tutorial-roots)).
 
 !!! tip "Julia differences"
 
-    The `LinearAlgebra` generic functions have methods `eigvals` and `eigvecs` for this taks
+    The `LinearAlgebra` generic functions have methods `eigvals` and `eigvecs` for this task
 
 ```@repl Julia
 M = Sym[3 -2 4 -2; 5 3 -3 -2; 5 -2 2 -2; 5 -2 -3 3]

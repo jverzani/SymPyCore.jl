@@ -11,7 +11,7 @@ in the [advanced expression manipulation](tutorial-manipulation) section.
 
 !!! tip "Julia differences"
 
-    We access SymPy from `Julia` by loading either the `SymPyPyCall` or `SymPyPythonCall` packages. Once loaded, commands like the following one should run without complaint.
+    We access SymPy from `Julia` by loading either the `SymPy` or `SymPyPythonCall` packages. Once loaded, commands like the following one should run without complaint.
 
 
 
@@ -526,7 +526,7 @@ dictionary of `sympy_name:numerical_function` pairs.  For example
 
 !!! tip "Julia differences"
 
-	While passing in a map of function values is supported, creating an arbitray function is not. In `Symbolics` one can `@register` a function, this could be added.
+	While passing in a map of function values is supported, creating an arbitrary function is not. In `Symbolics` one can `@register` a function, this could be added.
 
 ```@repl Julia
 nothing

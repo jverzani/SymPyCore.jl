@@ -13,7 +13,7 @@ Wild(x::Symbol) = Wild(string(x)) # Wild(::String) in syjmpy.jl
 
 Match a pattern against an expression; returns a dictionary of matches.
 
-If a match is unsuccesful, returns an *empty* dictionary. (SymPy returns "nothing")
+If a match is unsuccessful, returns an *empty* dictionary. (SymPy returns "nothing")
 
 The order of the arguments follows `Julia`'s `match` function, not `sympy.match`, which can be used directly, otherwise.
 """
@@ -27,7 +27,7 @@ end
     replace(expression, pattern, value, ...)
     replace(expression, pattern => value; kwargs...)
 
-In the expression replace a mathcing pattern with the value. Returns the modified expression.
+In the expression replace a matching pattern with the value. Returns the modified expression.
 
 # Extended help
 
@@ -121,7 +121,7 @@ y + 2/x
 
 ## "type" -> "function"
 
-To replace with a more complicated function, requires some assistance from `Python`, as an anonymous function must be defined witin Python, not `Julia`. This is how it might be done:
+To replace with a more complicated function, requires some assistance from `Python`, as an anonymous function must be defined within Python, not `Julia`. This is how it might be done:
 
 ```julia
 julia> import PyCall
