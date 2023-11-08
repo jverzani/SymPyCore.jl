@@ -190,7 +190,11 @@ end
 end
 
 @testset "Piecewise" begin
-
+    @syms x
+    u = diff(sympy.Piecewise((2x, (Le(0,x) & Le(x, 10))), (3x^2, true)), x)
+    @test u(x => 5) == 2
+    @syms y::negative
+    @test u(x => y) == 6*y
 end
 
 @testset "Relations" begin
