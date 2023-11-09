@@ -18,6 +18,13 @@ SpecialFunctions.besselj(n::Number, b::Sym) = sympy.besselj(n, b)
 SpecialFunctions.besselk(n::Number, b::Sym) = sympy.besselk(n, b)
 SpecialFunctions.bessely(n::Number, b::Sym) = sympy.bessely(n, b)
 
+# CommonEq
+CommonEq.Lt(a::T,b::T) where {T <: SymbolicObject} = sympy.Lt(a,b)
+CommonEq.Le(a::T,b::T) where {T <: SymbolicObject} = sympy.Le(a,b)
+CommonEq.Eq(a::T,b::T) where {T <: SymbolicObject} = sympy.Eq(a,b)
+CommonEq.Ne(a::T,b::T) where {T <: SymbolicObject} = sympy.Ne(a,b)
+CommonEq.Ge(a::T,b::T) where {T <: SymbolicObject} = sympy.Ge(a,b)
+CommonEq.Gt(a::T,b::T) where {T <: SymbolicObject} = sympy.Gt(a,b)
 
 LinearAlgebra.norm(x::AbstractVector{T}, args...; kwargs...) where {T <: SymbolicObject} =
     ↑(getproperty(sympy.Matrix(Tuple(xᵢ for xᵢ ∈ x)), :norm)(↓(args)...; ↓ₖ(kwargs)...))
