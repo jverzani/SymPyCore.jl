@@ -63,12 +63,12 @@ generic_methods = (
     (:_sympy_, :solve, :CommonSolve, :solve),
 
     # Eq
-    (:_sympy_, :Eq, :CommonEq, :Eq),
-    (:_sympy_, :Lt, :CommonEq, :Lt),
-    (:_sympy_, :Le, :CommonEq, :Le),
-    (:_sympy_, :Ne, :CommonEq, :Ne),
-    (:_sympy_, :Ge, :CommonEq, :Ge),
-    (:_sympy_, :Gt, :CommonEq, :Gt),
+    #(:_sympy_, :Eq, :CommonEq, :Eq),
+    #(:_sympy_, :Lt, :CommonEq, :Lt),
+    #(:_sympy_, :Le, :CommonEq, :Le),
+    #(:_sympy_, :Ne, :CommonEq, :Ne),
+    #(:_sympy_, :Ge, :CommonEq, :Ge),
+    #(:_sympy_, :Gt, :CommonEq, :Gt),
 
 
     # collect

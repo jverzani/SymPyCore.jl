@@ -108,12 +108,3 @@ Base.:!(x::Sym)         =  ↑(↓(x).__invert__())
 ∨(x::Sym, y::Sym) = x | y
 ∧(x::Sym, y::Sym) = x & y
 ¬(x::Sym) = !x
-
-# CommonEq adjustment
-# Annoying, but generated value only does first argument
-CommonEq.Eq(a::Real,x::Sym) = Eq(promote(a,x)...)
-CommonEq.Lt(a::Real,x::Sym) = Lt(promote(a,x)...)
-CommonEq.Le(a::Real,x::Sym) = Le(promote(a,x)...)
-CommonEq.Ne(a::Real,x::Sym) = Ne(promote(a,x)...)
-CommonEq.Ge(a::Real,x::Sym) = Ge(promote(a,x)...)
-CommonEq.Gt(a::Real,x::Sym) = Gt(promote(a,x)...)
