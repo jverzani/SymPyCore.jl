@@ -71,6 +71,7 @@ end
     @test isa(N(Sym(1)), Integer)
     @test isa(N(Sym(1)/2), Rational)
     @test isa(N(Sym(1.2)), Float64)
+    @test isa(N(exp(log(x)^2/2)(x=>2)), Float64)
 
 end
 
