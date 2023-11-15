@@ -179,6 +179,7 @@ for passing to an underlying Python function.
 ↓(x::Pair) = (↓(first(x)), ↓(last(x))) # Not the most useful?
 
 ↓ₖ(kw) = collect(k => ↓(v) for (k,v) ∈ kw) # unsym NamedTuple?
+#↓ₖ(kw) = tuple((k => ↓(v) for (k,v) ∈ kw)...) # unsym NamedTuple?
 
 
 """
@@ -203,13 +204,13 @@ to manually convert `Julia` objects into `Python` objects and back.
 !!! note
     There are *some* times where this doesn't work well, and using `sympy.o.λ` along with `↓` and `↑` will work.
 """
-struct SymbolicCallable
-    𝑓
+struct SymbolicCallable{T}
+    𝑓::T
 end
 
 Base.show(io::IO, λ::SymbolicCallable) = print(io, "Callable SymPy method")
 function (v::SymbolicCallable)(args...; kwargs...)
-    val = v.𝑓(↓(args)...; ↓ₖ(kwargs)...)
+    val = v.𝑓(map(↓, args)...; (k => ↓(v) for (k,v) ∈ kwargs)...)
     ↑(val)
 end
 

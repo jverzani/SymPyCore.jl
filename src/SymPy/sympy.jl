@@ -63,8 +63,6 @@ export ↓, ↑
 import SymPyCore: Lt, ≪, Le, ≦, Eq, ⩵, Ne, ≶, ≷, Ge, ≫, Gt, ≧
 export  Lt, ≪, Le, ≦, Eq, ⩵, Ne, ≶, ≷, Ge, ≫, Gt, ≧
 
-const _sympy_core_  = _pynull()
-
 # exported symbols and their python counterparts
 const _sympy_  = _pynull()
 const sympy = Sym(_sympy_)
@@ -96,11 +94,21 @@ const 𝑄 = Sym(_𝑄_)
 const _𝑆_ = _pynull()
 const 𝑆 = Sym(_𝑆_)
 
+# ugly, but needed to speed up python_connection
+const _pyset_ = _pynull()
+const _pytuple_ = _pynull()
+const _pylist_ = _pynull()
+const _pydict_ = _pynull()
+const _bool_ = _pynull()
+const _types_  = _pynull()
+const _ModuleType_ = _pynull()
+const _FiniteSet_ = _pynull()
+const _MutableDenseMatrix_ = _pynull()
+
 function __init__()
 
     ## Define sympy, mpmath, ...
     _copy!(_sympy_, _pyimport_conda("sympy", "sympy"))
-    _copy!(_sympy_core_, _pyimport("sympy.core"))
     _copy!(_combinatorics_, _pyimport_conda("sympy.combinatorics", "sympy"))
 
     _copy!(_PI_, _sympy_.pi)
@@ -110,6 +118,18 @@ function __init__()
     _copy!(_zoo_, _sympy_.zoo)
     _copy!(_𝑆_, _sympy_.S)
     _copy!(_𝑄_, _sympy_.Q)
+
+    # ugly, avoids allocation in PyCall
+    _copy!(_pyset_, getproperty(_pybuiltin, :set))
+    _copy!(_pytuple_, getproperty(_pybuiltin, :tuple))
+    _copy!(_pylist_, getproperty(_pybuiltin, :list))
+    _copy!(_pydict_, getproperty(_pybuiltin, :dict))
+    _copy!(_bool_, getproperty(_pybuiltin, :bool))
+    _copy!(_types_, _pyimport_conda("types", "types"))
+    _copy!(_ModuleType_, getproperty(_types_, :ModuleType))
+    _copy!(_FiniteSet_, _sympy_.FiniteSet)
+    _copy!(_MutableDenseMatrix_, _sympy_.MutableDenseMatrix)
+
 
 end
 
