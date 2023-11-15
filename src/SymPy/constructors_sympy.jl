@@ -1,7 +1,7 @@
 ## constructors
 
-Sym(x::Number) = ↑(_sympy_.sympify(x))
-Sym(x::AbstractString) = ↑(_sympy_.sympify(x))
+Sym(x::Number) = ↑(_sympy_.sympify(x)) # slower that Sym(Py(x)), but more idiomatic
+Sym(x::AbstractString) = ↑(_sympy_.symbols(x))
 Sym(x::Irrational{:π}) = PI
 Sym(x::Irrational{:ℯ}) = E
 Sym(x::Irrational{:φ}) = (1 + sqrt(Sym(5))) / 2
