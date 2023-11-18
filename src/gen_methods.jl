@@ -210,7 +210,13 @@ end
 
 Base.show(io::IO, λ::SymbolicCallable) = print(io, "Callable SymPy method")
 function (v::SymbolicCallable)(args...; kwargs...)
-    val = v.𝑓(map(↓, args)...; (k => ↓(v) for (k,v) ∈ kwargs)...)
+    as = map(↓, args)
+    if isempty(kwargs)
+        val = v.𝑓(as...)
+    else
+        kws = (k => ↓(v) for (k,v) ∈ kwargs)
+        val = v.𝑓(as...; kws...)
+    end
     ↑(val)
 end
 
