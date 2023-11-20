@@ -1,7 +1,7 @@
 name = "SymPyCore"
 uuid = "458b697b-88f0-4a86-b56b-78b75cfb3531"
 authors = ["jverzani <jverzani@gmail.com> and contributors"]
-version = "0.1.7"
+version = "0.1.8"
 
 [deps]
 CommonEq = "3709ef60-1bee-4518-9f2f-acd86f176c50"
