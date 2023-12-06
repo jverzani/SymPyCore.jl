@@ -152,6 +152,7 @@ _ALL_(xs...) = all(xs) # all∘tuple
 _ZERO_(xs...) = 0      #
 # not quite a match; NaN not θ(0) when evaluated at 0 w/o second argument
 _HEAVISIDE_(a...)  = (a[1] < 0 ? 0 : (a[1] > 0 ? 1 : (length(a) > 1 ? a[2] : NaN)))
+_sinc_(x) = iszero(x) ? 1 : sin(x)/x # sympy.sinc ->
 
 ## Map to get function object from type information
 # we may want fn or expression, Symbol(+) yields :+ but allocates to make a string
@@ -180,6 +181,7 @@ sympy_fn_julia_fn = Dict(
     "GreaterThan" => (>=, :(>=)),
     "Greater" => (>, :(>)),
     #
+    "sinc" => (SymPyCore._sinc_, :(SymPyCore._sinc_)),
     "Piecewise" => (SymPyCore._piecewise,  :(SymPyCore._piecewise)),
     "Heaviside" => (SymPyCore._HEAVISIDE_, :(SymPyCore._HEAVISIDE_)),
     "Order" =>     (SymPyCore._ZERO_,      :(SymPyCore._ZERO_)),

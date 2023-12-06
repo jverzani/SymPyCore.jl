@@ -37,6 +37,15 @@ using SymPyCore
     @test sinc(Sym(1)) == 0
     @test N(sinc(Sym(0.2))) ≈ sinc(0.2)
 
+    # we have sinc(x) -> sin(PI*x)/(PI*x) *but*
+    # sympy.sinc(x) as sin(x)/x (their choice).
+    # What do do with lambdify(sympy.sinc(x))? we keep the SymPy
+    @syms x
+    @test lambdify(sinc(x))(1/2) ≈ sinc(1/2)
+    @test lambdify(sympy.sinc(x))(1/2) ≈ sinc(1/2/pi)
+
+
+
     @test flipsign(Sym(3), 2.0) == 3
     @test flipsign(Sym(3), 0.0) == 3
     @test flipsign(Sym(3), -0.0) == -3

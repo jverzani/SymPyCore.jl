@@ -55,6 +55,13 @@ end
 
 Base.sinpi(x::Sym) = sin(PI*x)
 Base.cospi(x::Sym) = cos(PI*x)
+"""
+    sinc(x::Sym)
+
+Returns `sin(PI*x)/(PI*x)`.
+
+In the sympy library, `sinc` refers to `sin(x)/x`, differing from `Julia`. When `sympy.sinc(x)` is "lambdified" the value of `sin(x)/x` is used.
+"""
 Base.sinc(x::Sym) = iszero(x) ? one(x) : sinpi(x)/(PI*x)
 Base.cosc(x::Sym) = cospi(x)/x - sinc(x)/x
 
