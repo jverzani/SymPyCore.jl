@@ -2,7 +2,11 @@
 
 ## convert is either convert or pyconvert; defined in python_connection
 _convert() = ()
-Base.convert(::Type{S}, x::Sym{T}) where {S<:Number, T} = _convert(S, ↓(x))
+# no general conversion for "Number", just subtypes
+#Base.convert(::Type{S}, x::Sym{T}) where {S<:Number, T} = _convert(S, ↓(x))
+Base.convert(::Type{S}, x::Sym{T}) where {S<:Real, T} = _convert(S, ↓(x))
+Base.convert(::Type{S}, x::Sym{T}) where {S<:Complex, T} = _convert(S, ↓(x))
+Base.convert(::Type{S}, x::Sym{T}) where {S<:Bool, T} = _convert(S, ↓(x))
 
 ## N
 # special case numbers in sympy.core.numbers
