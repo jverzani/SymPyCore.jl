@@ -12,6 +12,9 @@ function limit(ex::Sym, xc::Pair; kwargs...) # allow pairs
     sympy.limit(↓(ex), Sym(first(xc)), Sym(last(xc)); kwargs...)
 end
 Base.xor(x::Sym, y::Sym) = ↑(_sympy_.Xor(↓(x), ↓(y)))
+Base.div(x::Sym, y::Sym) = ↑(first(_sympy_.div(↓(x), ↓(y))))
+Base.rem(x::Sym, y::Sym) = ↑(_sympy_.rem(↓(x), ↓(y)))
+
 SpecialFunctions.beta(a::Sym, b::Sym) = sympy.beta(a,b)
 SpecialFunctions.besseli(n::Number, b::Sym) = sympy.besseli(n, b)
 SpecialFunctions.besselj(n::Number, b::Sym) = sympy.besselj(n, b)
@@ -39,13 +42,13 @@ end
 
 SymPyCore.Wild(x::AbstractString) = sympy.Wild(string(x))
 
-function Permutation(x; kwargs...)
+function Permutation(x...; kwargs...)
     if typeof(x) <: UnitRange
         x = collect(x)
     end
     # should do this _check_permutation_format(x)
     # call this way to avoid ↓(x) call
-    Sym(_combinatorics_.permutations.Permutation(x; kwargs...))
+    Sym(_combinatorics_.permutations.Permutation(x...; kwargs...))
 end
 PermutationGroup(args...; kwargs...) = combinatorics.PermutationGroup(args...; kwargs...)
 

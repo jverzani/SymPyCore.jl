@@ -81,9 +81,9 @@ Base.isreal(x::Sym) = x.is_real == true
 Base.isnan(x::Sym) = _convert(Bool, ↓(x) == ↓(Sym(NaN)))
 Base.copysign(x::Sym, y::Sym) = abs(x)*sign(y)
 Base.flipsign(x::Sym, y) = isless(y, 0) ? -x : x
-# Base.divrem(x::Sym, y::Sym) = (div(x,y), rem(x,y)) # XXX
 Base.fld(x::Sym, y::Sym) = floor(x / y)
 Base.clamp(x::Sym, a, b) = min(max(x, a), b)
+Base.divrem(x::Sym, y::Sym) = (div(x,y), rem(x,y))
 
 
 ## --------------------------------------------------

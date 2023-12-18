@@ -53,6 +53,11 @@ using SymPyCore
 
     @test eps(Sym) == 0
     #@test rewrite(sinc(x), "jn") == jn(0, PI * x)
+
+    # divrem
+    a, b = x^4 + 2x^2 + 5, x - 2
+    u, v = divrem(a, b)
+    @test simplify(u*b + v - a) == 0
 end
 
 @testset "sign and absolute value functions" begin
