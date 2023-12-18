@@ -12,6 +12,9 @@ function limit(ex::Sym, xc::Pair; kwargs...) # allow pairs
     sympy.limit(↓(ex), Sym(first(xc)), Sym(last(xc)); kwargs...)
 end
 Base.xor(x::Sym, y::Sym) = ↑(_sympy_.Xor(↓(x), ↓(y)))
+Base.div(x::Sym, y::Sym) = ↑(first(_sympy_.div(↓(x), ↓(y))))
+Base.rem(x::Sym, y::Sym) = ↑(_sympy_.rem(↓(x), ↓(y)))
+
 SpecialFunctions.beta(a::Sym, b::Sym) = sympy.beta(a,b)
 SpecialFunctions.besseli(n::Number, b::Sym) = sympy.besseli(n, b)
 SpecialFunctions.besselj(n::Number, b::Sym) = sympy.besselj(n, b)
