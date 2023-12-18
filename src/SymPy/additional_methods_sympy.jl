@@ -42,13 +42,13 @@ end
 
 SymPyCore.Wild(x::AbstractString) = sympy.Wild(string(x))
 
-function Permutation(x; kwargs...)
+function Permutation(x...; kwargs...)
     if typeof(x) <: UnitRange
         x = collect(x)
     end
     # should do this _check_permutation_format(x)
     # call this way to avoid ↓(x) call
-    Sym(_combinatorics_.permutations.Permutation(x; kwargs...))
+    Sym(_combinatorics_.permutations.Permutation(x...; kwargs...))
 end
 PermutationGroup(args...; kwargs...) = combinatorics.PermutationGroup(args...; kwargs...)
 
