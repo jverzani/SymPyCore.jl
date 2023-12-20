@@ -39,6 +39,9 @@ function N(x)
 
     if _istree(x)
         z = y.evalf()
+        if _convert(Bool, Sym(z.is_real))
+            return _convert(Float64, z)
+        end
         if _convert(Bool, Sym(z.is_complex))
             return Complex(convert(Float64, real(Sym((z)))), convert(Float64, imag(Sym(z))))
         end
