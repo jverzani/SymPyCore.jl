@@ -9,8 +9,8 @@
     # @syms
     @syms x
     @syms x, y
-    @syms t, x(), y[1:5], z::positive, a=>"α₁"
     @syms x, xs[1:3]()
+    @syms t, x(), y[1:5], z::positive, a=>"α₁"
     @test SymPyCore.funcname(x(t)) == "x"
     @test string(y[1]) == "y₁"
     @test string(a) == "α₁"
