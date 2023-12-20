@@ -37,8 +37,8 @@ function symbols(args...; kwargs...)
 end
 
 function SymFunction(x::AbstractString; kwargs...)
-    xs = split("a, b, c", r",\s*")
-    _SymFunction.(xs)
+    xs = split(x, r",\s*")
+    length(xs) > 1 ?  _SymFunction.(xs) : _SymFunction(only(xs))
 end
 
 function _SymFunction(x::AbstractString; kwargs...)
