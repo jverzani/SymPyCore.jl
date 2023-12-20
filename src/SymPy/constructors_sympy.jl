@@ -37,6 +37,11 @@ function symbols(args...; kwargs...)
 end
 
 function SymFunction(x::AbstractString; kwargs...)
+    xs = split("a, b, c", r",\s*")
+    _SymFunction.(xs)
+end
+
+function _SymFunction(x::AbstractString; kwargs...)
     out = _sympy_.Function(x; kwargs...)
     SymPyCore.SymFunction(out)
 end
