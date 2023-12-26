@@ -32,7 +32,6 @@ CommonEq.Gt(a::T,b::T) where {T <: SymbolicObject} = sympy.Gt(a,b)
 LinearAlgebra.norm(x::AbstractVector{T}, args...; kwargs...) where {T <: SymbolicObject} =
     ↑(getproperty(sympy.Matrix(Tuple(xᵢ for xᵢ ∈ x)), :norm)(↓(args)...; ↓ₖ(kwargs)...))
 
-
 function dsolve(eqn, args...;
                 ics::Union{Nothing, AbstractDict, Tuple}=nothing,
                 kwargs...)

@@ -112,13 +112,17 @@ Use to find (partial) derivatives.
 Dx = Differential(x)
 Dx(u(x,y))  # resolves to diff(u(x,y),x)
 Dx(u)       # will evaluate diff(u(x), x)
+(Dx^2)(u(x))  # two derivatives in x; not () to avoid 2u(x) eager evaluation
 ```
 """
 struct Differential
     x::Sym
+    i::Int
 end
-(∂::Differential)(u::Sym) = diff(u, ∂.x)
-(∂::Differential)(u::SymFunction) = diff(u(∂.x), ∂.x)
+Differential(x::Sym) = Differential(x, 1)
+Base.:^(∂::Differential, n::Int) = Differential(∂.x, ∂.i*n)
+(∂::Differential)(u::Sym) = diff(u, ∂.x, ∂.i)
+(∂::Differential)(u::SymFunction) = diff(u(∂.x), ∂.x, ∂.i)
 
 
 ## Add interfaces for solve, nonlinsolve when vector of equations passed in

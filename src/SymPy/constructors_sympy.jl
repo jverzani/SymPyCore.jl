@@ -41,7 +41,7 @@ function SymFunction(x::AbstractString; kwargs...)
     length(xs) > 1 ?  _SymFunction.(xs; kwargs...) : _SymFunction(only(xs); kwargs...)
 end
 
-function _SymFunction(x::AbstractString; kwargs...)
+function _SymFunction(x; kwargs...)
     out = _sympy_.Function(x; kwargs...)
     SymPyCore.SymFunction(out)
 end
