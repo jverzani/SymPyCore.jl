@@ -35,7 +35,8 @@ end
     pi, e, catalan = Base.MathConstants.pi, Base.MathConstants.e, Base.MathConstants.catalan
     @test N(Sym(pi)) == pi
     @test N(Sym(ℯ)) ==  ℯ
-
+    @test N(oo) == Inf
+    @test N(-oo) == -Inf
     # @test N(Sym(catalan)) == catalan XXX <<--- expose catalan?
 end
 

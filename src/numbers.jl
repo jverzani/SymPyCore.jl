@@ -48,6 +48,10 @@ function N(x)
         return _convert(Float64, z)
     end
 
+    if x.is_infinite == true
+        return convert(Float64, sign(x)*Inf)
+    end
+
     if x.is_real == true
         x.is_zero == true && return 0
         x.is_infinite == true && return (y.is_negative ? -1 : 1) * Inf
