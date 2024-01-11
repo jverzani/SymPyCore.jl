@@ -73,6 +73,8 @@ end
     @test isa(N(Sym(1)/2), Rational)
     @test isa(N(Sym(1.2)), Float64)
 
+    # issue #39
+    @test promote_type(typeof(one(Sym)), eltype(Sym[1, 2])) == eltype([Sym(1)])
 end
 
 
