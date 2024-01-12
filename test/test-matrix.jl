@@ -20,6 +20,10 @@ using LinearAlgebra
 
     @test adjoint(B) == [adjoint(x) 0; 1 adjoint(2x)]
     @test adjoint(B) == B'
+    @test eltype(adjoint(A)) == eltype(A)
+    @test eltype(transpose(A)) == eltype(A)
+
+
     @test A.dual() == sympy.zeros(2, 2)
 
 

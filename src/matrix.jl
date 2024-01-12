@@ -19,6 +19,15 @@ call_matrix_meth(M::Matrix{T}, meth::Symbol, args...; kwargs...) where {T <: Sym
     ↑(getproperty(↓(M), meth)(↓(args)...; ↓ₖ(kwargs)...))
 
 
+## -- special methods
+function LinearAlgebra.transpose(A::AbstractVecOrMat{T}) where {T <: Sym}
+    LinearAlgebra.Transpose{T,typeof(A)}(A)
+end
+function LinearAlgebra.adjoint(A::AbstractVecOrMat{T}) where {T <: Sym}
+    LinearAlgebra.Adjoint{T,typeof(A)}(A)
+end
+
+
 LinearAlgebra.qr(A::AbstractArray{Sym,2}) = ↑(↓(A).QRdecomposition())
 
 # solve Ax=b for x, avoiding generic `lu`, which can be very slow for bigger n values
