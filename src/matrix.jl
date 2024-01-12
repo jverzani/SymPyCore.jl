@@ -8,9 +8,12 @@ Base.promote_op(::O, ::Type{Sym{T}}, ::Type{S}) where {O,T, S <: Number} = Sym{T
 Base.promote_op(::O, ::Type{Sym{T}}, ::Type{Sym{T}}) where {O,T} = Sym{T} # This helps out linear alg
 
 Base.eachrow(M::Matrix{T}) where {T <: SymbolicObject} = (M[i,:] for i ∈ 1:size(M,1))
-function Base.view(A::AbstractArray{T,N}, I::Vararg{Any,M}) where {T <: SymbolicObject, N,M}
-    A[I...] # can't take view!!
-end
+
+# XXX for *some* reason this was a good idea. Doesn't seem to be necessary
+# now, but if that reason resurfaces, will have to see
+#function Base.view(A::AbstractArray{T,N}, I::Vararg{Any,M}) where {T <: SymbolicObject, N,M}
+#    A[I...] # can't take view!!
+#end
 
 call_matrix_meth(M::Matrix{T}, meth::Symbol, args...; kwargs...) where {T <: Sym} =
     ↑(getproperty(↓(M), meth)(↓(args)...; ↓ₖ(kwargs)...))

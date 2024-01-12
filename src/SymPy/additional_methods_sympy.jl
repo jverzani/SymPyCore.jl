@@ -1,3 +1,13 @@
+"""
+    symtype(x=Sym(1))
+
+Return `Sym{T}` for `T` being the uderlying Python type of `x`.
+"""
+symtype(x::SymbolicObject{T}=Sym(1)) where {T} = Sym{T}
+export symtype
+
+
+
 # Math and other functions that don't fit metaprogramming pattern
 Base.log(x::Sym) = sympy.log(x) # generated method confuses two argument form
 Base.log(n::Number, x::Sym) = sympy.log(x, n) # Need to switch order here

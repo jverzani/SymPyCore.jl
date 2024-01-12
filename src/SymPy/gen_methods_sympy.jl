@@ -40,6 +40,8 @@ for (smeth, jmod, jmeth) ∈ SymPyCore.matrix_meths
     @eval begin
         ($(jmod).$(jmeth))(M::Matrix{T}, args...; kwargs...) where {T <: Sym} =
             ↑(↓(M).$(smeth)(↓(args)...; ↓ₖ(kwargs)...))
+        ($(jmod).$(jmeth))(M::SubArray{T,2}, args...; kwargs...) where {T <: Sym} =
+            ↑(↓(M).$(smeth)(↓(args)...; ↓ₖ(kwargs)...))
     end
 end
 

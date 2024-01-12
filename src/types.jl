@@ -40,7 +40,6 @@ Sym(x::Vector) = Sym[Sym(xᵢ) for xᵢ ∈ x]
 _pytype(::Sym{T}) where {T} = T
 
 Base.promote_type(::Type{Sym}, ::Type{Sym{T}})  where {T} = Sym{T}
-
 Base.collect(s::Sym) = Sym.(collect(↓(s)))
 
 ## --------------------------------------------------

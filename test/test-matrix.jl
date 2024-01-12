@@ -204,4 +204,11 @@ using LinearAlgebra
     ls = eigvals(a)
     vs = eigvecs(a)
     @test simplify.(vs * Diagonal(ls) * inv(vs) -a) == 0*a
+
+    # issue #41 with views
+    A = zeros(symtype(), 2, 2)
+    A[1,1] = 1
+    @test A == [1 0; 0 0]
+    A[2,:] .= 2
+    @test A == [1 0; 2 2]
 end
