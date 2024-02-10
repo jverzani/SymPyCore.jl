@@ -72,6 +72,14 @@ Base.isless(::Missing, y::S)  where {T,S<:SymbolicObject{T}} = false
 function Base.isless(x::S, y::S) where {T,S<:SymbolicObject{T}}
 
     (isnan(x) || isnan(y)) && return !isnan(x)
+    if isinf(x)
+        sign(x) == -1 && return true
+        sign(x) == 1  && return false
+    end
+    if isinf(y)
+        sign(y) == -1 && return false
+        sign(x) == 1  && return true
+    end
 
     u,v = convert(Bool3, x), convert(Bool3, y)
     u != nothing && v != nothing && return isless(u,v)
