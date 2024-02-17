@@ -134,6 +134,11 @@ end
     @test isless(a,b)
     @test isless(a,3) # promotes
     @test !isless(x, b)  # sympy.compare specific
+
+    # issue #47
+    for i ∈ -2.0:0.5:2.0
+        @test -oo < i < oo
+    end
 end
 
 @testset  "nan"  begin

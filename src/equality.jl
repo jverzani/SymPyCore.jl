@@ -78,7 +78,7 @@ function Base.isless(x::S, y::S) where {T,S<:SymbolicObject{T}}
     end
     if isinf(y)
         sign(y) == -1 && return false
-        sign(x) == 1  && return true
+        sign(y) == 1  && return true
     end
 
     u,v = convert(Bool3, x), convert(Bool3, y)
