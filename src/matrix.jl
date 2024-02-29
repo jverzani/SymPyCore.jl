@@ -60,6 +60,13 @@ function LinearAlgebra.eigvals(A::AbstractMatrix{T}) where {T <: Sym}
     vcat((fill(λ, N(k)) for (λ,k,v) ∈ eigs)...)
 end
 
+# add sortby
+#
+function LinearAlgebra.eigen(A::AbstractMatrix{T}) where {T <: Sym}
+    LinearAlgebra.Eigen(eigvals(A), eigvecs(A))
+end
+
+
 ## Issue #359 so that A  +  λI is of type Sym
 Base.:+(A::AbstractMatrix{T}, J::UniformScaling) where {T <: SymbolicObject}    = _sym_plus_I(A,J)
 Base.:+(A::AbstractMatrix, J::UniformScaling{T}) where {T <: SymbolicObject}    = _sym_plus_I(A,J)
