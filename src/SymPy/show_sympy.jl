@@ -18,12 +18,14 @@ function Base.show(io::IO, ::MIME"text/plain", x::SymbolicObject)
     print(io, out)
 end
 
-# function Base.show(io::IO,  ::MIME"text/plain", x::Array{T, N}) where {N, T<:SymbolicObject)
-#     o = x.o
-#     out = string(_sympy_.printing.str.sstr(o)) # or .pretty
-#     out = replace(out, r"\*\*" => "^")
-#     print(io, out)
-# end
+#=
+function Base.show(io::IO,  ::MIME"text/plain", x::Array{T, N}) where {N, T<:SymbolicObject)
+    o = x.o
+    out = string(_sympy_.printing.str.sstr(o)) # or .pretty
+    out = replace(out, r"\*\*" => "^")
+    print(io, out)
+end
+=#
 
 ## --------------------------------------------------
 ## LaTeX printing
@@ -33,11 +35,11 @@ function Base.show(io::IO,  ::MIME"text/latex", x::SymbolicObject)
     print(io, string(out))
 end
 
-function  show(io::IO, ::MIME"text/latex", x::AbstractArray{Sym})
-    print(io, as_markdown(toeqnarray(x)))
+function  Base.show(io::IO, M::MIME"text/latex", x::AbstractArray{<:Sym})
+    show(io, M, sympy.ImmutableMatrix(x))
 end
 
-function show(io::IO, ::MIME"text/latex", d::Dict{T,S}) where {T<:SymbolicObject, S<:Any}
+function Base.show(io::IO, ::MIME"text/latex", d::Dict{T,S}) where {T<:SymbolicObject, S<:Any}
     Latex(x::Sym) = latex(x)
     Latex(x) = sprint(io -> show(IOContext(io, :compact => true), x))
 
