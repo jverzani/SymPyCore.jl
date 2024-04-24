@@ -773,6 +773,19 @@ Here  is  one other way  to  express  the same
 Eq.( (2x+3y,3x-4y), (6,12)) |>  solve == d
 ```
 
+### Solving a linear recurrence
+
+The `rsolve` function solves univariate recurrence with rational coefficients. It's use is like `solve`, though we need to qualify it, as the function does not have a `Julia`n counterpart:
+
+```@repl introduction
+@syms y() n
+eqn = y(n) ~ y(n-1) + y(n-2)
+sympy.rsolve(eqn ,y(n))
+```
+
+A possibly familiar solution to the Fibonacci pattern is produced.
+
+
 ## Matrices
 
 A matrix of symbolic values could be represented in `Julia` as either a symbolic matrix or a matrix of symbolic elements. In `SymPy` the default is to use the latter:
