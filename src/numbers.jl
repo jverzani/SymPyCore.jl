@@ -37,6 +37,15 @@ function N(x)
         cname == u && return v
     end
 
+    if x.is_infinite == true
+        if x.is_extended_real == true
+            x > 0 && return Inf
+            return -Inf
+        else
+            return  Complex(Inf, Inf)
+        end
+    end
+
     if _istree(x)
         z = y.evalf()
         if _convert(Bool, Sym(z.is_real))
