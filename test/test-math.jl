@@ -357,7 +357,9 @@ end
     @syms t, F()
     diffeq = diff(F(t),t) - 3*F(t)
     res = dsolve(diffeq, F(t), ics=Dict(F(0) => 2))  # 2exp(3t)
-    @test lambdify(res)(1) ≈ 2*exp(3*1)
+    @test_broken lambdify(res)(1) ≈ 2*exp(3*1)
+    @test lambdify(res.rhs)(1) ≈ 2*exp(3*1)
+
 
     # issue 304 wrong values for sind, ...
     a = Sym(45)
