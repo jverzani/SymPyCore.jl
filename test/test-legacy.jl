@@ -592,6 +592,11 @@ end
     #@symfuns h real=true positive=true
     @syms h()::(real, positive)
     @test ask(𝑄.positive(h(x))) == true
+
+    # issue #53; not recommended to create functions this way
+    v = sympy.Function("v")
+    @test diff(v(x), x) != 1
+
 end
 
 @testset "Fix past issues" begin
