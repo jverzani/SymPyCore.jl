@@ -9,11 +9,12 @@
 
 ## without specification, variables to substitute for come from ordering of `free_symbols`:
 function (ex::Sym)(args...)
-    xs = free_symbols(ex)
-    for (var, val) in zip(xs, args)
-        ex = subs(ex, Pair(var, Sym(val)))
+    if ex.is_Function
+        return ↑(↓(ex)(map(↓, args)...))
     end
-    ex
+
+    xs = free_symbols(ex)
+    return subs(ex, Dict(zip(xs, args)))
 end
 
 ## can use a Dict or pairs to specify:
@@ -23,12 +24,7 @@ function (ex::Sym)(x::Dict)
     end
     ex
 end
-function (ex::Sym)(kvs::Pair...)
-    for (k,v) in kvs
-        ex = subs(ex, Pair(k, Sym(v)))
-    end
-    ex
-end
+(ex::Sym)(kvs::Pair...) = ex(Dict(kvs...))
 
 ##################################################
 ## subs
@@ -80,7 +76,9 @@ julia> ex |> subs(x=>1, y=>2)
 
 
 """
-subs(ex::T, y::Tuple{Any, Any}; kwargs...)          where {T <: SymbolicObject} = ex.subs(y[1], Sym(y[2]), kwargs...)
+function subs(ex::T, y::Tuple{Any, Any}; kwargs...) where {T <: SymbolicObject}
+    ex.subs(y[1], Sym(y[2]), kwargs...)
+end
 
 # Alternate interfaces
 
