@@ -362,6 +362,15 @@ function  lambdify(ex::Sym, vars=free_symbols(ex);
               use_julia_code=false,
               invoke_latest=true)
 
+    # what to do with equations?
+    if (ex.is_Equality == true)
+        return [
+            lambdify(ex.lhs, vars; fns, values, use_julia_code, invoke_latest),
+            lambdify(ex.rhs, vars; fns, values, use_julia_code, invoke_latest)
+        ]
+    end
+
+
     if isempty(vars)
         # can't call N(ex) here...
         v = ex.evalf()
