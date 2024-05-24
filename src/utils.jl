@@ -9,9 +9,14 @@
 
 ## without specification, variables to substitute for come from ordering of `free_symbols`:
 function (ex::Sym)(args...)
-    if ex.is_Function == true || ex.is_Permutation == true
+    if ex.is_Permutation == true
         return ↑(↓(ex)(map(↓, args)...))
     end
+
+    # need to check if callable
+#    if ex.is_Function == true
+#        return ↑(↓(ex)(map(↓, args)...))
+#    end
 
     xs = free_symbols(ex)
     return subs(ex, Dict(zip(xs, args)))
