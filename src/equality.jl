@@ -26,32 +26,25 @@ Base.:(==)(x::Missing, y::S) where {T, S<:SymbolicObject{T}} = missing
 function Base.:(==)(x::SymbolicObject, y::SymbolicObject)
 
     isnan(x) && isnan(y) && return false
-    a, b = convert(Bool3, x), convert(Bool3, y)
+    a, b = Bool3(x), Bool3(y)
     a == b == true  && return true
     a == b == false && return true
 
     if hasproperty(↓(x), "equals") && hasproperty(↓(y), "equals")
         u = ↑(↓(x).equals(↓(y)))
-        v = convert(Bool3, u)
+        v = Bool3(u)
         v == true && return true
         v == false && return false
     end
     return (hash(x) == hash(y))
 end
 
+Base.hasproperty(::Nothing, ::Any) = false
+
 # Bool3: used with ==; true, false or nothing
-struct Bool3 end
-function Base.convert(::Type{Bool3}, x::Sym{T}) where {T}
-    y = ↓(x)
-    if hasproperty(y, "is_Boolean")
-        if _convert(Bool, y.is_Boolean)
-            return _convert(Bool, y)
-        end
-    elseif hasproperty(y, "__bool__")
-        _convert(Bool, y != ↓(Sym(nothing))) && return _convert(Bool, y)
-    end
-    return nothing
-end
+Bool3(::Sym{Nothing}) = nothing
+Bool3(::Sym{P}) where {P} = throw(ArgumentError("Need specific P"))
+# specialized method form Sym{P} in python_connection
 
 #=
 Similar to ==, except for the treatment of floating point numbers and
@@ -81,7 +74,7 @@ function Base.isless(x::S, y::S) where {T,S<:SymbolicObject{T}}
         sign(y) == 1  && return true
     end
 
-    u,v = convert(Bool3, x), convert(Bool3, y)
+    u, v = Bool3(x), Bool3(y)
     u != nothing && v != nothing && return isless(u,v)
 
     if x.is_real == true && y.is_real == true

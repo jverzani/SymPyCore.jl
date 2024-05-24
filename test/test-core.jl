@@ -75,6 +75,14 @@ end
 
     # issue #39
     @test promote_type(typeof(one(Sym)), eltype(Sym[1, 2])) == eltype([Sym(1)])
+
+    # SymPy issue #545
+    @syms x
+    for op ∈ (+,-,*,/,^)
+        @inferred op(2,x)
+        @inferred op(x,2)
+        @inferred op(x,x)
+    end
 end
 
 

@@ -27,6 +27,7 @@ sympy_core_numbers = ((:Zero, 0),
 
 # N(x.evalf([prec]))
 function N(x)
+
     !is_symbolic(x) && return x
     !isempty(free_symbols(x)) && return x # need constant
     y = ↓(x)
@@ -46,7 +47,7 @@ function N(x)
         end
     end
 
-    if _istree(x)
+    if _iscall(x)
         z = y.evalf()
         if _convert(Bool, Sym(z.is_real))
             return _convert(Float64, z)
@@ -73,7 +74,7 @@ function N(x)
             end
         end
         Sym(y.is_rational) == Sym(true) && return Rational(N(numerator(x)), N(denominator(x)))
-        if _istree(x)
+        if _iscall(x)
             if length(args(x)) > 1
                 def_precision_decimal = ceil(Int, log10(big"2"^Base.MPFR.DEFAULT_PRECISION.x))
                 return _convert(BigFloat, y.evalf(def_precision_decimal))
@@ -96,7 +97,7 @@ function N(x)
 
     x.is_imaginary == Sym(true) && return complex(0, N(imag(x)))
     x.is_complex == Sym(true) && return complex(N(real(x)), N(imag(x)))
-
+@show x
     try
         N(x.evalf())
     catch err

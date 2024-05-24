@@ -70,7 +70,8 @@ PermutationGroup(args...; kwargs...) = combinatorics.PermutationGroup(args...; k
 
 function SymPyCore.ask(x::Sym)
     u = sympy.ask(x)
-    return convert(SymPyCore.Bool3, u)
+    return SymPyCore.Bool3(u)
+    #return convert(SymPyCore.Bool3, u)
 end
 
 # lambdify using use_julia_code (`sympy` not available in `lambify.jl`)
