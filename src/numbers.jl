@@ -27,6 +27,7 @@ sympy_core_numbers = ((:Zero, 0),
 
 # N(x.evalf([prec]))
 function N(x)
+
     !is_symbolic(x) && return x
     !isempty(free_symbols(x)) && return x # need constant
     y = ↓(x)
@@ -96,7 +97,7 @@ function N(x)
 
     x.is_imaginary == Sym(true) && return complex(0, N(imag(x)))
     x.is_complex == Sym(true) && return complex(N(real(x)), N(imag(x)))
-
+@show x
     try
         N(x.evalf())
     catch err
