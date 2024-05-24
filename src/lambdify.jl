@@ -11,7 +11,7 @@ Struct holding functions used to inspect an object
 * `Introspection.funcname`: Returns name of function
 * `Introspection.args`: Returns arguments for expression or empty tuple
 * `Introspection.arguments`: Return arguments
-* `Introspection.istree`: Check if object is an expression (with operation and arguments) or not
+* `Introspection.iscall *`: Check if object is an expression (with operation and arguments) or not
 * `Introspection.class`: Returns `__class__` value
 * `Introspection.classname`: Returns `__class__` value as a string
 * `Introspection.similarterm`: Create a similar term
@@ -23,7 +23,7 @@ every well-formed SymPy expression `ex` must either have `length(args(ex)) == 0`
 `func(ex)(↓(args(ex))...) = ex`.
 
 Using the methods designed for `SymbolicUtils` usage, this becomes
-every expression one of `!istree(ex)`  or `operation(ex)(args(ex)...) == ex` should hold.
+every expression one of `!iscall *(ex)`  or `operation(ex)(args(ex)...) == ex` should hold.
 """
 
 @doc Introspection_docs
@@ -36,7 +36,7 @@ Base.@kwdef struct Introspection{T}
     classname::Function = (x::Sym) -> SymPyCore.classname(x, _sympy_)
     operation::Function = (x::Sym) -> SymPyCore._operation(x)
     arguments::Function = (x::Sym) -> SymPyCore.args(x, _sympy_)
-    istree::Function    = (x::Sym) -> SymPyCore._istree(x)
+    iscall *::Function    = (x::Sym) -> SymPyCore._iscall *(x)
 end
 
 is_symbolic(x::SymbolicObject) = true
@@ -90,13 +90,13 @@ end
 
 ## --------------------------------------------------
 # Methods for SymbolicUtils extension
-function _istree(x::SymbolicObject)
+function _iscall *(x::SymbolicObject)
     hasproperty(↓(x), "is_Atom") && return !x.is_Atom
     return false
 end
 
 function _operation(x::SymbolicObject)
-    #@assert _istree(x)
+    #@assert _iscall *(x)
     nm = funcname(x)
     λ = get(sympy_fn_julia_fn, nm, nothing)
     isnothing(λ) && return getfield(Main, Symbol(nm))
