@@ -455,4 +455,7 @@ end
     # XX sprint(io -> show(io, SymPy.Doc(:sin)))
     Base.Docs.getdoc(sin(x))
 
+    # permutation
+    p = Permutation(0,2)
+    @test p([1,2,3]) == [3,2,1]
 end
