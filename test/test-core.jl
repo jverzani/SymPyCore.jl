@@ -152,6 +152,10 @@ end
         @test ex(d...) == factorial(4)
     end
 
+    # call is substitution
+    @syms x c f()
+    @test sin(x)(c) == sin(c)
+    @test f(x)(c) == f(c)
 end
 
 

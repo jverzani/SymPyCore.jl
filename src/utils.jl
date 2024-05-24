@@ -9,7 +9,13 @@
 
 ## without specification, variables to substitute for come from ordering of `free_symbols`:
 function (ex::Sym)(args...)
-    if ex.is_Function == true || ex.is_Permutation == true
+    if ex.is_Permutation == true
+        return ↑(↓(ex)(map(↓, args)...))
+    end
+
+    # need to check if callable.
+    # This is a total hack!
+    if ex.is_Function == true && string(ex.o.__class__.__name__) == "UndefinedFunction"
         return ↑(↓(ex)(map(↓, args)...))
     end
 
