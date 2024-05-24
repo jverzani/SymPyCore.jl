@@ -178,7 +178,7 @@ with it:
 
 ```@repl Julia
 expr + 1
-expr = x
+expr - x
 ```
 
 ----
