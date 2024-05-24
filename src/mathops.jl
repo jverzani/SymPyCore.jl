@@ -28,7 +28,7 @@ import Base: +, -, *, /, //, \, ^, inv
 
 \(x::Sym, y::Sym) = (y'/x')' # ?
 
-Base.inv(x::Sym) = ↑(↓(x).__pow__(-1)) #x.__pow__(Sym(-1))
+Base.inv(x::Sym) = ↑(↓(x).__pow__(-1))
 
 # special case Boolean; issue   351
 # promotion for Boolean here is to 0 or  1,  not False,  True

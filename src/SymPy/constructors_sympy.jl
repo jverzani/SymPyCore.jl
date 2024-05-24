@@ -1,11 +1,11 @@
 ## constructors
 
-Sym(x::Number) = ↑(_sympy_.sympify(x)) # slower that Sym(Py(x)), but more idiomatic
-Sym{P}(x::Number) where {P} = Sym{P}(_sympy_.sympify(x)) # slower that Sym(Py(x)), but more idiomatic
 Sym(x::AbstractString) = ↑(_sympy_.symbols(x))
+Sym(x::Number) = ↑(_sympy_.sympify(x)) # slower that Sym(Py(x)), but more idiomatic
 Sym(x::Irrational{:π}) = PI
 Sym(x::Irrational{:ℯ}) = E
 Sym(x::Irrational{:φ}) = (1 + sqrt(Sym(5))) / 2
+Sym(x::Rational) = ↑(_sympy_.Rational(numerator(x), denominator(x)))
 function Sym(x::Complex{Bool})
     !x.re &&  x.im && return IM
     !x.re && !x.im && return Sym(0)
@@ -14,28 +14,22 @@ function Sym(x::Complex{Bool})
 end
 Sym(x::Complex{T}) where {T} = Sym(real(x)) + Sym(imag(x)) * IM
 
-# ---
-# avoid some inferrence isses with `::Number`
-# XXX Need a inferred way to make an sympy.Integer
-#===
-Sym{P}(x::Integer) where {P} = sympy.Integer(x) #Sym{P}(_sympy_.Integer(x))
-Sym{P}(x::AbstractFloat) where {P} = Sym{P}(_sympy_.Float(x))
-Sym{P}(x::Rational) where {P} = Sym{P}(_sympy_.Rational(numerator(x), denominator(x)))
-
-Sym{P}(x::Number) where {P} = Sym{P}(_sympy_.sympify(x)) # slower that Sym(Py(x)), but more idiomatic
-Sym{P}(x::AbstractString) where {P} = ↑(_sympy_.symbols(x))
-Sym{P}(x::Irrational{:π}) where {P} = PI
-Sym{P}(x::Irrational{:ℯ}) where {P} = E
-Sym{P}(x::Irrational{:φ}) where {P} = (1 + sqrt(Sym(5))) / 2
+# workaround to get inferrability
+Sym{P}(x::AbstractString) where {P} = ↑(_sympy_.symbols(x))::Sym{P}
+Sym{P}(x::Number) where {P} = Sym{P}(_sympy_.sympify(x))::Sym{P} # slower that Sym(Py(x)), but more idiomatic
+Sym{P}(x::Irrational{:π}) where {P} = PI::Sym{P}
+Sym{P}(x::Irrational{:ℯ}) where {P} = E::Sym{P}
+Sym{P}(x::Irrational{:φ}) where {P} = ((1 + sqrt(Sym{P}(5))) / 2)::Sym{P}
+Sym{P}(x::Rational) where {P} = Sym{P}(_sympy_.Rational(numerator(x), denominator(x)))::Sym{P}
 function Sym{P}(x::Complex{Bool}) where {P}
     !x.re &&  x.im && return IM
-    !x.re && !x.im && return Sym(0)
-     x.re && !x.im && return Sym(1)
-     x.re &&  x.im && return Sym(1) + IM
+    !x.re && !x.im && return Sym{P}(0)
+     x.re && !x.im && return Sym{P}(1)
+     x.re &&  x.im && return Sym{P}(1) + IM
 end
-Sym{P}(x::Complex{T}) where {P,T} = Sym(real(x)) + Sym(imag(x)) * IM
-==#
-# ---
+Sym{P}(x::Complex{T}) where {P,T} = Sym{P}(real(x)) + Sym{P}(imag(x)) * IM
+
+## ---
 
 sympify(x; kwargs...) = ↑(_sympy_.sympify(x; kwargs...))
 
