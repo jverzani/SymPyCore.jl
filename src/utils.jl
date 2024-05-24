@@ -13,10 +13,11 @@ function (ex::Sym)(args...)
         return ↑(↓(ex)(map(↓, args)...))
     end
 
-    # need to check if callable
-#    if ex.is_Function == true
-#        return ↑(↓(ex)(map(↓, args)...))
-#    end
+    # need to check if callable.
+    # This is a total hack!
+    if ex.is_Function == true && string(ex.o.__class__.__name__) == "UndefinedFunction"
+        return ↑(↓(ex)(map(↓, args)...))
+    end
 
     xs = free_symbols(ex)
     return subs(ex, Dict(zip(xs, args)))
