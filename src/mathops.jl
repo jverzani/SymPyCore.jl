@@ -46,7 +46,7 @@ Base.inv(x::Sym) = ↑(↓(x).__pow__(-1))
 # strict conversion Sym(true) only
 function Base.convert(::Type{Bool}, x::Sym{T}) where {T}
     y = ↓(x)
-    hasproperty(y, "is_Boolean") && return _convert(Bool, y)
-    hasproperty(y, "__bool__") && return _convert(Bool, y)
+    hasproperty(y, :is_Boolean) && return _convert(Bool, y)
+    hasproperty(y, :__bool__) && return _convert(Bool, y)
     return false
 end

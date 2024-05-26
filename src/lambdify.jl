@@ -91,7 +91,7 @@ end
 ## --------------------------------------------------
 # Methods for SymbolicUtils extension
 function _iscall(x::SymbolicObject)
-    hasproperty(↓(x), "is_Atom") && return !x.is_Atom
+    hasproperty(↓(x), :is_Atom) && return !x.is_Atom
     return false
 end
 
