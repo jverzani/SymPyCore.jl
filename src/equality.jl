@@ -30,7 +30,7 @@ function Base.:(==)(x::SymbolicObject, y::SymbolicObject)
     a == b == true  && return true
     a == b == false && return true
 
-    if hasproperty(↓(x), "equals") && hasproperty(↓(y), "equals")
+    if hasproperty(↓(x), :equals) && hasproperty(↓(y), :equals)
         u = ↑(↓(x).equals(↓(y)))
         v = Bool3(u)
         v == true && return true
@@ -38,8 +38,6 @@ function Base.:(==)(x::SymbolicObject, y::SymbolicObject)
     end
     return (hash(x) == hash(y))
 end
-
-Base.hasproperty(::Nothing, ::Any) = false
 
 # Bool3: used with ==; true, false or nothing
 Bool3(::Sym{Nothing}) = nothing
@@ -81,9 +79,9 @@ function Base.isless(x::S, y::S) where {T,S<:SymbolicObject{T}}
         return Lt(x, y) == Sym(true) ? true : false
     end
 
-    if hasproperty(↓(x), "compare")
+    if hasproperty(↓(x), :compare)
         out = x.compare(y)
-    elseif hasproperty(↓(y), "compare")
+    elseif hasproperty(↓(y), :compare)
         out = - (y.compare(x))
     else
         @show :huh_shouldnt_get_here, x, y
