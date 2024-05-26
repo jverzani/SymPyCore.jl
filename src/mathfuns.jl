@@ -179,7 +179,7 @@ julia> u = solve([a*x + b*y-3, c*x + b*y - 1], [x,y]); show(u[x])
     Use a tuple, not a vector, of equations when there is more than one.
 
 """
-solve() = nothing
+solve
 
 ## dsolve allowing initial condiation to be specified
 
