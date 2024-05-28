@@ -22,7 +22,7 @@ Base.:(==)(::SymbolicObject, ::Missing) = missing
 Base.:(==)(::Missing, ::SymbolicObject) = missing
 Base.:(==)(x::S, y::Nothing) where {T, S<:SymbolicObject{T}} = y == x
 Base.:(==)(::Nothing, y::S) where {T, S<:SymbolicObject{T}} =
-    isa(y, Sym{Nothing})
+    isa(y, Sym{Nothing}) || y == Sym(nothing)
 
 function Base.:(==)(x::SymbolicObject, y::SymbolicObject)
 

@@ -1,6 +1,6 @@
 using Test
 
-@testset "ODes" begin
+@testset "ODEs" begin
     ## ODEs
     @syms x, a , F()
     ex = diff(F(x), x) - a*F(x)
