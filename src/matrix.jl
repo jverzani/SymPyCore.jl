@@ -3,9 +3,16 @@
 # XXX has issue with @inferred
 # XXX link into pyconvert...
 
-Base.promote_op(::O, ::Type{S}, ::Type{Sym{T}}) where {O,T, S <: Number} = Sym{T}
-Base.promote_op(::O, ::Type{Sym{T}}, ::Type{S}) where {O,T, S <: Number} = Sym{T}
-Base.promote_op(::O, ::Type{Sym{T}}, ::Type{Sym{T}}) where {O,T} = Sym{T} # This helps out linear alg
+Base.promote_op(::O, ::Type{S}, ::Type{T}) where {O, T<:Sym, S <: Number} = T
+Base.promote_op(::O, ::Type{T}, ::Type{S}) where {O, T<:Sym, S <: Number} = T
+Base.promote_op(::O, ::Type{T}, ::Type{T′}) where {O, T<:Sym, T′<:Sym} = T
+
+# Base.promote_op(::O, ::Type{S}, ::Type{T}) where {O, T<:Sym, S <: Number} =
+#     Sym{T}
+# Base.promote_op(::O, ::Type{Sym{T}}, ::Type{S}) where {O, T, S <: Number} =
+#     Sym{T}
+# Base.promote_op(::O, ::Type{Sym{T}}, ::Type{Sym{T}}) where {O,T} =
+#     Sym{T} # This helps out linear alg
 
 Base.eachrow(M::Matrix{T}) where {T <: SymbolicObject} = (M[i,:] for i ∈ 1:size(M,1))
 
@@ -32,7 +39,10 @@ LinearAlgebra.qr(A::AbstractArray{Sym,2}) = ↑(↓(A).QRdecomposition())
 
 # solve Ax=b for x, avoiding generic `lu`, which can be very slow for bigger n values
 # fix suggested by @olof3 in issue 355
-function LinearAlgebra.:(\)(A::AbstractArray{T,2}, b::AbstractArray{S,1}) where {S, T<:Sym}
+function LinearAlgebra.:\(A::AbstractMatrix{T}, b::AbstractVector) where {T<:Sym}
+    _backslash(A,b)
+end
+function _backslash(A,b)
     m,n  = size(A)
     x =  [Sym("x$i") for  i in 1:n]
     out = solve(A*x-b, x)
@@ -70,11 +80,14 @@ end
 ## Issue #359 so that A  +  λI is of type Sym
 Base.:+(A::AbstractMatrix{T}, J::UniformScaling) where {T <: SymbolicObject}    = _sym_plus_I(A,J)
 Base.:+(A::AbstractMatrix, J::UniformScaling{T}) where {T <: SymbolicObject}    = _sym_plus_I(A,J)
-Base.:+(A::AbstractMatrix{T}, J::UniformScaling{T}) where {T <: SymbolicObject} = _sym_plus_I(A,J)
+Base.:+(A::AbstractMatrix{T}, J::UniformScaling{T′}) where {T <: SymbolicObject, T′ <: SymbolicObject} = _sym_plus_I(A,J)
+
+## ----
+
 
 Base.:-(J::UniformScaling, A::AbstractMatrix{T}) where {T <: SymbolicObject}    = (-A) + J
 Base.:-(J::UniformScaling{T}, A::AbstractMatrix) where {T <: SymbolicObject}    = (-A) + J
-Base.:-(J::UniformScaling{T}, A::AbstractMatrix{T}) where {T <: SymbolicObject} = (-A) + J
+Base.:-(J::UniformScaling{T}, A::AbstractMatrix{T′}) where {T <: SymbolicObject,T′ <: SymbolicObject} = (-A) + J
 
 function _sym_plus_I(A::AbstractArray{T,N}, J::UniformScaling{S}) where {T, N, S}
     n = LinearAlgebra.checksquare(A)
@@ -84,3 +97,35 @@ function _sym_plus_I(A::AbstractArray{T,N}, J::UniformScaling{S}) where {T, N, S
     end
     B
 end
+
+## ----
+## handle ambiguities -- whack-a-mole?
+## There are still a few to manage
+Base.:+(A::LinearAlgebra.Diagonal{S, V}, J::UniformScaling{T}) where {S, V<:AbstractVector{S}, T<:SymbolicObject} = _sym_plus(A,J)
+Base.:+(A::LinearAlgebra.UpperHessenberg, J::UniformScaling{T}) where {T<:SymbolicObject} = _sym_plus(A,J)
+Base.:+(A::LinearAlgebra.UpperHessenberg{U,V}, J::UniformScaling{T}) where {U,V,T<:SymbolicObject} = _sym_plus(A,J)
+Base.:+(A::LinearAlgebra.Tridiagonal{S, V}, J::UniformScaling{T}) where {S, V<:AbstractVector{S}, T<:SymbolicObject} = _sym_plus(A,J)
+Base.:+(A::LinearAlgebra.SymTridiagonal{S, V}, J::UniformScaling{T}) where {S, V<:AbstractVector{S}, T<:SymbolicObject} = _sym_plus(A,J)
+Base.:+(A::LinearAlgebra.UnitLowerTriangular{S, V}, J::UniformScaling{T}) where {S, V, T<:SymbolicObject} = _sym_plus(A,J)
+Base.:+(A::LinearAlgebra.UnitLowerTriangular{S, V}, J::UniformScaling{T}) where {S, V<:AbstractMatrix{S}, T<:SymbolicObject} = _sym_plus(A,J)
+Base.:+(A::LinearAlgebra.UnitUpperTriangular, J::UniformScaling{T}) where {T<:SymbolicObject} = _sym_plus(A,J)
+Base.:+(A::LinearAlgebra.Bidiagonal, J::UniformScaling{T}) where {T<:SymbolicObject} = _sym_plus(A,J)
+Base.:+(A::LinearAlgebra.BitMatrix, J::UniformScaling{T}) where {T<:SymbolicObject} = _sym_plus(A,J)
+
+#
+Base.:-(J::LinearAlgebra.UniformScaling{T}, A::LinearAlgebra.BitMatrix) where {T<:SymbolicObject} = (-A) + J
+Base.:-(J::LinearAlgebra.UniformScaling{T}, A::LinearAlgebra.Diagonal) where {T<:SymbolicObject} = (-A) + J
+Base.:-(J::LinearAlgebra.UniformScaling{T}, A::LinearAlgebra.Diagonal{U,V}) where {U,V,T<:SymbolicObject} = (-A) + J
+Base.:-(J::LinearAlgebra.UniformScaling{T}, A::LinearAlgebra.Tridiagonal) where {T<:SymbolicObject} = (-A) + J
+Base.:-(J::LinearAlgebra.UniformScaling{T}, A::LinearAlgebra.Tridiagonal{U,V}) where {U,V,T<:SymbolicObject} = (-A) + J
+Base.:-(J::LinearAlgebra.UniformScaling{T}, A::LinearAlgebra.SymTridiagonal) where {T<:SymbolicObject} = (-A) + J
+Base.:-(J::LinearAlgebra.UniformScaling{T}, A::LinearAlgebra.SymTridiagonal{U,V}) where {U,V,T<:SymbolicObject} = (-A) + J
+Base.:-(J::LinearAlgebra.UniformScaling{T}, A::LinearAlgebra.Bidiagonal) where {T<:SymbolicObject} = (-A) + J
+Base.:-(J::LinearAlgebra.UniformScaling{T}, A::LinearAlgebra.Bidiagonal{U,V}) where {U,V,T<:SymbolicObject} = (-A) + J
+Base.:-(J::LinearAlgebra.UniformScaling{T}, A::LinearAlgebra.UpperHessenberg) where {T<:SymbolicObject} = (-A) + J
+Base.:-(J::LinearAlgebra.UniformScaling{T}, A::LinearAlgebra.UpperHessenberg{U,V}) where {U,V,T<:SymbolicObject} = (-A) + J
+
+#
+Base.:\(A::LinearAlgebra.Bidiagonal{T,V}, x::AbstractVector) where {T<:SymbolicObject, V<:AbstractVector{T}} = _backslash(A,x)
+Base.:\(A::LinearAlgebra.Tridiagonal{T,V}, x::AbstractVector) where {T<:SymbolicObject, V<:AbstractVector{T}} = _backslash(A,x)
+Base.:\(A::LinearAlgebra.SymTridiagonal{T,V}, x::AbstractVector) where {T<:SymbolicObject, V<:AbstractVector{T}} = _backslash(A,x)

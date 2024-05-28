@@ -198,3 +198,9 @@ end
 function Base.replace(ex::Sym, qv::Pair; kwargs...)
     replace(ex, first(qv), last(qv); kwargs...)
 end
+
+# avoid some ambiguity
+function Base.replace(ex::Sym, qv::Pair, qv1::Pair; kwargs...)
+    replace(ex, first(qv), last(qv); kwargs...)
+    replace(ex, first(qv1), last(qv1); kwargs...)
+end

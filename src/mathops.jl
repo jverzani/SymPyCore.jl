@@ -1,6 +1,7 @@
 Base.promote_rule(::Type{S}, ::Type{T})  where {S<:Number, T<:Sym}= T
 #Base.promote_rule(::Type{T}, ::Type{S})  where {T<:Sym, S<:Number}= T
-Base.promote_rule(::Type{S}, ::Type{T})  where {S<:Irrational, T<:Sym}= T
+#Base.promote_rule(::Type{S}, ::Type{T})  where {S<:Irrational, T<:Sym}= T
+Base.promote_rule(::Type{S}, ::Type{T})  where {S<:AbstractIrrational, T<:Sym}= T
 #Base.promote_rule(::Type{T}, ::Type{S})  where {T<:Sym, S<:Irrational}= T
 #Base.promote_rule(::Type{Sym}, ::Type{Bool}) = Sym
 Base.promote_rule(::Type{Bool}, ::Type{T}) where {T <: Sym} = T
