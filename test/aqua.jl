@@ -11,4 +11,5 @@ Aqua.test_deps_compat(testtarget)
 Aqua.test_piracies(testtarget)
 Aqua.test_persistent_tasks(testtarget)
 
-Aqua.test_ambiguities([testtarget, Base, Core])
+exclude = [+, -, \] # matrix ops
+Aqua.test_ambiguities([testtarget, Base, Core]; exclude=exclude)
