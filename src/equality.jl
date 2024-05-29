@@ -16,12 +16,13 @@ Generic equality operator. Falls back to ===. Should be implemented for all type
 This operator follows IEEE semantics for floating-point numbers: 0.0 == -0.0 and NaN != NaN.
 =#
 import Base: ==
-Base.:(==)(x::S, y) where {T, S<:SymbolicObject{T}}  = ==(promote(x,y)...)
-Base.:(==)(x, y::S) where {T, S<:SymbolicObject{T}} = ==(promote(x,y)...)
 Base.:(==)(x::S, y::Number) where {T, S<:SymbolicObject{T}}  = ==(promote(x,y)...)
 Base.:(==)(x::Number, y::S) where {T, S<:SymbolicObject{T}} = ==(promote(x,y)...)
-Base.:(==)(x::S, y::Missing) where {T, S<:SymbolicObject{T}}  = missing
-Base.:(==)(x::Missing, y::S) where {T, S<:SymbolicObject{T}} = missing
+Base.:(==)(::SymbolicObject, ::Missing) = missing
+Base.:(==)(::Missing, ::SymbolicObject) = missing
+Base.:(==)(x::S, y::Nothing) where {T, S<:SymbolicObject{T}} = y == x
+Base.:(==)(::Nothing, y::S) where {T, S<:SymbolicObject{T}} =
+    isa(y, Sym{Nothing}) || y == Sym(nothing)
 
 function Base.:(==)(x::SymbolicObject, y::SymbolicObject)
 
@@ -56,13 +57,14 @@ function Base.isequal(x::T, y::T) where {T <: SymbolicObject}
 end
 
 
-Base.isless(x::S, y) where {T,S<:SymbolicObject{T}} = isless(promote(x,y)...)
-Base.isless(x, y::S) where {T, S<:SymbolicObject{T}} = isless(promote(x,y)...)
-Base.isless(x::S, y::Missing) where {T,S<:SymbolicObject{T}} = true
-Base.isless(::Missing, y::S)  where {T,S<:SymbolicObject{T}} = false
-function Base.isless(x::S, y::S) where {T,S<:SymbolicObject{T}}
+Base.isless(x::S, y::Real) where {T,S<:SymbolicObject{T}} = isless(promote(x,y)...)
+Base.isless(x::Real, y::S) where {T, S<:SymbolicObject{T}} = isless(promote(x,y)...)
+function Base.isless(x::SymbolicObject{T}, y::SymbolicObject{T}) where {T}
 
-    (isnan(x) || isnan(y)) && return !isnan(x)
+    isnan(x) && isnan(y) && return false
+    isnan(x) && return false  # NaN ordered last
+    isnan(y) && return true
+
     if isinf(x)
         sign(x) == -1 && return true
         sign(x) == 1  && return false
@@ -92,11 +94,11 @@ function Base.isless(x::S, y::S) where {T,S<:SymbolicObject{T}}
 
 end
 
-Base.:<(x::S, y) where {T,S<:SymbolicObject{T}} = <(promote(x,y)...)
-Base.:<(x, y::S) where {T, S<:SymbolicObject{T}} = <(promote(x,y)...)
-Base.:<(x::S, y::Missing) where {T,S<:SymbolicObject{T}} = missing
-Base.:<(::Missing, y::S)  where {T,S<:SymbolicObject{T}} = missing
-function Base.:<(x::S, y::S) where {T,S<:SymbolicObject{T}}
+Base.:<(x::S, y) where {S<:SymbolicObject} = <(promote(x,y)...)
+Base.:<(x, y::S) where {S<:SymbolicObject} = <(promote(x,y)...)
+Base.:<(x::S, y::Missing) where {S<:SymbolicObject} = missing
+Base.:<(::Missing, y::S)  where {S<:SymbolicObject} = missing
+function Base.:<(x::T, y::T′) where {T <: SymbolicObject, T′ <: SymbolicObject}
 
     (isnan(x) || isnan(y)) && return false
     isless(x, y)

@@ -3,9 +3,9 @@
 # XXX has issue with @inferred
 # XXX link into pyconvert...
 
-Base.promote_op(::O, ::Type{S}, ::Type{Sym{T}}) where {O,T, S <: Number} = Sym{T}
-Base.promote_op(::O, ::Type{Sym{T}}, ::Type{S}) where {O,T, S <: Number} = Sym{T}
-Base.promote_op(::O, ::Type{Sym{T}}, ::Type{Sym{T}}) where {O,T} = Sym{T} # This helps out linear alg
+Base.promote_op(::O, ::Type{S}, ::Type{T}) where {O, T<:Sym, S <: Number} = T
+Base.promote_op(::O, ::Type{T}, ::Type{S}) where {O, T<:Sym, S <: Number} = T
+Base.promote_op(::O, ::Type{T}, ::Type{T′}) where {O, T<:Sym, T′<:Sym} = T
 
 Base.eachrow(M::Matrix{T}) where {T <: SymbolicObject} = (M[i,:] for i ∈ 1:size(M,1))
 
@@ -26,27 +26,9 @@ end
 function LinearAlgebra.adjoint(A::AbstractVecOrMat{T}) where {T <: Sym}
     LinearAlgebra.Adjoint{T,typeof(A)}(A)
 end
+#LinearAlgebra.qr(A::AbstractArray{<:Sym,2}) = ↑(↓(A).QRdecomposition())
 
-
-LinearAlgebra.qr(A::AbstractArray{Sym,2}) = ↑(↓(A).QRdecomposition())
-
-# solve Ax=b for x, avoiding generic `lu`, which can be very slow for bigger n values
-# fix suggested by @olof3 in issue 355
-function LinearAlgebra.:(\)(A::AbstractArray{T,2}, b::AbstractArray{S,1}) where {S, T<:Sym}
-    m,n  = size(A)
-    x =  [Sym("x$i") for  i in 1:n]
-    out = solve(A*x-b, x)
-    isempty(out) && throw(SingularException(0)) # Could also return out here?
-    ret = Vector{Sym}(undef, n)
-    for (i,xᵢ)  in enumerate(x)
-        ret[i] =  get(out,  xᵢ, xᵢ)
-    end
-    return ret
-end
-
-# function LinearAlgebra.:\(A::AbstractArray{T,2}, B::AbstractArray{S,2}) where {T <: Sym, S}
-#     hcat([A \ bⱼ for bⱼ in eachcol(B)]...)
-# end
+## ----
 
 # XXX what keyword arguments to support?
 function LinearAlgebra.eigvecs(A::AbstractMatrix{T}) where {T <: Sym}
@@ -66,21 +48,36 @@ function LinearAlgebra.eigen(A::AbstractMatrix{T}) where {T <: Sym}
     LinearAlgebra.Eigen(eigvals(A), eigvecs(A))
 end
 
+## ----
 
 ## Issue #359 so that A  +  λI is of type Sym
-Base.:+(A::AbstractMatrix{T}, J::UniformScaling) where {T <: SymbolicObject}    = _sym_plus_I(A,J)
-Base.:+(A::AbstractMatrix, J::UniformScaling{T}) where {T <: SymbolicObject}    = _sym_plus_I(A,J)
-Base.:+(A::AbstractMatrix{T}, J::UniformScaling{T}) where {T <: SymbolicObject} = _sym_plus_I(A,J)
+Base.promote_op(::O, ::Type{S}, ::Type{T}) where {O, P, S<:Sym{P}, R, T<:UniformScaling{R}} = S
+Base.promote_op(::O, ::Type{T}, ::Type{S}) where {O, P, S<:Sym{P}, R, T<:UniformScaling{R}} = S
 
-Base.:-(J::UniformScaling, A::AbstractMatrix{T}) where {T <: SymbolicObject}    = (-A) + J
-Base.:-(J::UniformScaling{T}, A::AbstractMatrix) where {T <: SymbolicObject}    = (-A) + J
-Base.:-(J::UniformScaling{T}, A::AbstractMatrix{T}) where {T <: SymbolicObject} = (-A) + J
+## ----
+# solve Ax=b for x, avoiding generic `lu`, which can be very slow for bigger n values
+# fix suggested by @olof3 in issue 355
+# This is causing many ambiguities
 
-function _sym_plus_I(A::AbstractArray{T,N}, J::UniformScaling{S}) where {T, N, S}
-    n = LinearAlgebra.checksquare(A)
-    B = convert(AbstractArray{promote_type(T,S),N}, copy(A))
-    for i ∈ 1:n
-        B[i,i] += J.λ
+function LinearAlgebra.:\(A::AbstractMatrix{<:SymbolicObject},
+    b::AbstractVecOrMat)
+    _backslash(A,b)
+end
+
+# use solve
+# lu(A) works, *but* doesn't simplify (https://github.com/JuliaPy/SymPy.jl/issues/355) so can have exponentially growing complexity
+function _backslash(A, b::AbstractVector)
+    m,n  = size(A)
+    x =  [Sym("x$i") for  i in 1:n]
+    out = solve(A*x-b, x)
+    isempty(out) && throw(SingularException(0)) # Could also return out here?
+    ret = Vector{Sym}(undef, n)
+    for (i,xᵢ)  in enumerate(x)
+        ret[i] =  get(out,  xᵢ, xᵢ)
     end
-    B
+    return ret
+end
+
+function _backslash(A, B::AbstractMatrix)
+    hcat([A \ bⱼ for bⱼ in eachcol(B)]...)
 end
