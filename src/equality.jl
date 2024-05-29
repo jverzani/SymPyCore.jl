@@ -59,15 +59,11 @@ end
 
 Base.isless(x::S, y::Real) where {T,S<:SymbolicObject{T}} = isless(promote(x,y)...)
 Base.isless(x::Real, y::S) where {T, S<:SymbolicObject{T}} = isless(promote(x,y)...)
-Base.isless(x::S, y::Missing) where {T,S<:SymbolicObject{T}} = true
-Base.isless(::Missing, y::S)  where {T,S<:SymbolicObject{T}} = false
-#function Base.isless(x::S, y::S) where {T,S<:SymbolicObject{T}}
 function Base.isless(x::SymbolicObject{T}, y::SymbolicObject{T}) where {T}
 
     isnan(x) && isnan(y) && return false
     isnan(x) && return false  # NaN ordered last
     isnan(y) && return true
-
 
     if isinf(x)
         sign(x) == -1 && return true
