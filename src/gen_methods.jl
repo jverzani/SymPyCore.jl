@@ -143,7 +143,7 @@ matrix_meths = (
     (:inv, :Base, :inv),
     (:transpose, :Base, :transpose),
     (:det, :LinearAlgebra, :det),
-    (:diag, :LinearAlgebra, :diag),
+    #(:diag, :LinearAlgebra, :diag),
     #(:eigenvects, :LinearAlgebra, :eigvecs),
     #(:eigenvals, :LinearAlgebra, :eigvals),
     (:norm, :LinearAlgebra, :norm),

@@ -34,14 +34,21 @@ function LinearAlgebra.adjoint(A::AbstractVecOrMat{T}) where {T <: Sym}
     LinearAlgebra.Adjoint{T,typeof(A)}(A)
 end
 
-
+#LienarAlgebra.diag(A::AbstractMatrix{<:SymbolicObject}, k::Integer=0) =
 LinearAlgebra.qr(A::AbstractArray{Sym,2}) = ↑(↓(A).QRdecomposition())
 
 # solve Ax=b for x, avoiding generic `lu`, which can be very slow for bigger n values
 # fix suggested by @olof3 in issue 355
-function LinearAlgebra.:\(A::AbstractMatrix{T}, b::AbstractVector) where {T<:Sym}
-    _backslash(A,b)
+# This is causing many ambiguities
+function LinearAlgebra.:\(A::AbstractMatrix{<:SymbolicObject},
+    b::AbstractVector)
+     _backslash(A,b)
 end
+
+function LinearAlgebra.:\(A::AbstractMatrix{<:SymbolicObject}, B::AbstractMatrix)
+     hcat([A \ bⱼ for bⱼ in eachcol(B)]...)
+end
+
 function _backslash(A,b)
     m,n  = size(A)
     x =  [Sym("x$i") for  i in 1:n]
@@ -81,7 +88,6 @@ end
 Base.:+(A::AbstractMatrix{T}, J::UniformScaling) where {T <: SymbolicObject}    = _sym_plus_I(A,J)
 Base.:+(A::AbstractMatrix, J::UniformScaling{T}) where {T <: SymbolicObject}    = _sym_plus_I(A,J)
 Base.:+(A::AbstractMatrix{T}, J::UniformScaling{T′}) where {T <: SymbolicObject, T′ <: SymbolicObject} = _sym_plus_I(A,J)
-
 ## ----
 
 
