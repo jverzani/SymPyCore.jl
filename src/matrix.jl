@@ -129,3 +129,6 @@ Base.:-(J::LinearAlgebra.UniformScaling{T}, A::LinearAlgebra.UpperHessenberg{U,V
 Base.:\(A::LinearAlgebra.Bidiagonal{T,V}, x::AbstractVector) where {T<:SymbolicObject, V<:AbstractVector{T}} = _backslash(A,x)
 Base.:\(A::LinearAlgebra.Tridiagonal{T,V}, x::AbstractVector) where {T<:SymbolicObject, V<:AbstractVector{T}} = _backslash(A,x)
 Base.:\(A::LinearAlgebra.SymTridiagonal{T,V}, x::AbstractVector) where {T<:SymbolicObject, V<:AbstractVector{T}} = _backslash(A,x)
+
+#
+Base.:\(A::Union{LinearAlgebra.Adjoint{T, <:LinearAlgebra.Bidiagonal}, LinearAlgebra.Transpose{T, <:LinearAlgebra.Bidiagonal}}, x::AbstractVector) where {T<:Sym} = _backslash(A, x)
