@@ -74,7 +74,7 @@ end
 
 Base.trunc(x::Sym) = x.is_Number != true ? x :
     (x.is_positive == true) ? floor(x) : ceil(x)
-Base.isfinite(x::Sym) = x.is_finite == true
+Base.isfinite(x::Sym) = !isinf(x) #x.is_finite == true
 Base.isinf(x::Sym) = x.is_infinite == true
 Base.isinteger(x::Sym) = x.is_integer == true
 Base.isreal(x::Sym) = x.is_real == true
