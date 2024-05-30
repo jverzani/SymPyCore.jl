@@ -35,7 +35,7 @@ end
 #==
 Construct a new term with the operation f and arguments args, the term should be similar to t in type. if t is a SymbolicUtils.Term object a new Term is created with the same symtype as t. If not, the result is computed as f(args...). Defining this method for your term type will reduce any performance loss in performing f(args...) (esp. the splatting, and redundant type computation). T is the symtype of the output term. You can use SymbolicUtils.promote_symtype to infer this type. The exprhead keyword argument is useful when creating Exprs.
 ==#
-function SymbolicUtils.similarterm(t::SymPyCore.SymbolicObject, f, args, symtype=nothing;
+function SymbolicUtils.maketerm(t::SymPyCore.SymbolicObject, f, args, symtype=nothing;
                                    metadata=nothing, exprhead=:call)
     SymPyCore._similarterm(t, f, args, symtype; metadata=metadata, exprhead=exprhead)
 end
