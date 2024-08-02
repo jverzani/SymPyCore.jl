@@ -8,6 +8,7 @@ export symtype
 
 # speedup for Add issue #67
 Base.:+(x::SymbolicObject, y, z, zs...) = sympy.Add(x, y, z, zs...)
+Base.:*(x::SymbolicObject, y, z, zs...) = sympy.Mul(x, y, z, zs...)
 
 # Math and other functions that don't fit metaprogramming pattern
 Base.log(x::Sym) = sympy.log(x) # generated method confuses two argument form
