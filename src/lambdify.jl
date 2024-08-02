@@ -89,7 +89,7 @@ end
 # end
 
 ## --------------------------------------------------
-# Methods for SymbolicUtils extension
+# Methods for TermInterface extension
 function _iscall(x::SymbolicObject)
     hasproperty(↓(x), :is_Atom) && return !x.is_Atom
     return false
@@ -105,9 +105,13 @@ end
 
 _arguments(x::SymbolicObject) = collect(args(x))
 
-function _similarterm(t::SymbolicObject, f, args, symtype=nothing;
-                      metadata=nothing, exprhead=:call)
-    f(args...) # default
+function _similarterm(T::Type{<:SymbolicObject}, head::Symbol, args, metadata)
+    if head == :call
+        f, as... = args
+        return f(as...)
+    else
+        @show :head
+    end
 end
 
 ## --------------------------------------------------
