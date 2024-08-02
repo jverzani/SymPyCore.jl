@@ -6,7 +6,8 @@ Return `Sym{T}` for `T` being the uderlying Python type of `x`.
 symtype(x::SymbolicObject{T}=Sym(1)) where {T} = Sym{T}
 export symtype
 
-
+# speedup for Add issue #67
+Base.:+(x::SymbolicObject, y, z, zs...) = sympy.Add(x, y, z, zs...)
 
 # Math and other functions that don't fit metaprogramming pattern
 Base.log(x::Sym) = sympy.log(x) # generated method confuses two argument form
