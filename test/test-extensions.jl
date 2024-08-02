@@ -1,11 +1,11 @@
 # test extensions
 
-import SymbolicUtils
+import TermInterface
 
-@testset "SymbolicUtils" begin
+@testset "TermInterface" begin
     @syms x
-    @test !SymbolicUtils.iscall(x) # istree deprecated
-    @test SymbolicUtils.iscall(sin(x))
-    @test SymbolicUtils.operation(sin(x)) == sin
-    @test only(SymbolicUtils.arguments(sin(x))) == x
+    @test !TermInterface.iscall(x) # istree deprecated
+    @test TermInterface.iscall(sin(x))
+    @test TermInterface.operation(sin(x)) == sin
+    @test only(TermInterface.arguments(sin(x))) == x
 end
