@@ -105,13 +105,8 @@ end
 
 _arguments(x::SymbolicObject) = collect(args(x))
 
-function _similarterm(T::Type{<:SymbolicObject}, head::Symbol, args, metadata)
-    if head == :call
-        f, as... = args
-        return f(as...)
-    else
-        @show :head
-    end
+function _similarterm(T::Type{<:SymbolicObject}, head, args, metadata)
+    return head(args...)
 end
 
 ## --------------------------------------------------

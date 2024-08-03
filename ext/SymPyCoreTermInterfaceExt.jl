@@ -13,17 +13,10 @@ end
 #==
 Returns the head of the S-expression.
 
-f x is a term as defined by iscall(x), exprhead(x) must return a symbol, corresponding to the head of the Expr most similar to the term x. If x represents a function call, for example, the exprhead is :call. If x represents an indexing operation, such as arr[i], then exprhead is :ref. Note that exprhead is different from operation and both functions should be defined correctly in order to let other packages provide code generation and pattern matching features.
+In other symbolic expression languages, such as SymbolicUtils.jl, the head of a node can correspond to operation and children can correspond to arguments.
 ==#
-function TermInterface.head(ex::SymPyCore.SymbolicObject)
-    TermInterface.iscall(ex) ? :call : :symbol
-end
-
-function TermInterface.children(ex::SymPyCore.SymbolicObject)
-    TermInterface.head(ex) == :call &&
-        return (TermInterface.operation(ex), TermInterface.arguments(ex)...)
-    nothing
-end
+TermInterface.head(ex::SymPyCore.SymbolicObject) = TermInterface.operation(ex)
+TermInterface.children(ex::SymPyCore.SymbolicObject) = TermInterface.arguments(ex)
 
 #=
 Returns true if x is an expression tree. If true, head(x) and children(x) methods must be defined for x. Optionally, if x represents a function call, iscall(x) should be true, and operation(x) and arguments(x) should also be defined.
