@@ -11,33 +11,57 @@ function TermInterface.iscall(x::SymPyCore.Sym)
 end
 
 #==
-f x is a term as defined by iscall(x), exprhead(x) must return a symbol, corresponding to the head of the Expr most similar to the term x. If x represents a function call, for example, the exprhead is :call. If x represents an indexing operation, such as arr[i], then exprhead is :ref. Note that exprhead is different from operation and both functions should be defined correctly in order to let other packages provide code generation and pattern matching features.
-function TermInterface.exprhead(x::SymPyCore.SymbolicObject) # deprecated
-    :call # this is not right
-end
+Returns the head of the S-expression.
+
+In other symbolic expression languages, such as SymbolicUtils.jl, the head of a node can correspond to operation and children can correspond to arguments.
 ==#
+TermInterface.head(ex::SymPyCore.SymbolicObject) = TermInterface.operation(ex)
+TermInterface.children(ex::SymPyCore.SymbolicObject) = TermInterface.arguments(ex)
+
+#=
+Returns true if x is an expression tree. If true, head(x) and children(x) methods must be defined for x. Optionally, if x represents a function call, iscall(x) should be true, and operation(x) and arguments(x) should also be defined.
+=#
+function TermInterface.isexpr(ex::SymPyCore.SymbolicObject)
+    TermInterface.iscall(ex) && return true
+
+    return false
+end
+
 
 #==
 Returns the head (a function object) performed by an expression tree. Called only if iscall(::T) is true. Part of the API required for simplify to work. Other required methods are arguments and iscall
 ==#
-function TermInterface.operation(x::SymPyCore.SymbolicObject)
-    SymPyCore._operation(x)
+function TermInterface.operation(ex::SymPyCore.SymbolicObject)
+    SymPyCore._operation(ex)
 end
 
 
 #==
 Returns the arguments (a Vector) for an expression tree. Called only if iscall(x) is true. Part of the API required for simplify to work. Other required methods are operation and iscall
 ==#
-function TermInterface.arguments(x::SymPyCore.SymbolicObject)
-    SymPyCore._arguments(x)
+function TermInterface.arguments(ex::SymPyCore.SymbolicObject)
+    SymPyCore._arguments(ex)
 end
 
 #==
-Construct a new term with the operation f and arguments args, the term should be similar to t in type. if t is a TermInterface.Term object a new Term is created with the same symtype as t. If not, the result is computed as f(args...). Defining this method for your term type will reduce any performance loss in performing f(args...) (esp. the splatting, and redundant type computation). T is the symtype of the output term. You can use TermInterface.promote_symtype to infer this type. The exprhead keyword argument is useful when creating Exprs.
+Constructs an expression. `T` is a constructor type, `head` and `children` are
+the head and tail of the S-expression.
+`metadata` is any metadata attached to this expression.
+
+Note that `maketerm` may not necessarily return an object of type `T`. For example,
+it may return a representation which is more efficient.
+
+This function is used by term-manipulation routines to construct terms generically.
+In these routines, `T` is usually the type of the input expression which is being manipulated.
+For example, when a subexpression is substituted, the outer expression is re-constructed with
+the sub-expression. `T` will be the type of the outer expression.
+
+Packages providing expression types _must_ implement this method for each expression type.
+
+Giving `nothing` for `metadata` should result in a default being selected.
 ==#
-function TermInterface.maketerm(t::SymPyCore.SymbolicObject, f, args;
-                                   metadata=nothing, exprhead=:call)
-    SymPyCore._similarterm(t, f, args; metadata=metadata, exprhead=exprhead)
+function TermInterface.maketerm(T::Type{<:SymPyCore.SymbolicObject}, head, args, metadata)
+    SymPyCore._similarterm(T, head, args, metadata)
 end
 
 
