@@ -1,7 +1,7 @@
 name = "SymPyCore"
 uuid = "458b697b-88f0-4a86-b56b-78b75cfb3531"
 authors = ["jverzani <jverzani@gmail.com> and contributors"]
-version = "0.2.4"
+version = "0.2.5"
 
 [deps]
 CommonEq = "3709ef60-1bee-4518-9f2f-acd86f176c50"
@@ -29,7 +29,6 @@ Markdown = "<0.0.1, 1.6"
 RecipesBase = "0.7, 0.8, 1.0, 1.1"
 SpecialFunctions = "0.8, 0.9, 0.10, 1.0, 2"
 SymPyPythonCall = "0.3"
-Symbolics = "5"
 TermInterface = "2"
 Test = "<0.0.1, 1.6"
 julia = "1.6"
@@ -37,9 +36,8 @@ julia = "1.6"
 [extras]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 SymPyPythonCall = "bc8888f7-b21e-4b7c-a06a-5d9c9496438c"
-Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 TermInterface = "8ea1fca8-c5ef-4a55-8b96-4e9afe9c9a3c"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Aqua", "Symbolics",  "TermInterface", "SymPyPythonCall", "Test"]
+test = ["Aqua",  "TermInterface", "SymPyPythonCall", "Test"]
