@@ -58,6 +58,17 @@ using SymPyCore
     a, b = x^4 + 2x^2 + 5, x - 2
     u, v = divrem(a, b)
     @test simplify(u*b + v - a) == 0
+
+    # basic arithmetic
+    @syms x y z
+    @test x + 1 == 1 + x
+    @test x * y == y * x
+    @test x / 2 == (1//2) * x
+    @test x^2 == x*x
+
+    @syms x[1:100]
+    @test +(x...) == sum(x)
+    @test *(x...) == prod(x)
 end
 
 @testset "sign and absolute value functions" begin
