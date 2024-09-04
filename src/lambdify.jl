@@ -95,7 +95,8 @@ function _iscall(x::SymbolicObject)
     return false
 end
 
-function _operation(x::SymbolicObject)
+TermInterface.isexpr(x::SymbolicObject) = _iscall(x)
+function TermInterface.operation(x::SymbolicObject)
     #@assert _iscall(x)
     nm = funcname(x)
     λ = get(sympy_fn_julia_fn, nm, nothing)
@@ -103,11 +104,109 @@ function _operation(x::SymbolicObject)
     return first(λ)
 end
 
-_arguments(x::SymbolicObject) = collect(args(x))
+TermInterface.arguments(x::SymbolicObject) = collect(args(x))
 
-function _similarterm(T::Type{<:SymbolicObject}, head, args, metadata)
+TermInterface.iscall(ex::SymbolicObject) = TermInterface.isexpr(ex)
+TermInterface.head(ex::SymbolicObject) = TermInterface.operation(ex)
+TermInterface.children(ex::SymbolicObject) = TermInterface.arguments(ex)
+
+function TermInterface.maketerm(T::Type{<:SymbolicObject}, head, args, metadata)
     return head(args...)
 end
+
+## --- Additional TermInterface like methods for roundtripping
+is_symbolic_variable(x::Sym) = x.is_symbol
+function symbol_metadata(x::Sym)
+    is_symbolic_variable(x) || throw(ArgumentError("not a symbol"))
+    (Symbol(x), x.assumptions0)
+end
+is_symbolic_number(x::Sym) = x.is_number
+function as_number(x::Sym)
+    is_symbolic_number(x) || throw(ArgumentError("Not a symbolic number"))
+    N(x)
+end
+
+# make a symbolic variable of type T
+# implicit assumption that symbol + metadata makes identical symbol
+function makesym(T::Type{<:Sym}, 𝑥::Symbol, m=nothing)
+    Sym(𝑥) # add metadata
+end
+
+"""
+    exhange(T, ex)
+
+Exchange an expression in one symbolic type with an expression in another. E.g. from SymPy to SymbolicUtils.
+
+!!! note "Tentative"
+    This is a possible interface for exchanging symbolic expressions, it may change
+
+For conversion *from* SymPy or SymPyPythonCall a method for `makesym` must be defined. For example
+
+```
+import SymbolicUtils
+function SymPyCore.makesym(T::Type{<:SymbolicUtils.BasicSymbolic}, 𝑥::Symbol, m=nothing)
+    SymbolicUtils.Sym{Number}(𝑥) # add metadata
+end
+```
+
+For conversion through `exchange` *to* SymPy or SymPyPythonCall methods for
+`is_symbolic_variable(x::T)`,  `symbol_metadata(x::T)`, `is_symbolic_number(x::T)` and  `as_number(x::T)` must be defined.
+
+"""
+function exchange(T, ex)
+    if TermInterface.isexpr(ex)
+        op, args = TermInterface.operation(ex), TermInterface.arguments(ex)
+        args′ = exchange.(Ref(T), args)
+        return TermInterface.maketerm(T, op, args′, nothing)
+    elseif is_symbolic_number(ex)
+        return as_number(ex)
+    elseif is_symbolic_variable(ex)
+        𝑥, m = symbol_metadata(ex)
+        return makesym(T, 𝑥, m)
+    end
+    ex
+end
+
+# **possible alternate to the above**
+# which doesn't make any effort to detect and convert symbols
+
+_N(ex::Sym) = N(ex)
+_N(ex) = ex
+
+"""
+    _exchange(ex, as::Pair...)
+
+```
+SymPy.@syms 𝑥 𝑦
+SymbolicUtils.@syms x y
+
+𝑒𝑥 = sin(𝑥^2 + y + π) / (2 + cos(𝑦) + 𝑥^2)
+ex = sin(x^2 + y + π) / (2 + cos(y) + x^2)
+
+SymPyCore.xchange(𝑒𝑥, 𝑥 => x, 𝑦 => y)
+SymPyCore.xchange(ex, x => 𝑥, y => 𝑦)
+```
+
+!!! note
+    Experimental
+"""
+function xchange(ex, as::Pair...)
+    _xchange(Val(iscall(ex)), ex, as...)
+end
+
+function _xchange(::Val{true}, ex, as...)
+    op, args = operation(ex), arguments(ex)
+    args′ = replace(args, as...)
+    op((xchange(aᵢ, as...) for aᵢ ∈ args′)...)
+end
+
+function _xchange(::Val{false}, ex, as...)
+    for (k,v) ∈ as
+        isequal(ex, k) && return v
+    end
+    _N(ex)
+end
+
 
 ## --------------------------------------------------
 
