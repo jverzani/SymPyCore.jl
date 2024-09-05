@@ -120,27 +120,26 @@ function symbol_metadata(x::Sym)
     is_symbolic_variable(x) || throw(ArgumentError("not a symbol"))
     (Symbol(x), x.assumptions0)
 end
+
 is_symbolic_number(x::Sym) = x.is_number
 function as_number(x::Sym)
     is_symbolic_number(x) || throw(ArgumentError("Not a symbolic number"))
     N(x)
 end
 
+is_symbolic_variable(::Any) = false
+is_symbolic_number(::Any) = false
+
+is_symbolic_number(x::Number) = false
+as_number(x::Number) = x
+
 # make a symbolic variable of type T
 # implicit assumption that symbol + metadata makes identical symbol
-function makesym(T::Type{<:Sym}, 𝑥::Symbol, m=nothing)
-    Sym(𝑥) # add metadata
-end
 
 """
-    exhange(T, ex)
+    makesym(constructor::Type, x::Symbol, metadata::Nothing)
 
-Exchange an expression in one symbolic type with an expression in another. E.g. from SymPy to SymbolicUtils.
-
-!!! note "Tentative"
-    This is a possible interface for exchanging symbolic expressions, it may change
-
-For conversion *from* SymPy or SymPyPythonCall a method for `makesym` must be defined. For example
+For conversion *from* SymPy or SymPyPythonCall a method for `makesym` must be defined. For example, this is in an extension for SymbolicUtils:
 
 ```
 import SymbolicUtils
@@ -148,6 +147,30 @@ function SymPyCore.makesym(T::Type{<:SymbolicUtils.BasicSymbolic}, 𝑥::Symbol,
     SymbolicUtils.Sym{Number}(𝑥) # add metadata
 end
 ```
+"""
+function makesym(T::Type{<:Sym}, 𝑥::Symbol, m=nothing)
+    Sym(𝑥) # add metadata
+end
+
+"""
+    exhange(T, ex)
+
+Exchange an expression in one symbolic type with an expression in another. E.g. from `SymPy` to `SymbolicUtils`.
+
+## Example
+```
+import SymPy
+import SymbolicUtils
+import SymPy.SymPyCore: exchange
+T,S = SymPy.Sym, SymbolicUtils.BasicSymbolic
+SymPy.@syms x y
+exchange(S, sin(x^2) + 2cos(y))
+exchange(T, exchange(S, sin(x^2) + 2cos(y))) # round trip
+```
+
+
+!!! note "Tentative"
+    This is a possible interface for exchanging symbolic expressions, it may change
 
 For conversion through `exchange` *to* SymPy or SymPyPythonCall methods for
 `is_symbolic_variable(x::T)`,  `symbol_metadata(x::T)`, `is_symbolic_number(x::T)` and  `as_number(x::T)` must be defined.
