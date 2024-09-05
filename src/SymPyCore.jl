@@ -8,6 +8,7 @@ import CommonSolve: solve
 using CommonEq
 using RecipesBase
 using Latexify
+using TermInterface
 
 include("types.jl")
 include("equality.jl")

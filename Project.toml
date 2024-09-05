@@ -1,7 +1,7 @@
 name = "SymPyCore"
 uuid = "458b697b-88f0-4a86-b56b-78b75cfb3531"
 authors = ["jverzani <jverzani@gmail.com> and contributors"]
-version = "0.2.5"
+version = "0.2.6"
 
 [deps]
 CommonEq = "3709ef60-1bee-4518-9f2f-acd86f176c50"
@@ -14,10 +14,10 @@ SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 TermInterface = "8ea1fca8-c5ef-4a55-8b96-4e9afe9c9a3c"
 
 [weakdeps]
-TermInterface = "8ea1fca8-c5ef-4a55-8b96-4e9afe9c9a3c"
+SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
 
 [extensions]
-SymPyCoreTermInterfaceExt = "TermInterface"
+SymPyCoreSymbolicUtilsExt = "SymbolicUtils"
 
 [compat]
 Aqua = "0.8"
@@ -28,6 +28,7 @@ LinearAlgebra = "<0.0.1, 1.6"
 Markdown = "<0.0.1, 1.6"
 RecipesBase = "0.7, 0.8, 1.0, 1.1"
 SpecialFunctions = "0.8, 0.9, 0.10, 1.0, 2"
+SymbolicUtils = "3, 4"
 SymPyPythonCall = "0.3"
 TermInterface = "2"
 Test = "<0.0.1, 1.6"
