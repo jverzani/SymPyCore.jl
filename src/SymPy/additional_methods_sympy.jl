@@ -36,8 +36,8 @@ SpecialFunctions.besselj1(b::Sym) = sympy.besselj(1, b)
 SpecialFunctions.besselk(n::Number, b::Sym) = sympy.besselk(n, b)
 
 SpecialFunctions.bessely(n::Number, b::Sym) = sympy.bessely(n, b)
-SpecialFunctions.bessel0(b::Sym) = sympy.bessely(n, b)
-SpecialFunctions.bessel1(b::Sym) = sympy.bessely(n, b)
+SpecialFunctions.bessely0(b::Sym) = sympy.bessely(n, b)
+SpecialFunctions.bessely1(b::Sym) = sympy.bessely(n, b)
 
 # no besselix, besseljx, besselkx, or besselyx
 
