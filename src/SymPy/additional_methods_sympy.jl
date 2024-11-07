@@ -26,10 +26,21 @@ Base.div(x::Sym, y::Sym) = ↑(first(_sympy_.div(↓(x), ↓(y))))
 Base.rem(x::Sym, y::Sym) = ↑(_sympy_.rem(↓(x), ↓(y)))
 
 SpecialFunctions.beta(a::Sym, b::Sym) = sympy.beta(a,b)
+
 SpecialFunctions.besseli(n::Number, b::Sym) = sympy.besseli(n, b)
+
 SpecialFunctions.besselj(n::Number, b::Sym) = sympy.besselj(n, b)
+SpecialFunctions.besselj0(b::Sym) = sympy.besselj(0, b)
+SpecialFunctions.besselj1(b::Sym) = sympy.besselj(1, b)
+
 SpecialFunctions.besselk(n::Number, b::Sym) = sympy.besselk(n, b)
+
 SpecialFunctions.bessely(n::Number, b::Sym) = sympy.bessely(n, b)
+SpecialFunctions.bessely0(b::Sym) = sympy.bessely(n, b)
+SpecialFunctions.bessely1(b::Sym) = sympy.bessely(n, b)
+
+# no besselix, besseljx, besselkx, or besselyx
+
 
 # CommonEq
 CommonEq.Lt(a::T,b::T) where {T <: SymbolicObject} = sympy.Lt(a,b)
