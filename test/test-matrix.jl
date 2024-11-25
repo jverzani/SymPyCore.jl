@@ -1,5 +1,6 @@
 using Test
 using LinearAlgebra
+using SparseArrays
 
 @testset "Matrix" begin
     ## matrices
@@ -176,6 +177,12 @@ using LinearAlgebra
     ## Issue #397 adjoint losing type
     A = ones(Sym, 1, 1)
     @test A * A' isa Matrix{<:Sym}
+
+    # issue SymPyCore #77 adjoint of sparse losing type
+    @syms x
+    m = sparse([1],[1],[x], 2,2)
+    @test eltype(m') <: Sym
+    @test m + m' == m' + m
 
     # XXX No SymMatrix?
     # ## Issue 413 with matrix exponential; SymMatrix multiplication
