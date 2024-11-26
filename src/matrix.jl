@@ -26,6 +26,9 @@ end
 function LinearAlgebra.adjoint(A::AbstractVecOrMat{T}) where {T <: Sym}
     LinearAlgebra.Adjoint{T,typeof(A)}(A)
 end
+Base.promote_op(::Union{typeof(adjoint),typeof(transpose)}, ::Type{T}) where {T<: Sym} = T # issue #77
+
+
 #LinearAlgebra.qr(A::AbstractArray{<:Sym,2}) = ↑(↓(A).QRdecomposition())
 
 ## ----
