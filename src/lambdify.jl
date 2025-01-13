@@ -250,7 +250,7 @@ function walk_expression(ex; values=Dict(), fns=Dict())
         val, cond = args(ex)
         return (val, walk_expression(cond, values=values, fns=fns))
     elseif fn == "Tuple"
-        return walk_expression.(args(ex), values=values, fns=fns)
+        return Expr(:tuple, walk_expression.(args(ex), values=values, fns=fns)...)
     elseif fn == "Indexed"
         return Expr(:ref, [walk_expression(a, values=values, fns=fns) for a in args(ex)]...)
     elseif fn == "Pow"
