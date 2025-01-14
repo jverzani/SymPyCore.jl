@@ -258,6 +258,16 @@ function walk_expression(ex; values=Dict(), fns=Dict())
         b == 1//2 && return Expr(:call, :sqrt, walk_expression(a, values=values, fns=fns))
         b == 1//3 && return Expr(:call, :cbrt, walk_expression(a, values=values, fns=fns))
         return Expr(:call, :^,  [walk_expression(aᵢ, values=values, fns=fns) for aᵢ in (a,b)]...)
+    elseif fn == "Integral" || fn == "NonElementaryIntegral"
+        expr, lim = args(ex)
+        respect = args(lim)[1]
+        var_new = gensym()
+        respect_new = Sym(var_new)
+        expr = subs(expr, respect=>respect_new)
+        lim = [respect_new, args(lim)[2:end]...]
+        ast1 = Expr(:local, Expr(:(=), var_new, Expr(:call, :Sym, string(var_new))))
+        ast2 = Expr(:call, map_fn(fn, fns_map), walk_expression(expr, values=values, fns=fns), Expr(:tuple, walk_expression.(lim, values=values, fns=fns)...))
+        return Expr(:block, ast1, ast2)
     elseif haskey(vals_map, fn)
         return vals_map[fn]
     end
