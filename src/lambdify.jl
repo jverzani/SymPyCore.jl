@@ -191,7 +191,9 @@ sympy_fn_julia_fn = Dict(
 
 const  fn_map = Dict(k => last(v) for (k,v) ∈ pairs(sympy_fn_julia_fn))
 
-map_fn(key, fn_map) = haskey(fn_map, key) ? fn_map[key] : Symbol(key)
+map_fn(key, fn_map) = haskey(fn_map, key) ? fn_map[key] :
+    isdefined(@__MODULE__, Symbol(key)) ? Symbol(key) :
+    error("Lambdify doesn't know what to do with $key. Sorry.")
 
 ##
 
@@ -272,8 +274,10 @@ function walk_expression(ex; values=Dict(), fns=Dict())
         return vals_map[fn]
     end
 
+    fn′ = map_fn(fn, fns_map)
+    
     as = args(ex)
-    Expr(:call, map_fn(fn, fns_map), [walk_expression(a, values=values, fns=fns) for a in as]...)
+    Expr(:call, fn′, [walk_expression(a, values=values, fns=fns) for a in as]...)
 end
 
 """
