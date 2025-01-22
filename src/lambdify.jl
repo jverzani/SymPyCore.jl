@@ -263,9 +263,7 @@ function walk_expression(ex; values=Dict(), fns=Dict())
     elseif fn == "Integral" || fn == "NonElementaryIntegral"
         expr, lims... = args(ex)
         respect = first.(args.(lims))
-        respect_new = gensym.(Symbol.(respect))
-        expr = subs(expr, [r => r1 for (r,r1) in zip(respect, respect_new)]...)
-        fn_expr = Expr(:->, Expr(:tuple, respect_new...), walk_expression(expr, values=values, fns=fns))
+        fn_expr = Expr(:->, Expr(:tuple, respect...), walk_expression(expr, values=values, fns=fns))
         lim_ranges = [Expr(:tuple, walk_expression.(Base.tail(args(lim)), values=values, fns=fns)...) for lim in lims]
         return Expr(:call, map_fn(fn, fns_map), fn_expr, lim_ranges...)
     elseif haskey(vals_map, fn)
