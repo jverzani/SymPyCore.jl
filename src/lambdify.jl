@@ -261,6 +261,12 @@ function walk_expression(ex; values=Dict(), fns=Dict())
         b == 1//3 && return Expr(:call, :cbrt, walk_expression(a, values=values, fns=fns))
         return Expr(:call, :^,  [walk_expression(aᵢ, values=values, fns=fns) for aᵢ in (a,b)]...)
     elseif fn == "Integral" || fn == "NonElementaryIntegral"
+        expr, lims... = args(ex)
+        respect = first.(args.(lims))
+        fn_expr = Expr(:->, Expr(:tuple, Symbol.(respect)...), walk_expression(expr, values=values, fns=fns))
+        lim_ranges = [Expr(:tuple, walk_expression.(Base.tail(args(lim)), values=values, fns=fns)...) for lim in lims]
+        return Expr(:call, map_fn(fn, fns_map), fn_expr, lim_ranges...)
+        #=
         expr, lim = args(ex)
         respect = args(lim)[1]
         var_new = gensym()
@@ -270,12 +276,13 @@ function walk_expression(ex; values=Dict(), fns=Dict())
         ast1 = Expr(:local, Expr(:(=), var_new, Expr(:call, :Sym, string(var_new))))
         ast2 = Expr(:call, map_fn(fn, fns_map), walk_expression(expr, values=values, fns=fns), Expr(:tuple, walk_expression.(lim, values=values, fns=fns)...))
         return Expr(:block, ast1, ast2)
+        =#
     elseif haskey(vals_map, fn)
         return vals_map[fn]
     end
 
     fn′ = map_fn(fn, fns_map)
-    
+
     as = args(ex)
     Expr(:call, fn′, [walk_expression(a, values=values, fns=fns) for a in as]...)
 end
@@ -429,3 +436,69 @@ function lambdify(exs::Array{S, N}, vars = union(free_symbols.(exs)...); T::Data
 end
 
 Base.convert(::Type{Function}, ex::Sym) = lambdify(ex)
+
+## --- new lambdify
+import GeneralizedGenerated
+
+struct 𝐹{F,E,N} <: Function
+
+    λ::F
+    expr::E
+    xs::NTuple{N, Symbol}
+end
+function Base.show(io::IO, ::MIME"text/plain", F::𝐹)
+    vars = isempty(F.xs) ? "no variables" :
+        length(F.xs) == 1 ? "a single variable $(only(F.xs))" :
+        "variables $(F.xs)"
+    print(io, "Callable function with $vars")
+end
+(F::𝐹)() = F.λ()
+(F::𝐹)(x) = F.λ(x...)
+(F::𝐹)(x, xs...) = F.λ(x, xs...)
+
+
+julia_code() = nothing # stub for function to convert
+"""
+    λfy(ex, xs...; kwargs...)
+
+Lambdify a function using GeneralizedGenerated. Creates an ``n``-ary function where ``n`` is the legnth of `xs`.
+
+* `xs` defaults to `free_symbols(ex)`
+
+The keyword arguments (borrowed from `Symbolics`' `build_function`) include:
+
+* `conv`, which can be `walk_expression` or `julia_code`. For `walk_expression` values for `fns::Dict` and `vals::Dict` are passed along.
+* `expression` -- either `Val{true}` to return an expression or the default `Val{false}`; can also specify `invoke_latest=false` to get `Val{true}`.
+* `expression_module` -- module passed to `GeneralizedGenerated.mk_function`.
+
+"""
+function λfy(ex; kwargs...)
+    vars = free_symbols(ex)
+    _λfy(ex, vars...; kwargs...)
+end
+λfy(ex, xs...; kwargs...) = _λfy(ex, xs...; kwargs...)
+function _λfy(ex, xs...;
+              invoke_latest = true,
+              use_julia_code=false,
+              expression = Val{false},
+              expression_module = Main,
+              conv = walk_expression,
+              kwargs...)
+
+    # legacy arguments
+    use_julia_code && (conv = julia_code)
+    !invoke_latest && (expression = Val{true})
+
+    body = conv(ex; kwargs...)
+    syms = Symbol.(xs)
+    λ = Expr(:->, Expr(:tuple, syms...), body)
+
+    if expression == Val{true}
+        return λ
+    else
+        return 𝐹(GeneralizedGenerated.mk_function(expression_module, λ), body, syms)
+    end
+end
+
+
+## ----
