@@ -1,7 +1,7 @@
 name = "SymPyCore"
 uuid = "458b697b-88f0-4a86-b56b-78b75cfb3531"
 authors = ["jverzani <jverzani@gmail.com> and contributors"]
-version = "0.2.9"
+version = "0.2.11"
 
 [deps]
 CommonEq = "3709ef60-1bee-4518-9f2f-acd86f176c50"
@@ -13,11 +13,7 @@ RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 TermInterface = "8ea1fca8-c5ef-4a55-8b96-4e9afe9c9a3c"
 
-[weakdeps]
-TermInterface = "8ea1fca8-c5ef-4a55-8b96-4e9afe9c9a3c"
-
 [extensions]
-SymPyCoreTermInterfaceExt = "TermInterface"
 
 [compat]
 Aqua = "0.8"
@@ -38,8 +34,7 @@ julia = "1.6"
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 SymPyPythonCall = "bc8888f7-b21e-4b7c-a06a-5d9c9496438c"
-TermInterface = "8ea1fca8-c5ef-4a55-8b96-4e9afe9c9a3c"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Aqua", "TermInterface", "SparseArrays", "SymPyPythonCall", "Test"]
+test = ["Aqua", "SparseArrays", "SymPyPythonCall", "Test"]
