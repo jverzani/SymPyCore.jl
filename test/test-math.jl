@@ -250,7 +250,7 @@ end
     @test lambdify(ex)() ≈ 3.1961985135995072
 
     # SymPyCore issue #83 (avoid QuadGK issue with testing)
-    ∫(expr, lim) = sum(expr, range(lim..., 100))*(lim[2]-lim[1])/100
+    ∫(expr, lim) = sum(expr, range(lim..., length=100))*(lim[2]-lim[1])/100
     fns = Dict("Integral" => ∫, "NonElementaryIntegral" => ∫)
 
     f(x) = 1/(x+log(x))
