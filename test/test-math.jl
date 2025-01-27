@@ -1,7 +1,6 @@
 using Test
 using LinearAlgebra
 using SpecialFunctions
-using QuadGK
 using SymPyCore
 
 @testset "Math" begin
@@ -202,14 +201,12 @@ end
 
 
 @testset "Calculus" begin
-    integrate_with_quad(expr, lim) = quadgk(expr, lim[1], lim[2])[1]
-    fns = Dict("Integral" => integrate_with_quad, "NonElementaryIntegral" => integrate_with_quad)
     @syms x::real, a::positive
     @test limit(sin(x*a)/x, x=>0) == a
     @test diff(exp(x*a), x) == a*exp(x*a)
     @test integrate(cos(x*a), x) == sin(x*a) / a
     @test summation(x^2, (x, 1, 10)) == sum(x^2 for x ∈ 1:10)
-    @test lambdify(integrate(1/(x+log(x)), (x, 1, x)); fns)(2) ≈ 0.5715168780107482
+
 end
 
 @testset "Piecewise" begin
@@ -251,6 +248,13 @@ end
     @syms x
     ex = integrate(sqrt(1 + (1/x)^2), (x, 1/sympy.E, sympy.E))
     @test lambdify(ex)() ≈ 3.1961985135995072
+
+    # SymPyCore issue #83 (avoid QuadGK issue with testing)
+    ∫(expr, lim) = sum(expr, range(lim..., 100))*(lim[2]-lim[1])/100
+    fns = Dict("Integral" => ∫, "NonElementaryIntegral" => ∫)
+
+    f(x) = 1/(x+log(x))
+    @test lambdify(integrate(f(x), (x, 1, x)); fns)(2) ≈ ∫(f, (1,2))
 
 end
 

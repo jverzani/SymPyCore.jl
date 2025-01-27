@@ -293,9 +293,9 @@ end
 
 function walk_expression_case(::Val{:Pow}, ex; values=_vd, fns=_fd)
     a, b = args(ex)
-    aargs′ = walk_expression.(a; values, fns)
-    b == 1//2 && return Expr(:call, :sqrt, aargs′...)
-    b == 1//3 && return Expr(:call, :cbrt, aargs′...)
+    aargs′ = walk_expression(a; values, fns)
+    b == 1//2 && return Expr(:call, :sqrt, aargs′)
+    b == 1//3 && return Expr(:call, :cbrt, aargs′)
     bargs′ = walk_expression.(b; values, fns)
     return Expr(:call, :^, aargs′, bargs′)
 end
@@ -459,12 +459,12 @@ julia> @btime \$f(1,2)
 As seen, the function produced by `GeneralizedGenerated` is as performant as the original, and **much** more so than calling that returned by `lambdify`, which uses a call to `Base.invokelatest`.
 
 """
-function lambdify(ex; kwargs...)
+function lambdify(ex::SymbolicObject; kwargs...)
     vars = free_symbols(ex)
     _λfy(ex, vars...; kwargs...)
 end
-lambdify(ex, xs...; kwargs...) = _λfy(ex, xs...; kwargs...)
-lambdify(ex, xs::Tuple; kwargs...) = _λfy(ex, xs...; kwargs...)
+lambdify(ex::SymbolicObject, xs...; kwargs...) = _λfy(ex, xs...; kwargs...)
+lambdify(ex::SymbolicObject, xs::Tuple; kwargs...) = _λfy(ex, xs...; kwargs...)
 
 # from @mistguy cf. https://github.com/JuliaPy/SymPy.jl/issues/218
 # T a data type to convert to, when specified
