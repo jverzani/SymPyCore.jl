@@ -226,72 +226,149 @@ fn(1,1) # 1.6015187080185656
 ```
 
 """
-function walk_expression(ex; values=Dict(), fns=Dict())
+operation_name(ex) = funcname(ex)
+const _vd = Dict{String, Symbol}()
+const _fd = Dict{String, Symbol}()
 
-    fns_map = merge(fn_map, fns)
+
+function walk_expression(ex;
+                     values=_vd,
+                     fns=_fd)
+
+    fns_map = merge(fn_map, fns) # these modify
     vals_map = merge(val_map, values)
 
-    fn = funcname(ex)
+    op = operation_name(ex)
+
+    # base cases variables, numbers
+    if !_iscall(ex)
+        if any(==(op),  ("Symbol", "Dummy", "IndexedBase"))
+            str_ex = string(ex)
+            return get(vals_map, str_ex, Symbol(str_ex))
+        elseif any(==(op), ("Integer", "Float"))
+            return N(ex)
+        elseif any(==(op), ("Rational",))
+            return N(numerator(ex)) / N(denominator(ex))
+        end
+    end
+
+    # special cases
+    haskey(vals_map, op) && return vals_map[op]
+
+    hasmethod(walk_expression_case, (Val{Symbol(op)}, typeof(ex))) &&
+        return walk_expression_case(Val(Symbol(op)), ex; values, fns)
+
     # special case `F(t) = ...` output from ODE
     # this may be removed if it proves a bad idea....
-    if fn == "Equality" && lhs(ex).is_Function
-        return walk_expression(rhs(ex), values=values, fns=fns)
+    if op == "Equality" && lhs(ex).is_Function
+        return walk_expression(rhs(ex); values, fns)
     end
 
-    if fn == "Symbol" || fn == "Dummy" || fn == "IndexedBase"
-        str_ex = string(ex)
-        return get(vals_map, str_ex, Symbol(str_ex))
-    elseif fn in ("Integer" , "Float")
-        return N(ex)
-    elseif fn == "Rational"
-        return N(numerator(ex))// N(denominator(ex))
-        ## piecewise requires special treatment
-    elseif fn == "Piecewise"
-        return _piecewise([walk_expression(cond, values=values, fns=fns) for cond in args(ex)]...)
-    elseif fn == "ExprCondPair"
-        val, cond = args(ex)
-        return (val, walk_expression(cond, values=values, fns=fns))
-    elseif fn == "Tuple"
-        return Expr(:tuple, walk_expression.(args(ex), values=values, fns=fns)...)
-    elseif fn == "Indexed"
-        return Expr(:ref, [walk_expression(a, values=values, fns=fns) for a in args(ex)]...)
-    elseif fn == "Pow"
-        a, b = args(ex)
-        b == 1//2 && return Expr(:call, :sqrt, walk_expression(a, values=values, fns=fns))
-        b == 1//3 && return Expr(:call, :cbrt, walk_expression(a, values=values, fns=fns))
-        return Expr(:call, :^,  [walk_expression(aᵢ, values=values, fns=fns) for aᵢ in (a,b)]...)
-    elseif fn == "Integral" || fn == "NonElementaryIntegral"
-        expr, lim = args(ex)
-        respect = args(lim)[1]
-        var_new = gensym()
-        respect_new = Sym(var_new)
-        expr = subs(expr, respect=>respect_new)
-        lim = [respect_new, args(lim)[2:end]...]
-        ast1 = Expr(:local, Expr(:(=), var_new, Expr(:call, :Sym, string(var_new))))
-        ast2 = Expr(:call, map_fn(fn, fns_map), walk_expression(expr, values=values, fns=fns), Expr(:tuple, walk_expression.(lim, values=values, fns=fns)...))
-        return Expr(:block, ast1, ast2)
-    elseif haskey(vals_map, fn)
-        return vals_map[fn]
-    end
+    op′ = map_fn(op, fns_map)
+    args′ = walk_expression.(args(ex); values, fns)
 
-    fn′ = map_fn(fn, fns_map)
-    
-    as = args(ex)
-    Expr(:call, fn′, [walk_expression(a, values=values, fns=fns) for a in as]...)
+    Expr(:call, op′, args′...)
+
 end
 
+
+function walk_expression_case(::Val{:Piecewise}, ex; values=_vd, fns=_fd)
+    return _piecewise(walk_expression.(args(ex); values, fns)...)
+end
+
+function walk_expression_case(::Val{:ExprCondPair}, ex; values=_vd, fns=_fd)
+        val, cond = args(ex)
+        return (val, walk_expression(cond; values, fns))
+end
+
+function walk_expression_case(::Val{:Tuple}, ex; values=_vd, fns=_fd)
+    args′ = walk_expression.(args(ex); values, fns)
+    return Expr(:tuple, args′...)
+end
+
+function walk_expression_case(::Val{:Indexed}, ex; values=_vd, fns=_fd)
+    args′ = walk_expression.(args(ex); values, fns)
+    return Expr(:ref, args′...)
+end
+
+function walk_expression_case(::Val{:Pow}, ex; values=_vd, fns=_fd)
+    a, b = args(ex)
+    aargs′ = walk_expression(a; values, fns)
+    b == 1//2 && return Expr(:call, :sqrt, aargs′)
+    b == 1//3 && return Expr(:call, :cbrt, aargs′)
+    bargs′ = walk_expression.(b; values, fns)
+    return Expr(:call, :^, aargs′, bargs′)
+end
+
+function _integral_case(op::Val{X}, ex; values=_vd, fns=_fd) where X
+    expr, lims... = args(ex)
+
+    respect = first.(args.(lims))
+
+    fxargs = walk_expression(expr; values=values, fns=fns)
+    fn_expr = Expr(:->, Expr(:tuple, Symbol.(respect)...), fxargs)
+
+
+    lim_ranges = [Expr(:tuple, walk_expression.(Base.tail(args(lim)), values=values, fns=fns)...) for lim in lims]
+
+    op = map_fn(string(X), fns)
+
+    return Expr(:call, op, fn_expr, lim_ranges...)
+end
+walk_expression_case(op::Val{:Integral}, ex; values=_vd, fns=_fd) =
+    _integral_case(op, ex; values, fns)
+walk_expression_case(op::Val{:NonElementaryIntegral}, ex; values=_vd, fns=_fd) =
+    _integral_case(op, ex; values, fns)
+
+
+
+
+struct 𝐹{F,E,N} <: Function
+
+    λ::F
+    expr::E
+    xs::NTuple{N, Symbol}
+end
+
+function Base.show(io::IO, ::MIME"text/plain", F::𝐹)
+    vars = isempty(F.xs) ? "no variables" :
+        length(F.xs) == 1 ? "a single variable $(only(F.xs))" :
+        "variables $(F.xs)"
+    print(io, "Callable function with $vars")
+end
+
+(F::𝐹)() = F.λ()
+(F::𝐹)(x) = F.λ(x...)
+(F::𝐹)(x, xs...) = F.λ(x, xs...)
+
+function Base.iterate(F::𝐹, state=nothing)
+    isnothing(state) && return (F.xs,1)
+    state == 1 && return ((), 2)
+    state == 2 && return (F.expr, 3)
+    return nothing
+end
+
+#
+
 """
-    lambdify(ex, vars=free_symbols();
-             fns=Dict(), values=Dict, use_julia_code=false,
+    lambdify(ex, vars...;
+             fns=Dict(), values=Dict,
+             expression = Val{false},
+             conv = walk_expression,
+             use_julia_code=false,
              invoke_latest=true)
 
-Take a symbolic expression and return a `Julia` function or expression to build a function.
+Take a symbolic expression and return a `Julia` struct subtyping `Function` or expression to build a function. The struct contains the expression.
 
 * `ex::Sym` a symbolic expression with 0, 1, or more free symbols
 
-* `vars` a container of symbols to use for the function arguments. The default is `free_symbols` which has a specific ordering. Specifying `vars` allows this default ordering of arguments to be customized. If `vars` is empty, such as when the symbolic expression has *no* free symbols, a variable arg constant function is returned.
+* `vars` Either a tuple of variables or each listed separately, defaulting to `free_symbols(ex)` and its ordering. If `vars` is empty, a 0-argument function is returned.
 
 * `fns::Dict`, `vals::Dict`: Dictionaries that allow customization of the function that walks the expression `ex` and creates the corresponding AST for a Julia expression. See `SymPy.fn_map` and `SymPy.val_map` for the default mappings of sympy functions and values into `Julia`'s AST.
+
+# `expression`: the default, `Val{false}`, will return a callable struct; passing `Val{true}` will return the expression. (This is also in the `expr` field of the struct, so changing this is unnecessary.) (See also `invoke_latest=false`.)
+
+* `conv`: a method to convert a symbolic expression into an expression. The default is part of this package; the alternative, the unexpored `julia_code`, is from the Python package. (See also `use_julia_code`)
 
 * `use_julia_code::Bool`: use SymPy's conversion to an expression, the default is `false`
 
@@ -353,50 +430,86 @@ julia> @eval g2(x) = (\$ex)(x)
 g2 (generic function with 1 method)
 ```
 
-An alternative, say, is to use `GeneralizedGenerated`'s `mk_function`, as follows:
+A performant and easy alternative, say, is to use `GeneralizedGenerated`'s `mk_function`, as follows:
 
 ```julia
-julia> using GeneralizedGenerated
+julia> using GeneralizedGenerated, BenchmarkTools
 
-julia> body = convert(Expr, f(x))
-:(exp(cot(x)))
+julia> f(x,p) = x*tanh(exp(p*x));
 
-julia> g3 = mk_function((:x,), (), body)
-function = (x;) -> begin
-    (Main).exp((Main).cot(x))
-end
+julia> @syms x p; g = lambdify(f(x,p), x, p)
+Callable function with variables (:x, :p)
+
+julia> gg = mk_function(g...);
+
+julia> @btime \$g(1,2)
+  48.862 ns (1 allocation: 16 bytes)
+0.9999992362042291
+
+julia> @btime \$gg(1,2)
+ 1.391 ns (0 allocations: 0 bytes)
+0.9999992362042291
+
+julia> @btime \$f(1,2)
+  1.355 ns (0 allocations: 0 bytes)
+0.9999992362042291
+
 ```
 
-This function will be about 2-3 times slower than `f`.
+As seen, the function produced by `GeneralizedGenerated` is as performant as the original, and **much** more so than calling that returned by `lambdify`, which uses a call to `Base.invokelatest`.
 
 """
-function  lambdify(ex::Sym, vars=free_symbols(ex);
-              fns=Dict(), values=Dict(),
-              use_julia_code=false,
-              invoke_latest=true)
+function lambdify(ex::SymbolicObject; kwargs...)
+    vars = free_symbols(ex)
+    _λfy(ex, vars...; kwargs...)
+end
+lambdify(ex::SymbolicObject, xs...; kwargs...) = _λfy(ex, xs...; kwargs...)
+lambdify(ex::SymbolicObject, xs::Tuple; kwargs...) = _λfy(ex, xs...; kwargs...)
 
-    if isempty(vars)
-        # can't call N(ex) here...
-        v = ex.evalf()
-        if v.is_real == Sym(true)
-            val = _convert(Real, ↓(v))
-        else
-            val = Complex(convert(Real, ↓(real(v))), convert(Real, ↓(imag(v))))
-        end
-        return (ts...) -> val
-    end
-
-    body = convert_expr(ex, fns=fns, values=values, use_julia_code=use_julia_code)
-    ex = expr_to_function(body, vars)
-
-    if invoke_latest
-        fn = eval(ex)
-        return (args...) -> Base.invokelatest(fn, args...)
+# from @mistguy cf. https://github.com/JuliaPy/SymPy.jl/issues/218
+# T a data type to convert to, when specified
+function lambdify(exs::Array{S, N}, vars = union(free_symbols.(exs)...); T::DataType=Nothing, kwargs...) where {S <: Sym, N}
+    #f = λfy.(exs, (vars,)) # prevent broadcast in vars
+    f = _λfy.(exs, vars...) # prevent broadcast in vars
+    if T == Nothing
+        (args...) -> map.(f, args...)
     else
-        ex
+        (args...) -> convert(Array{T,N}, map.(f, args...))
     end
 end
 
+
+function _λfy(ex, xs...;
+              invoke_latest = true,
+              use_julia_code=false,
+              expression = Val{false},
+              conv = walk_expression,
+              kwargs...)
+
+    # legacy arguments
+    use_julia_code && (conv = julia_code)
+    !invoke_latest && (expression = Val{true})
+
+    body = conv(ex; kwargs...)
+    syms = Symbol.(xs)
+    λ = Expr(:->, Expr(:tuple, syms...), body)
+
+    if expression == Val{true}
+        return λ
+    else
+        fn = eval(λ)
+        λ′ = (args...) -> Base.invokelatest(fn, args...)
+        return 𝐹(λ′, body, syms)
+        return 𝐹(GeneralizedGenerated.mk_function(expression_module, λ), body, syms)
+    end
+end
+
+julia_code() = nothing # stub for function to convert in SymPy/
+
+# convert alternative to lambdify
+Base.convert(::Type{Function}, ex::Sym) = lambdify(ex)
+
+# Should deprecate, as one can just use lambdify and grab expr
 # convert symbolic expression to julia AST
 # more flexibly than `convert(Expr, ex)`
 function convert_expr(ex::Sym;
@@ -409,23 +522,3 @@ end
 function _convert_expr(::Val{false}, ex::SymbolicObject; fns=Dict(), values=Dict())
     walk_expression(ex; fns = fns, values=values)
 end
-
-
-# take an expression and arguments and return an Expr of a generic function
-function  expr_to_function(body, vars)
-    syms = Symbol.(vars)
-    Expr(:function, Expr(:call, gensym(), syms...), body)
-end
-
-# from @mistguy cf. https://github.com/JuliaPy/SymPy.jl/issues/218
-# T a data type to convert to, when specified
-function lambdify(exs::Array{S, N}, vars = union(free_symbols.(exs)...); T::DataType=Nothing, kwargs...) where {S <: Sym, N}
-    f = lambdify.(exs, (vars,)) # prevent broadcast in vars
-    if T == Nothing
-        (args...) -> map.(f, args...)
-    else
-        (args...) -> convert(Array{T,N}, map.(f, args...))
-    end
-end
-
-Base.convert(::Type{Function}, ex::Sym) = lambdify(ex)

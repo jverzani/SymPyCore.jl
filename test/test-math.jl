@@ -206,6 +206,7 @@ end
     @test diff(exp(x*a), x) == a*exp(x*a)
     @test integrate(cos(x*a), x) == sin(x*a) / a
     @test summation(x^2, (x, 1, 10)) == sum(x^2 for x ∈ 1:10)
+
 end
 
 @testset "Piecewise" begin
@@ -242,10 +243,18 @@ end
 
     # SymPy issue 567; constants
     u = lambdify(Sym(1//2))
-    @test u() == u(1,2,3) == 1/2
+    @test u() ==  1/2
+    @test_broken u(1,2,3) == 1/2 # no arguments so an error
     @syms x
     ex = integrate(sqrt(1 + (1/x)^2), (x, 1/sympy.E, sympy.E))
     @test lambdify(ex)() ≈ 3.1961985135995072
+
+    # SymPyCore issue #83 (avoid QuadGK issue with testing)
+    ∫(expr, lim) = sum(expr, range(lim..., length=100))*(lim[2]-lim[1])/100
+    fns = Dict("Integral" => ∫, "NonElementaryIntegral" => ∫)
+
+    f(x) = 1/(x+log(x))
+    @test lambdify(integrate(f(x), (x, 1, x)); fns)(2) ≈ ∫(f, (1,2))
 
 end
 

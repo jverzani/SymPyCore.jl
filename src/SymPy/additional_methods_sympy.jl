@@ -85,11 +85,13 @@ function SymPyCore.ask(x::Sym)
     #return convert(SymPyCore.Bool3, u)
 end
 
+
 # lambdify using use_julia_code (`sympy` not available in `lambify.jl`)
+SymPyCore.julia_code(ex) = Meta.parse(string(_sympy_.julia_code(↓(ex))))
+# deprecate this:
 function SymPyCore._convert_expr(use_julia_code::Val{true}, ex; kwargs...)
     Meta.parse(string(_sympy_.julia_code(↓(ex))))
 end
-
 
 # deprecations
 import Base: collect
