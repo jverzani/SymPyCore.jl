@@ -1,3 +1,5 @@
+import SymPyCore.TermInterface
+
 @testset "Symbol creation" begin
     ## Symbol creation
     Sym("x")
@@ -300,4 +302,12 @@ end
     # get callable object for objects with __call__ method
     @test x.subs isa SymPyCore.SymbolicCallable
     @test x.subs(x,2) isa Sym # calls return Sym objects (or containers of)
+end
+
+@testset "TermInterface" begin
+    @syms x
+    @test !TermInterface.iscall(x) # istree deprecated
+    @test TermInterface.iscall(sin(x))
+    @test TermInterface.operation(sin(x)) == sin
+    @test only(TermInterface.arguments(sin(x))) == x
 end

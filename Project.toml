@@ -13,7 +13,11 @@ RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 TermInterface = "8ea1fca8-c5ef-4a55-8b96-4e9afe9c9a3c"
 
+[weakdeps]
+SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
+
 [extensions]
+SymPyCoreSymbolicUtilsExt = "SymbolicUtils"
 
 [compat]
 Aqua = "0.8"
@@ -26,6 +30,7 @@ RecipesBase = "0.7, 0.8, 1.0, 1.1"
 SparseArrays = "1.1"
 SpecialFunctions = "0.8, 0.9, 0.10, 1.0, 2"
 SymPyPythonCall = "0.3,0.4"
+SymbolicUtils = "3.11.0"
 TermInterface = "2"
 Test = "<0.0.1, 1.6"
 julia = "1.6"
@@ -33,8 +38,9 @@ julia = "1.6"
 [extras]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
 SymPyPythonCall = "bc8888f7-b21e-4b7c-a06a-5d9c9496438c"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Aqua", "SparseArrays", "SymPyPythonCall", "Test"]
+test = ["Aqua", "SparseArrays", "SymPyPythonCall", "SymbolicUtils", "Test"]

@@ -1,11 +1,13 @@
 # test extensions
 
-import TermInterface
+import SymbolicUtils
+using SymPyCore: exchange, Sym
 
-@testset "TermInterface" begin
-    @syms x
-    @test !TermInterface.iscall(x) # istree deprecated
-    @test TermInterface.iscall(sin(x))
-    @test TermInterface.operation(sin(x)) == sin
-    @test only(TermInterface.arguments(sin(x))) == x
+@testset "SymbolicUtils exchange" begin
+    T = Sym
+    𝐓 = SymbolicUtils.BasicSymbolic
+
+    SymbolicUtils.@syms a b
+    a*cos(b) |> exchange(T) isa T
+    a*cos(b) |> exchange(T) |> exchange(𝐓) isa 𝐓
 end

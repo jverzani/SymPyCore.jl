@@ -119,8 +119,7 @@ end
 # is x a variable
 function issym(x::SymbolicObject)
     iscall(x) && return false
-    o = ↓(x)
-    return o.is_Atom && !o.is_number
+    x.is_Atom && !x.is_number
 end
 
 makesymbol(T::Type{<:SymbolicObject}, x::Symbol) = maketerm(T, nothing, (x,), nothing)
