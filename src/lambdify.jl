@@ -60,7 +60,7 @@ func(ex::Sym, _sympy_=nothing) = return ↓(ex).func
 function args(x::Sym, _sympy_=nothing)
     y = ↓(x)
     if hasproperty(y, :args)
-        return [Sym(aᵢ) for aᵢ in y.args]
+        return Tuple(Sym(aᵢ) for aᵢ in y.args)
     else
         return ()
     end
@@ -103,7 +103,7 @@ function TermInterface.operation(x::SymbolicObject)
     return first(λ)
 end
 
-TermInterface.arguments(x::SymbolicObject) = args(x)
+TermInterface.arguments(x::SymbolicObject) = [aᵢ for aᵢ in args(x)]
 
 function TermInterface.maketerm(T::Type{<:SymbolicObject}, head, args, metadata)
     return head(Iterators.flatten(args)...)
