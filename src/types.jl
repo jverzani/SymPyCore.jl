@@ -41,7 +41,9 @@ _pytype(::Sym{T}) where {T} = T
 
 Base.convert(::Type{Nothing}, ::Sym{Nothing}) = nothing
 
-Base.promote_type(::Type{Sym}, ::Type{Sym{T}})  where {T} = Sym{T}
+Base.promote_rule(::Type{Sym}, ::Type{Sym{T}})  where {T} = Sym{T}
+Base.promote_rule(::Type{Sym{T}}, ::Type{Sym})  where {T} = Sym{T}
+
 Base.collect(s::Sym) = Sym.(collect(↓(s)))
 
 ## --------------------------------------------------
