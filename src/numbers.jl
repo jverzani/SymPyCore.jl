@@ -47,7 +47,7 @@ function N(x)
         end
     end
 
-    if _iscall(x)
+    if iscall(x)
         z = y.evalf()
         if _convert(Bool, Sym(z.is_real))
             return _convert(Float64, z)
@@ -74,7 +74,7 @@ function N(x)
             end
         end
         Sym(y.is_rational) == Sym(true) && return Rational(N(numerator(x)), N(denominator(x)))
-        if _iscall(x)
+        if iscall(x)
             if length(args(x)) > 1
                 def_precision_decimal = ceil(Int, log10(big"2"^Base.MPFR.DEFAULT_PRECISION.x))
                 return _convert(BigFloat, y.evalf(def_precision_decimal))

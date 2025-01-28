@@ -34,9 +34,9 @@ Base.@kwdef struct Introspection{T}
     args::Function      = (x::Sym) -> SymPyCore.args(x, _sympy_)
     class::Function     = (x::Sym) -> SymPyCore.class(x, _sympy_)
     classname::Function = (x::Sym) -> SymPyCore.classname(x, _sympy_)
-    operation::Function = (x::Sym) -> SymPyCore._operation(x)
+    operation::Function = (x::Sym) -> SymPyCore.operation(x)
     arguments::Function = (x::Sym) -> SymPyCore.args(x, _sympy_)
-    iscall::Function    = (x::Sym) -> SymPyCore._iscall(x)
+    iscall::Function    = (x::Sym) -> SymPyCore.iscall(x)
 end
 
 is_symbolic(x::SymbolicObject) = true
@@ -89,25 +89,106 @@ end
 # end
 
 ## --------------------------------------------------
-# Methods for TermInterface extension
-function _iscall(x::SymbolicObject)
+# Methods for TermInterface
+function TermInterface.iscall(x::SymbolicObject)
     hasproperty(↓(x), :is_Atom) && return !x.is_Atom
     return false
 end
 
-function _operation(x::SymbolicObject)
-    #@assert _iscall(x)
+function TermInterface.operation(x::SymbolicObject)
+    @assert iscall(x)
     nm = funcname(x)
     λ = get(sympy_fn_julia_fn, nm, nothing)
     isnothing(λ) && return getfield(Main, Symbol(nm))
     return first(λ)
 end
 
-_arguments(x::SymbolicObject) = collect(args(x))
+TermInterface.arguments(x::SymbolicObject) = [aᵢ for aᵢ in args(x)]
 
-function _similarterm(T::Type{<:SymbolicObject}, head, args, metadata)
-    return head(args...)
+function TermInterface.maketerm(T::Type{<:SymbolicObject}, head, args, metadata)
+    return head(Iterators.flatten(args)...)
 end
+
+# make symbols
+function TermInterface.maketerm(T::Type{<:SymbolicObject}, ::Nothing, args, metadata)
+    Sym.(args)
+end
+
+## -----
+# desired extensions to TermInterface for `exchange`
+# is x a variable
+function issym(x::SymbolicObject)
+    iscall(x) && return false
+    x.is_Atom && !x.is_number
+end
+
+makesymbol(T::Type{<:SymbolicObject}, x::Symbol) = maketerm(T, nothing, (x,), nothing)
+
+value(x) = N(x)
+
+## Exchange
+## Use TermInterface to switch between different symbolic types
+_issymbol(x) = false
+_issymbol(x::Sym) = issym(x)
+
+_value(x) = x
+_value(x::Sym) = value(x)
+
+_makesymbol(T::Type{<:SymbolicObject}, x::Symbol) = makesymbol(T, x)
+
+"""
+    exchange(T, ex::𝑇)
+    exchange(T)
+
+Exchange an expression in one symbolic representation with another.
+
+## Example
+
+This shows how to exchange between `SymPy` with `SymbolicUtils`:
+
+```
+import SymPy
+T = SymPy.Sym
+
+import SymbolicUtils
+𝐓 = SymbolicUtils.BasicSymbolic
+
+import SymPyCore: exchange, _issymbol, _value, _makesymbol
+_issymbol(x::𝐓) = SymbolicUtils.issym(x)
+_value(x::𝐓) = x
+_makesymbol(::Type{<:𝐓}, 𝑥::Symbol) = SymbolicUtils.Sym{Number}(𝑥)
+
+SymPy.@syms x y
+ex = x * tanh(exp(x)) - max(0, y)
+
+ex |> exchange(𝐓) isa 𝐓
+ex |> exchange(𝐓) |> exchange(T) isa T
+
+SymbolicUtils.@syms x y
+ex = y*cos(x)^2
+ex′ = exchange(T, ex)
+𝑥, 𝑦 = SymPy.free_symbols(ex′)
+ex′ = SymPy.integrate(ex′, 𝑥) # y*(x/2 + sin(x)*cos(x)/2)
+exchange(𝐓, ex′)              # y*((1//2)*x + (1//2)*sin(x)*cos(x))
+```
+
+**EXPERIMENTAL** -- interface is subject to change.
+
+"""
+function exchange(T, ex)
+    if iscall(ex)
+        op = operation(ex)
+        args = arguments(ex)
+        args′ = exchange.(T, args)
+        return maketerm(T, op, collect(args′), metadata(ex))
+    elseif _issymbol(ex)
+        return _makesymbol(T, Symbol(ex))
+    else
+        return _value(ex)
+    end
+end
+
+exchange(T) = Base.Fix1(exchange, T)
 
 ## --------------------------------------------------
 
@@ -241,7 +322,7 @@ function walk_expression(ex;
     op = operation_name(ex)
 
     # base cases variables, numbers
-    if !_iscall(ex)
+    if !iscall(ex)
         if any(==(op),  ("Symbol", "Dummy", "IndexedBase"))
             str_ex = string(ex)
             return get(vals_map, str_ex, Symbol(str_ex))
