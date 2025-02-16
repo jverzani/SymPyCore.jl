@@ -546,6 +546,7 @@ function lambdify(ex::SymbolicObject; kwargs...)
 end
 lambdify(ex::SymbolicObject, xs...; kwargs...) = _λfy(ex, xs...; kwargs...)
 lambdify(ex::SymbolicObject, xs::Tuple; kwargs...) = _λfy(ex, xs...; kwargs...)
+lambdify(ex::SymbolicObject, xs::AbstractArray; kwargs...) = _λfy(ex, xs...; kwargs...)
 
 # from @mistguy cf. https://github.com/JuliaPy/SymPy.jl/issues/218
 # T a data type to convert to, when specified
