@@ -234,6 +234,11 @@ function free_symbols(ex::S) where {T, S<:SymbolicObject{T}}
     return Sym.(fs[sortperm(string.(fs))] )
 end
 
-function free_symbols(exs::Vector{S}) where {S<:SymbolicObject}
+# over container
+function free_symbols(exs::Vector{S}) where {S}
     return sort(unique(reduce(vcat, free_symbols.(exs))))
+end
+
+function free_symbols(exs::Tuple)
+    map(free_symbols, exs)
 end
