@@ -273,6 +273,14 @@ end
     @test ask(𝑄.positive_definite([x_real 1; 1 x_real])) == Sym(nothing)
 end
 
+@testset "use sympy modules" begin
+
+    # issue SymPy #561
+    @syms x::real y::real
+    u = sympy.solvers.diophantine(2x + 3y ~ 5)
+    t0 = only(free_symbols(collect(u)))
+    @test u == Set((3t0 - 5, 5 - 2t0))
+end
 
 @testset "Fix past issues" begin
     @syms x y z
