@@ -632,7 +632,7 @@ end
     # SymPy issue 567; constants
     u = lambdify(Sym(1//2))
     @test u() ==  1/2
-    @test_broken u(1,2,3) == 1/2 # no arguments so an error
+    @test u(1,2,3) == 1/2 # remove no arguments so an error
     @syms x
     ex = integrate(sqrt(1 + (1/x)^2), (x, 1/sympy.E, sympy.E))
     @test lambdify(ex)() ≈ 3.1961985135995072
