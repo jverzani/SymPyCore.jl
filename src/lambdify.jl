@@ -419,6 +419,7 @@ function Base.show(io::IO, ::MIME"text/plain", F::𝐹)
 end
 
 (F::𝐹)() = F.λ()
+(F::𝐹{FF,E,0})(xs...) where {FF, E} = F.λ() # no vars can be called in which way
 (F::𝐹)(x) = F.λ(x...)
 (F::𝐹)(x, xs...) = F.λ(x, xs...)
 
