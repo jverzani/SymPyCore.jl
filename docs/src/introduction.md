@@ -846,3 +846,16 @@ However, `B * A` will error:
 ```@repl introduction
 try  B * A catch err "Error" end
 ```
+
+## External packages
+
+Using packages from the sympy ecosphere not imported into `SymPyCore` requires calling into the `_pyimport` method of the underlying module. Depending on which is being used. The following shows how the `WignerD` method can be called from the `sympy.physics.quantum.spin` module under `SymPyPythonCall`.
+
+```
+julia> spin = SymPyPythonCall._pyimport("sympy.physics.quantum.spin")
+
+Julia> WignerD = spin.WignerD(1,1,0, pi, pi/2, 0)
+Python: WignerD(1, 1, 0, 3.14159265358979, 1.5707963267949, 0)
+```
+
+This example flushes out some idiosyncracies: passing `PI` errors; the output is a python reference, call `Sym` to get a symbolic one.
