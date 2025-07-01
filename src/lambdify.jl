@@ -204,7 +204,8 @@ val_map = Dict(
                "Exp1"             => :ℯ,
                "Infinity"         => :Inf,
                "NegativeInfinity" => :(-Inf),
-               "ComplexInfinity"  => :Inf, # error?
+    "ComplexInfinity"  => :Inf, # error?
+    "NaN" => :NaN,
                "ImaginaryUnit"    => :im,
                "BooleanTrue"      => :true,
                "BooleanFalse"     => :false
@@ -219,7 +220,7 @@ val_map = Dict(
 function _piecewise(args...)
     as = copy([args...])
     val, cond = pop!(as)
-    ex = Expr(:call, :ifelse, cond, convert(Expr,val), :nothing)
+    ex = Expr(:call, :ifelse, cond, convert(Expr,val), :NaN)
     while length(as) > 0
         val, cond = pop!(as)
         ex = Expr(:call, :ifelse, cond, convert(Expr,val), convert(Expr, ex))
