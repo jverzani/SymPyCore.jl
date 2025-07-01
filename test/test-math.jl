@@ -462,6 +462,11 @@ end
     λ = lambdify(u)
     @test all((iszero(λ(-1)), isone(λ(0)), isone(λ(1))))
 
+    ## lambdify piecewise without error PR #96
+    @syms t
+    v = sympy.Piecewise((1, Le(t, 0)))
+    vv = lambdify(v)
+    @test isnan(vv(1))
 
     ## Issue catch all for N; floats only
     @syms x
