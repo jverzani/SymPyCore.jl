@@ -162,7 +162,8 @@ using SparseArrays
         @test isa(a*I - A1, Matrix{<:Sym})
         @test isa(-a*I - A1, Matrix{<:Sym})
 
-        A2 = [1 2; 2 1]
+        # A2 = [1 2; 2 1] # issue pose v1.12 with SymPyPythonCall
+        A2 = eltype(a)[1 2; 2 1]
         @test isa(A2 + a*I, Matrix{<:Sym})
         @test isa(A2 - a*I, Matrix{<:Sym})
         @test isa(-A2 + a*I, Matrix{<:Sym})
