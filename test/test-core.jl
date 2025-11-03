@@ -80,10 +80,11 @@ end
 
     # SymPy issue #545
     @syms x
+    T = typeof(x)
     for op ∈ (+,-,*,/,^)
-        @inferred op(2,x)
-        @inferred op(x,2)
-        @inferred op(x,x)
+        @inferred T op(2,x)
+        @inferred T op(x,2)
+        @inferred T op(x,x)
     end
 end
 
