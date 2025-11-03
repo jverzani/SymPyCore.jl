@@ -187,3 +187,20 @@ The value of `c1` prints as a tuple, but is of type `Sym` and sympy type `CondEx
 ```
 
 The Python object, `↓(a)` is indexed, so 0-based indexing is used above. These pieces are then converted to `Sym` objects for familiarity.
+
+
+This is a similar example. The `sympy.Heaviside` function can be used to model a jump discontinuity. Its derivative is the `DiracDelta` function. Consider
+
+```{julia}
+@syms t t₀
+u = sympy.Heaviside(t)
+uₜ₀ = 10 * subs(u, t=> t - t₀)
+δ = diff(uₜ₀, t)
+c, delta = Introspection.arguments(δ)
+```
+
+To programmatically get the value for $t_0$ we use `solve`:
+
+```{julia}
+only(solve(only(Introspection.arguments(delta)) ~ 0, t))
+```
