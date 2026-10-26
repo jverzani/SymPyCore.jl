@@ -84,3 +84,13 @@ end
 function _backslash(A, B::AbstractMatrix)
     hcat([A \ bⱼ for bⱼ in eachcol(B)]...)
 end
+
+## ----
+# b^A = exp(log(b) * A); use an exact log(b) so the result stays symbolic.
+# Without this, Julia 1.13's generic fallback computes log(b) as a Float64.
+function Base.:^(b::Number, A::AbstractMatrix{T}) where {T <: SymbolicObject}
+    LinearAlgebra.checksquare(A)
+    exp(log(Sym(b)) * A)
+end
+Base.:^(b::Irrational{:ℯ}, A::AbstractMatrix{T}) where {T <: SymbolicObject} =
+    invoke(^, Tuple{Number, AbstractMatrix{T}}, b, A)

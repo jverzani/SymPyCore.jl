@@ -348,11 +348,11 @@ import SymPyCore: SymFunction
     @test s .^ v == [3^x, 3]
     @test_throws DimensionOrMethodError v ^ s ## error
     v .^ s
-    @test_throws MethodError  s ^ rv ## error
+    @test_throws DimensionMismatch  s ^ rv ## error
     s .^ rv
     @test_throws DimensionMismatch  rv ^ s ## error
     rv .^ s
-    @test_throws MethodError  s ^ a ## error
+    @test s ^ a == exp(x * log(Sym(3))) / 3 * [5 4; 4 5] # exact, not floating point
     s .^ a
     a ^ s
     a .^ s
