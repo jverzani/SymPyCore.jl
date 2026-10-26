@@ -8,6 +8,6 @@ using SymPyCore: exchange, Sym
     𝐓 = SymbolicUtils.BasicSymbolic
 
     SymbolicUtils.@syms a b
-    a*cos(b) |> exchange(T) isa T
-    a*cos(b) |> exchange(T) |> exchange(𝐓) isa 𝐓
+    @test a*cos(b) |> exchange(T) isa T
+    @test a*cos(b) |> exchange(T) |> exchange(𝐓) isa 𝐓
 end

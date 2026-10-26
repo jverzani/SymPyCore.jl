@@ -136,6 +136,9 @@ _value(x::Sym) = value(x)
 
 _makesymbol(T::Type{<:SymbolicObject}, x::Symbol) = makesymbol(T, x)
 
+# map a type passed to `exchange` to the concrete type to build (e.g. add a default parameter)
+_exchangetype(T) = T
+
 """
     exchange(T, ex::𝑇)
     exchange(T)
@@ -176,6 +179,7 @@ exchange(𝐓, ex′)              # y*((1//2)*x + (1//2)*sin(x)*cos(x))
 
 """
 function exchange(T, ex)
+    T = _exchangetype(T)
     if iscall(ex)
         op = operation(ex)
         args = arguments(ex)
