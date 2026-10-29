@@ -41,6 +41,7 @@ Base.asech(z::Sym) = log(sqrt(1/z-1)*sqrt(1/z+1) + 1/z)
 Base.acsch(z::Sym) = log(sqrt(1+1/z^2) + 1/z) ## http://mathworld.wolfram.com/InverseHyperbolicCosecant.html
 
 Base.sincos(x::Sym) = (sin(x), cos(x))
+Base.cis(x::Sym) = exp(im*x)
 
 Base.hypot(x::Sym, y::Number) = hypot(promote(x,y)...)
 Base.hypot(xs::Sym...) = sqrt(sum(abs(xᵢ)^2 for xᵢ ∈ xs))
